@@ -116,7 +116,7 @@ switch ($Action) {
         $containerId = (& docker @compose ps -q $service).Trim()
         if ($LASTEXITCODE -ne 0 -or -not $containerId) { throw 'Could not identify test container for restore copy.' }
         Invoke-Docker @('cp', $resolvedBackup, "${containerId}:/tmp/phoenix_canonical_restore.dump")
-        Invoke-Docker ($compose + @('exec', '-T', $service, 'pg_restore', '-U', 'phoenix_bootstrap', '-d', $restoreDb, '--no-owner', '--no-privileges', '--exit-on-error', '/tmp/phoenix_canonical_restore.dump'))
+        Invoke-Docker ($compose + @('exec', '-T', $service, 'pg_restore', '-U', 'phoenix_bootstrap', '-d', $restoreDb, '--no-owner', '--exit-on-error', '/tmp/phoenix_canonical_restore.dump'))
         $sql = [IO.File]::ReadAllText((Join-Path $root 'tests/foundation.sql'))
         Invoke-Psql $restoreDb $sql | Out-Null
         Write-Output "PASS restore into $restoreDb"

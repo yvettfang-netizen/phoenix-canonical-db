@@ -6,9 +6,10 @@ This directory is a new development database namespace. It does not connect to l
 
 | Path | Purpose |
 |---|---|
-| `compose.yaml` | PostgreSQL 16 and optional PostgreSQL 17 compatibility service, loopback ports only |
+| `compose.yaml` | PostgreSQL 16 and optional PostgreSQL 17 compatibility service on an internal Compose network |
 | `migrations/canonical/0001_foundation.sql` | New `canonical_migrations` ledger, seven schemas, restricted capability roles |
 | `scripts/db.ps1` | Initialization, migration, exact-name test reset, health, backup and restore test |
+| `scripts/native-db.ps1` | Optional local fallback; PG17 was used for a supplemental check before Docker became available |
 | `tests/foundation.sql` | Schema, role and repeat-migration checks |
 | `PHASE1_REPORT.md` | Executed evidence and contract holds |
 
@@ -20,6 +21,7 @@ The script creates an ignored `.env` containing a random local bootstrap passwor
 pwsh -File ./scripts/db.ps1 -Action init -Version 16
 pwsh -File ./scripts/db.ps1 -Action health -Version 16
 pwsh -File ./scripts/db.ps1 -Action test -Version 16
+pwsh -File ./scripts/db.ps1 -Action init -Version 17
 pwsh -File ./scripts/db.ps1 -Action test -Version 17
 pwsh -File ./scripts/db.ps1 -Action backup -Version 16
 pwsh -File ./scripts/db.ps1 -Action restore-test -Version 16 -BackupPath ./backups/<actual-backup-file>.dump
@@ -27,7 +29,7 @@ pwsh -File ./scripts/db.ps1 -Action restore-test -Version 16 -BackupPath ./backu
 
 `test` resets only `phoenix_canonical_test_16` or `phoenix_canonical_test_17`; `restore-test` resets only `phoenix_canonical_restore_test_16` or `_17`. The development database is never reset by those actions. `migrate` applies checksum-locked files in lexical order and checks applied file hashes on repeat runs. The SQL itself is transaction wrapped and repeat safe if interrupted before ledger registration.
 
-The PostgreSQL 16 and 17 services listen on `127.0.0.1:55416` and `127.0.0.1:55417` respectively. Containers share only the Compose `internal` network. Do not publish these ports on a nonlocal interface.
+The containers expose PostgreSQL only within the Compose `internal` network; no host port is published. The scripts access PostgreSQL with `docker compose exec`. Do not publish these ports on a nonlocal interface.
 
 ## Role boundary
 
