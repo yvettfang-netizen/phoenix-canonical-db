@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('init', 'health', 'migrate', 'provision-local-roles', 'reset-test', 'test', 'backup', 'restore-test')]
+    [ValidateSet('init', 'health', 'migrate', 'provision-local-roles', 'reset-test', 'test', 'probe', 'backup', 'restore-test')]
     [string]$Action,
     [ValidateSet('16', '17')][string]$Version = '16',
     [string]$BackupPath
@@ -137,6 +137,15 @@ function Reset-TestDatabase([string]$database) {
     Write-Output "RESET $database"
 }
 
+function Invoke-SyntheticProbes([string]$database) {
+    foreach ($name in @('foundation.sql', 'rls_probe.sql', 'docs_probe.sql', 'contract_neutral_probe.sql')) {
+        $sql = [IO.File]::ReadAllText((Join-Path $root "tests/$name"))
+        Invoke-Psql $database $sql | Out-Null
+    }
+    $probeGone = Invoke-Psql $database "SELECT to_regnamespace('acceptance_probe') IS NULL;"
+    if ((@($probeGone) -join '').Trim() -ne 't') { throw 'Disposable acceptance probe left schema behind.' }
+}
+
 switch ($Action) {
     'init' {
         Start-Database
@@ -160,13 +169,13 @@ switch ($Action) {
         Reset-TestDatabase $testDb
         Migrate $testDb
         Migrate $testDb
-        $sql = [IO.File]::ReadAllText((Join-Path $root 'tests/foundation.sql'))
-        Invoke-Psql $testDb $sql | Out-Null
-        $rlsSql = [IO.File]::ReadAllText((Join-Path $root 'tests/rls_probe.sql'))
-        Invoke-Psql $testDb $rlsSql | Out-Null
-        $docsSql = [IO.File]::ReadAllText((Join-Path $root 'tests/docs_probe.sql'))
-        Invoke-Psql $testDb $docsSql | Out-Null
-        Write-Output "PASS PostgreSQL $Version foundation, repeat migration, synthetic RLS and docs integrity probes"
+        Invoke-SyntheticProbes $testDb
+        Write-Output "PASS PostgreSQL $Version foundation, repeat migration, synthetic RLS, docs and contract-neutral probes"
+    }
+    'probe' {
+        Start-Database
+        Invoke-SyntheticProbes $devDb
+        Write-Output "PASS PostgreSQL $Version nondestructive transactional synthetic probes"
     }
     'backup' {
         Start-Database

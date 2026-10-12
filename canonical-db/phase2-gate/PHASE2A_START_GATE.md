@@ -28,3 +28,5 @@
 The user can review the four adjacent iteration files without treating any missing original as verified. When a gate is closed, record approver, date, exact file hash, and changed clauses before applying the dependent migration. A file's presence or a design filename containing “Reviewed” is not an approval event.
 
 **Execution boundary:** Phase 2A has begun with isolated scaffolding and synthetic tests. Full business schema/RLS, real data, external storage, and release remain HOLD.
+
+**2026-10-12 continuation:** PG16/17 also passed nondestructive, rolled-back mapping-refusal, Consent-withdrawal, guardian-expiry, and submitted-manifest snapshot probes. See `../PHASE2A_EXECUTION_REPORT.md`. This does not close any contract gate above.

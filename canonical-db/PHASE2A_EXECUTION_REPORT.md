@@ -35,13 +35,28 @@ Fresh allowlisted synthetic test databases applied both files, then skipped both
 | New database backup and restore | PASS | PASS | 7,422-byte PG16 and 7,562-byte PG17 dumps restored into exact allowlisted restore-test databases; `foundation.sql` passed |
 | Local mock object storage | PASS | Same local test, database independent | Synthetic content put/get, SHA-256 content key, deduplication, ZIP backup and restored-content digest; 517-byte ZIP |
 
+## Continued synthetic acceptance run (2026-10-12)
+
+Both existing development containers were healthy. The new `probe` action ran on PG16 and PG17 without resetting either development database or applying another migration. It verified the foundation and all three disposable probes, then confirmed that `acceptance_probe` did not persist. Both runs returned `PASS`.
+
+| Disposable synthetic check | PG16 | PG17 | Limit |
+|---|---|---|---|
+| Source-qualified legacy mapping; unmapped/ambiguous/non-v7 rejection | PASS | PASS | Candidate rules, no canonical mapping table |
+| Consent withdrawal takes effect on next decision | PASS | PASS | Test function with supplied actor; no trusted session binding |
+| Guardian expiry, family mismatch and self-declared legacy evidence refusal | PASS | PASS | Fixed synthetic evaluation time; legal age/evidence policy remains undecided |
+| Stable denial reasons recorded in disposable audit table | PASS | PASS | No canonical audit event table |
+| Submitted manifest append, edit, delete and status reversion refusal | PASS | PASS | Test-only trigger and tables |
+| Pinned digest match, missing-version refusal and reuse across submissions | PASS | PASS | Test-only snapshot mechanism; no final submission contract |
+
+The modified files are `tests/contract_neutral_probe.sql`, `tests/docs_probe.sql`, and `scripts/db.ps1`. These checks are deliberately transactional and use generated or fixed synthetic identifiers only. They cannot be reported as production authorization or approved Education/Identity business schema.
+
 The mock test writes only generated text beginning `SYNTHETIC PHOENIX DOCUMENT` under ignored `runtime/`; its ZIP is under ignored `backups/`. It accepts no customer file path and uses no external object store. Every run gets new local directories; no existing backup or object is deleted.
 
 ## What remains unbuilt
 
 - No Person, Student, Guardian, Consent, Education Application, Identity Case, document, submission, or legacy-mapping business table exists.
 - No trusted application session binding or business RLS policy exists. The RLS probe's session settings are caller-controlled and cannot be used for production authorization.
-- No mapping-refusal, Consent-withdrawal, guardian-expiry, or complete submission-snapshot acceptance suite has been run against final tables.
+- Mapping-refusal, Consent-withdrawal, guardian-expiry and submission-snapshot mechanism probes pass, but none has run against final business tables or a trusted application session.
 - The Family Context original contract and effective amendment, `auth` versus `core` principal ownership, `docs` versus `documents` naming, domain field lists, retention/deletion/storage-region policy, and Founder OS freeze original remain unresolved as detailed in `phase2-gate/PHASE2A_START_GATE.md`.
 
 **Next engineering boundary:** Continue synthetic, contract-neutral probes and mock storage work locally. Dependent business-table migrations require the specific contract gates in the Phase 2A start file. No push, merge, deployment, old-data migration, or production change was performed.

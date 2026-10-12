@@ -17,6 +17,7 @@ CREATE TABLE acceptance_probe.submission_items (
   submission_id integer NOT NULL REFERENCES acceptance_probe.submissions,
   item_no integer NOT NULL,
   version_id integer NOT NULL REFERENCES acceptance_probe.document_versions ON DELETE RESTRICT,
+  pinned_sha256 char(64) NOT NULL,
   PRIMARY KEY (submission_id, item_no)
 );
 CREATE FUNCTION acceptance_probe.reject_version_change() RETURNS trigger LANGUAGE plpgsql AS $fn$
@@ -26,22 +27,46 @@ END
 $fn$;
 CREATE TRIGGER immutable_version BEFORE UPDATE OR DELETE ON acceptance_probe.document_versions
   FOR EACH ROW EXECUTE FUNCTION acceptance_probe.reject_version_change();
-CREATE FUNCTION acceptance_probe.reject_submitted_item_change() RETURNS trigger LANGUAGE plpgsql AS $fn$
+CREATE FUNCTION acceptance_probe.protect_submission() RETURNS trigger LANGUAGE plpgsql AS $fn$
 BEGIN
-  IF EXISTS (SELECT 1 FROM acceptance_probe.submissions WHERE submission_id = OLD.submission_id AND status = 'SUBMITTED') THEN
-    RAISE EXCEPTION 'submitted manifest is immutable';
+  IF TG_OP = 'DELETE' OR OLD.status = 'SUBMITTED' THEN
+    RAISE EXCEPTION 'submitted submission cannot be changed or removed';
   END IF;
-  RETURN OLD;
+  RETURN NEW;
 END
 $fn$;
-CREATE TRIGGER immutable_submitted_item BEFORE UPDATE OR DELETE ON acceptance_probe.submission_items
-  FOR EACH ROW EXECUTE FUNCTION acceptance_probe.reject_submitted_item_change();
+CREATE TRIGGER immutable_submitted_submission BEFORE UPDATE OR DELETE ON acceptance_probe.submissions
+  FOR EACH ROW EXECUTE FUNCTION acceptance_probe.protect_submission();
+CREATE FUNCTION acceptance_probe.protect_submission_item() RETURNS trigger LANGUAGE plpgsql AS $fn$
+DECLARE
+  target_submission integer;
+  expected_digest char(64);
+BEGIN
+  target_submission := CASE WHEN TG_OP = 'INSERT' THEN NEW.submission_id ELSE OLD.submission_id END;
+  IF EXISTS (SELECT 1 FROM acceptance_probe.submissions WHERE submission_id = target_submission AND status = 'SUBMITTED') THEN
+    RAISE EXCEPTION 'submitted manifest is immutable';
+  END IF;
+  IF TG_OP = 'DELETE' THEN RETURN OLD; END IF;
+  IF EXISTS (SELECT 1 FROM acceptance_probe.submissions WHERE submission_id = NEW.submission_id AND status = 'SUBMITTED') THEN
+    RAISE EXCEPTION 'cannot move item into submitted manifest';
+  END IF;
+  SELECT sha256 INTO expected_digest FROM acceptance_probe.document_versions WHERE version_id = NEW.version_id;
+  IF expected_digest IS NULL THEN RETURN NEW; END IF;
+  IF expected_digest IS DISTINCT FROM NEW.pinned_sha256 THEN
+    RAISE EXCEPTION 'manifest digest does not match pinned version';
+  END IF;
+  RETURN NEW;
+END
+$fn$;
+CREATE TRIGGER immutable_submitted_item BEFORE INSERT OR UPDATE OR DELETE ON acceptance_probe.submission_items
+  FOR EACH ROW EXECUTE FUNCTION acceptance_probe.protect_submission_item();
 INSERT INTO acceptance_probe.document_versions VALUES
   (1, 10, 1, repeat('a',64), 'mock/key/v1'),
   (2, 10, 2, repeat('b',64), 'mock/key/v2');
 INSERT INTO acceptance_probe.submissions VALUES (20,'PREPARING');
 INSERT INTO acceptance_probe.submissions VALUES (21,'PREPARING');
-INSERT INTO acceptance_probe.submission_items VALUES (20,1,1);
+INSERT INTO acceptance_probe.submission_items VALUES (20,1,1,repeat('a',64));
+INSERT INTO acceptance_probe.submission_items VALUES (21,1,1,repeat('a',64));
 UPDATE acceptance_probe.submissions SET status = 'SUBMITTED' WHERE submission_id = 20;
 DO $test$
 DECLARE blocked boolean;
@@ -69,6 +94,34 @@ BEGIN
 
   blocked := false;
   BEGIN
+    INSERT INTO acceptance_probe.submission_items VALUES (20,2,2,repeat('b',64));
+  EXCEPTION WHEN raise_exception THEN blocked := true;
+  END;
+  IF NOT blocked THEN RAISE EXCEPTION 'submitted manifest append allowed'; END IF;
+
+  blocked := false;
+  BEGIN
+    UPDATE acceptance_probe.submission_items SET submission_id = 20, item_no = 2 WHERE submission_id = 21 AND item_no = 1;
+  EXCEPTION WHEN raise_exception THEN blocked := true;
+  END;
+  IF NOT blocked THEN RAISE EXCEPTION 'item moved into submitted manifest'; END IF;
+
+  blocked := false;
+  BEGIN
+    UPDATE acceptance_probe.submissions SET status = 'PREPARING' WHERE submission_id = 20;
+  EXCEPTION WHEN raise_exception THEN blocked := true;
+  END;
+  IF NOT blocked THEN RAISE EXCEPTION 'submitted status reverted'; END IF;
+
+  blocked := false;
+  BEGIN
+    DELETE FROM acceptance_probe.submissions WHERE submission_id = 20;
+  EXCEPTION WHEN raise_exception THEN blocked := true;
+  END;
+  IF NOT blocked THEN RAISE EXCEPTION 'submitted submission deleted'; END IF;
+
+  blocked := false;
+  BEGIN
     INSERT INTO acceptance_probe.document_versions VALUES (3,10,1,repeat('d',64),'mock/key/duplicate');
   EXCEPTION WHEN unique_violation THEN blocked := true;
   END;
@@ -76,12 +129,21 @@ BEGIN
 
   blocked := false;
   BEGIN
-    INSERT INTO acceptance_probe.submission_items VALUES (21,1,999);
+    INSERT INTO acceptance_probe.submission_items VALUES (21,2,999,repeat('e',64));
   EXCEPTION WHEN foreign_key_violation THEN blocked := true;
   END;
   IF NOT blocked THEN RAISE EXCEPTION 'manifest accepted a missing version'; END IF;
 
-  IF (SELECT version_id FROM acceptance_probe.submission_items WHERE submission_id = 20 AND item_no = 1) <> 1 THEN
+  blocked := false;
+  BEGIN
+    INSERT INTO acceptance_probe.submission_items VALUES (21,2,2,repeat('e',64));
+  EXCEPTION WHEN raise_exception THEN blocked := true;
+  END;
+  IF NOT blocked THEN RAISE EXCEPTION 'manifest accepted a false snapshot digest'; END IF;
+
+  IF (SELECT version_id FROM acceptance_probe.submission_items WHERE submission_id = 20 AND item_no = 1) <> 1 OR
+     (SELECT pinned_sha256 FROM acceptance_probe.submission_items WHERE submission_id = 20 AND item_no = 1) <> repeat('a',64) OR
+     (SELECT count(*) FROM acceptance_probe.submission_items WHERE version_id = 1) <> 2 THEN
     RAISE EXCEPTION 'pinned version changed';
   END IF;
 END
