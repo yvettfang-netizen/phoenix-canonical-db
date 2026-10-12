@@ -138,7 +138,7 @@ function Reset-TestDatabase([string]$database) {
 }
 
 function Invoke-SyntheticProbes([string]$database) {
-    foreach ($name in @('foundation.sql', 'rls_probe.sql', 'docs_probe.sql', 'contract_neutral_probe.sql')) {
+    foreach ($name in @('foundation.sql', 'rls_probe.sql', 'docs_probe.sql', 'contract_neutral_probe.sql', 'trusted_context_probe.sql')) {
         $sql = [IO.File]::ReadAllText((Join-Path $root "tests/$name"))
         Invoke-Psql $database $sql | Out-Null
     }

@@ -16,8 +16,10 @@ This directory is a new development database namespace. It does not connect to l
 | `tests/rls_probe.sql` | Transactional synthetic RLS engine check; leaves no canonical table |
 | `tests/docs_probe.sql` | Transactional synthetic version and submitted-manifest integrity check; leaves no canonical table |
 | `tests/contract_neutral_probe.sql` | Transactional synthetic legacy-ID refusal, Consent withdrawal and guardian-expiry decisions with audit reasons |
+| `tests/trusted_context_probe.sql` | Phase 2B transactional protected-context RLS simulation; no Canonical business table |
 | `PHASE1_REPORT.md` | Executed evidence and contract holds |
 | `PHASE2A_EXECUTION_REPORT.md` | Executed Phase 2A empty-schema and mock-store results |
+| `PHASE2B_EXECUTION_REPORT.md` | Executed PG16/17 access-boundary simulation and remaining trust/contract gates |
 | `phase2-gate/` | Four source-checked iteration files and the bounded Phase 2A start gate |
 
 ## Run locally when Docker is available
@@ -61,7 +63,7 @@ The migrations create three `NOLOGIN` capability roles and add empty Education/I
 | `phoenix_canonical_reader_local` | Inherits only reader capability | No domain table rights or ledger access |
 | `phoenix_bootstrap` | Local container superuser for setup, migration and synthetic tests | All; never an application connection |
 
-The migration ledger is inaccessible to app and reader roles. Future tables must grant exact operations and enable RLS in their own reviewed migrations. The synthetic RLS probe checks family, advisor, and partner scope filtering with test-only labels inside a rolled-back transaction. It proves PostgreSQL RLS behavior in both engines, not approved business authorization: its session settings are caller-controlled and cannot serve as a production identity source. The synthetic docs probe checks version overwrite, submitted-manifest edits and append, status reversion, version numbering, digest matching and pinned reuse. The new contract-neutral probe checks source-qualified mapping refusal, UUIDv7 version rejection, Consent withdrawal on the next decision, expiry, evidence level and denial audit events. These checks also roll back; they are not built business schemas or trusted session binding.
+The migration ledger is inaccessible to app and reader roles. Future tables must grant exact operations and enable RLS in their own reviewed migrations. The synthetic RLS probe checks family, advisor, and partner scope filtering with test-only labels inside a rolled-back transaction. Its session settings are caller-controlled and cannot serve as a production identity source. The Phase 2B protected-context probe instead ignores those caller settings and checks private context binding, scope, revocation and expiry; its binder is simulated by the test bootstrap role, so it also is not production authentication. The synthetic docs probe checks version overwrite, submitted-manifest edits and append, status reversion, version numbering, digest matching and pinned reuse. The contract-neutral probe checks source-qualified mapping refusal, UUIDv7 version rejection, Consent withdrawal on the next decision, expiry, evidence level and denial audit events. All probes roll back; they are not built business schemas or trusted session binding.
 
 ## Contract holds
 
