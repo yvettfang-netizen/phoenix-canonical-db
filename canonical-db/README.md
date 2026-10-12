@@ -8,12 +8,15 @@ This directory is a new development database namespace. It does not connect to l
 |---|---|
 | `compose.yaml` | PostgreSQL 16 and optional PostgreSQL 17 compatibility service on an internal Compose network |
 | `migrations/canonical/0001_foundation.sql` | New `canonical_migrations` ledger, seven schemas, restricted capability roles |
+| `migrations/canonical/0002_education_identity_skeleton.sql` | Phase 2A empty Education and Identity schemas with restricted grants |
 | `scripts/db.ps1` | Initialization, migration, local login provisioning, exact-name test reset, health, backup and restore test |
 | `scripts/native-db.ps1` | Optional local fallback; PG17 was used for a supplemental check before Docker became available |
+| `scripts/mock-object-store.ps1` | Synthetic local object put/get, deduplication and backup/restore test |
 | `tests/foundation.sql` | Schema, role and repeat-migration checks |
 | `tests/rls_probe.sql` | Transactional synthetic RLS engine check; leaves no canonical table |
 | `tests/docs_probe.sql` | Transactional synthetic version and submitted-manifest integrity check; leaves no canonical table |
 | `PHASE1_REPORT.md` | Executed evidence and contract holds |
+| `PHASE2A_EXECUTION_REPORT.md` | Executed Phase 2A empty-schema and mock-store results |
 | `phase2-gate/` | Four source-checked iteration files and the bounded Phase 2A start gate |
 
 ## Run locally when Docker is available
@@ -30,21 +33,24 @@ pwsh -File ./scripts/db.ps1 -Action provision-local-roles -Version 17
 pwsh -File ./scripts/db.ps1 -Action test -Version 17
 pwsh -File ./scripts/db.ps1 -Action backup -Version 16
 pwsh -File ./scripts/db.ps1 -Action restore-test -Version 16 -BackupPath ./backups/<actual-backup-file>.dump
+pwsh -File ./scripts/mock-object-store.ps1 -Action test
 ```
 
 `test` resets only `phoenix_canonical_test_16` or `phoenix_canonical_test_17`; `restore-test` resets only `phoenix_canonical_restore_test_16` or `_17`. The development database is never reset by those actions. `migrate` applies checksum-locked files in lexical order and checks applied file hashes on repeat runs. The SQL itself is transaction wrapped and repeat safe if interrupted before ledger registration.
+
+`restore-test` checks the current two-migration schema, so use a backup made after `0002` for that action. Earlier Phase 1 dumps remain historical snapshots.
 
 The containers expose PostgreSQL only within the Compose `internal` network; no host port is published. The scripts access PostgreSQL with `docker compose exec`. Do not publish these ports on a nonlocal interface.
 
 ## Role boundary
 
-The migration creates three `NOLOGIN` capability roles. The separate `provision-local-roles` action creates three local development logins with random passwords in ignored `.local-roles.env`. It repeats safely and verifies actual password connections and effective grants over container-local TCP. These credentials are for these isolated clusters only.
+The migrations create three `NOLOGIN` capability roles and add empty Education/Identity schemas. The separate `provision-local-roles` action creates three local development logins with random passwords in ignored `.local-roles.env`. It repeats safely and verifies actual password connections and effective grants over container-local TCP. These credentials are for these isolated clusters only.
 
 | Role | Database/schema rights | Table rights |
 |---|---|---|
-| `phoenix_canonical_migrator` | Connect to development database; usage and create in six domain schemas; usage of ledger schema | Select and insert in migration ledger; no domain table rights until explicitly granted |
-| `phoenix_canonical_app` | Connect; usage in six domain schemas | None until explicitly granted in a reviewed migration |
-| `phoenix_canonical_reader` | Connect; usage in six domain schemas | None until explicitly granted in a reviewed migration |
+| `phoenix_canonical_migrator` | Connect; usage and create in eight empty domain schemas; usage of ledger schema | Select and insert in migration ledger; no domain table rights until explicitly granted |
+| `phoenix_canonical_app` | Connect; usage in eight empty domain schemas | None until explicitly granted in a reviewed migration |
+| `phoenix_canonical_reader` | Connect; usage in eight empty domain schemas | None until explicitly granted in a reviewed migration |
 | `phoenix_canonical_migrator_local` | Inherits only migrator capability | Ledger select/insert; domain schema create |
 | `phoenix_canonical_app_local` | Inherits only app capability | No domain table rights or ledger access |
 | `phoenix_canonical_reader_local` | Inherits only reader capability | No domain table rights or ledger access |

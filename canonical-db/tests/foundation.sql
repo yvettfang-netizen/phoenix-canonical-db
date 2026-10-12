@@ -2,7 +2,7 @@ DO $test$
 DECLARE
   schema_name text;
 BEGIN
-  FOREACH schema_name IN ARRAY ARRAY['core','consent','audit','integration','docs','casework','canonical_migrations'] LOOP
+  FOREACH schema_name IN ARRAY ARRAY['core','consent','audit','integration','docs','casework','education','identity','canonical_migrations'] LOOP
     IF NOT EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = schema_name) THEN
       RAISE EXCEPTION 'missing schema: %', schema_name;
     END IF;
@@ -13,14 +13,23 @@ BEGIN
   IF has_schema_privilege('phoenix_canonical_reader','docs','CREATE') THEN
     RAISE EXCEPTION 'reader role can create tables';
   END IF;
+  IF has_schema_privilege('phoenix_canonical_app','education','CREATE') OR has_schema_privilege('phoenix_canonical_reader','identity','CREATE') THEN
+    RAISE EXCEPTION 'application or reader role can create domain tables';
+  END IF;
+  IF NOT has_schema_privilege('phoenix_canonical_migrator','education','CREATE') OR NOT has_schema_privilege('phoenix_canonical_migrator','identity','CREATE') THEN
+    RAISE EXCEPTION 'migration role cannot create in Phase 2A domains';
+  END IF;
   IF has_schema_privilege('phoenix_canonical_app','canonical_migrations','USAGE') THEN
     RAISE EXCEPTION 'application role can inspect migration ledger';
   END IF;
   IF NOT has_table_privilege('phoenix_canonical_migrator','canonical_migrations.applied','INSERT') THEN
     RAISE EXCEPTION 'migration role cannot register a migration';
   END IF;
-  IF (SELECT count(*) FROM canonical_migrations.applied) <> 1 THEN
+  IF (SELECT count(*) FROM canonical_migrations.applied) <> 2 THEN
     RAISE EXCEPTION 'migration ledger is not repeat safe';
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname IN ('core','consent','audit','integration','docs','casework','education','identity')) THEN
+    RAISE EXCEPTION 'contract-dependent domain table exists';
   END IF;
 END
 $test$;

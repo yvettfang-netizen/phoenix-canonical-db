@@ -1,10 +1,10 @@
 # Phoenix Canonical PostgreSQL — Phase 2A start gate
 
-**Decision:** `PHASE 2A ISOLATED PREPARATION = STARTABLE`; `PHASE 2 BUSINESS TABLES = HOLD` until the listed approvals. This gate is for the existing local worktree and synthetic PG16/17 only. It does not approve production, legacy migration, push, merge, or deployment.
+**Decision:** `PHASE 2A ISOLATED PREPARATION = STARTED`; `PHASE 2 BUSINESS TABLES = HOLD` until the listed approvals. Empty `education` and `identity` schemas and a synthetic mock-store test are now executed; see `../PHASE2A_EXECUTION_REPORT.md`. This gate is for the existing local worktree and synthetic PG16/17 only. It does not approve production, legacy migration, push, merge, or deployment.
 
 ## What is verified and available now
 
-- Phase 1 report: PG16.15/PG17.11 local clusters healthy on an internal network with no published host port; checksum-locked `canonical/0001_foundation.sql`; six empty schemas; restricted local roles; backup and restore tests passed.
+- Phase 1 report: PG16.15/PG17.11 local clusters healthy on an internal network with no published host port; checksum-locked `canonical/0001_foundation.sql`; six original empty schemas; restricted local roles; backup and restore tests passed. Phase 2A adds checksum-locked `0002_education_identity_skeleton.sql` and two more empty schemas.
 - Synthetic RLS and document-integrity probes pass on both versions and roll back without leaving domain tables.
 - Four-Portals original design file and six correction-gate drafts have file hashes recorded; the new migration conflict report independently checks the listed local Git refs and both local database catalogs.
 - FD-P1 **conditional design approval** and FD-P5 **technical design approval** are reported in the supplied `00_STATUS_SOURCES_VERDICT.md`. Those are not final Family Context or Docs contract approvals.
@@ -27,4 +27,4 @@
 
 The user can review the four adjacent iteration files without treating any missing original as verified. When a gate is closed, record approver, date, exact file hash, and changed clauses before applying the dependent migration. A file's presence or a design filename containing “Reviewed” is not an approval event.
 
-**Execution boundary:** The next phase may begin with isolated scaffolding and synthetic tests. Full business schema/RLS, real data, external storage, and release remain HOLD.
+**Execution boundary:** Phase 2A has begun with isolated scaffolding and synthetic tests. Full business schema/RLS, real data, external storage, and release remain HOLD.

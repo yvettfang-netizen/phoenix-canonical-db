@@ -2,6 +2,8 @@
 
 **PHASE 1 DATABASE FOUNDATION = HOLD** (updated 2026-10-12, Asia/Shanghai)
 
+This report records the Phase 1 acceptance snapshot before the Phase 2A skeleton migration. The current running state, including `0002` and two additional empty schemas, is in `PHASE2A_EXECUTION_REPORT.md`.
+
 Phase 1A's isolated database foundation is running and its migration, repeat execution, backup, and restore checks pass on PostgreSQL 16 and 17. Phase 1B's contract-dependent business tables and Phase 1C's required business access and immutability tests remain on CONTRACT HOLD. No design document is counted as a built table or tested RLS policy.
 
 ## Scope and safety
