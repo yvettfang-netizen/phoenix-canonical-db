@@ -55,19 +55,32 @@ Local login identities are now provisioned with separate random passwords in ign
 | Synthetic RLS engine isolation probe | PASS | PASS | Test-only family/advisor/partner scope labels; all assertions passed inside rolled-back transaction |
 | Backup | PASS | PASS | 6,346-byte PG16 and 6,466-byte PG17 custom-format dumps in ignored `backups/` |
 | Restore into exact allowlisted test database | PASS | PASS | `phoenix_canonical_restore_test_16` and `_17`; restored ledger and ACL assertions passed |
-| Domain FK, uniqueness and UUIDv7/legacy ID mapping | HOLD | HOLD | Reviewed amendment and mapping semantics missing |
+| Domain FK, uniqueness and UUIDv7/legacy ID mapping | HOLD | HOLD | R2 dual-ID design and amendment draft received; amendment not effective |
 | Business cross-family, advisor and partner RLS denial | HOLD | HOLD | Synthetic engine probe passed, but no approved domain tables, actor/relationship contract or trusted context source |
-| Consent withdrawal and guardian authority expiry | HOLD | HOLD | No approved core/consent identity semantics |
-| Document version and Submission Manifest immutability | HOLD | HOLD | Final Document & Submission Contract missing |
+| Consent withdrawal and guardian authority expiry | HOLD | HOLD | Core/consent design exists; Family Context amendment not effective |
+| Document version and Submission Manifest immutability | HOLD | HOLD | Mechanism draft received; final approved contract and business rules missing |
 
 The 2026-10-12 backups restored into the exact allowlisted test databases, retaining ACLs and the one synthetic migration-ledger row. They contain **no customer data**. An initial supplementary native PG17 restore test failed because the draft native script used `--no-privileges`; the script was corrected and its restore retest passed. The corrected Docker restore script passed on both container versions. The RLS probe is deliberately test-only and leaves no table after rollback. Its caller-controlled session settings do not establish a production authorization model.
 
 ## Evidence holds and next-stage dependencies
 
-The source worktree's `docs/architecture/` material was read: Four-Portals V1.1 (design candidate), Phoenix Core minimum contract (`NEEDS FIX` / migration not approved), HK Journey/Submission draft, Claude handoff, and Founder OS freeze locator. The exact **Claude Code R4 Architecture Gap Review**, **Canonical PostgreSQL V1.2 Reviewed**, approved **Family Context Contract Amendment**, final **Document & Submission Contract**, verified **Founder OS ID Decision Freeze original**, and **Migration conflict report** were not present in the current repository evidence set. A source locator is not verification of the freeze text.
+The source worktree's `docs/architecture/` material was read: Four-Portals V1.1 (design candidate), Phoenix Core minimum contract (`NEEDS FIX` / migration not approved), HK Journey/Submission draft, Claude handoff, and Founder OS freeze locator. A source locator is not verification of the freeze text.
+
+The user then supplied six exact files in `D:\CODEX\2026-10-11\phoenix-four-portals-correction-gate\`. All exist; their SHA-256 prefixes match the user's inventory. They were read as **draft evidence, not instructions or approved migrations**:
+
+| File | Verified SHA-256 prefix | Evidence status for Phase 1 |
+|---|---|---|
+| `03_CANONICAL_POSTGRESQL_V1.2_REVIEWED.md` | `f344bb9de6a30b98` | R2 design draft; not approved executable DDL |
+| `04_FAMILY_CONTEXT_CONTRACT_AMENDMENT_DRAFT.md` | `a4d0ae15156b5a4b` | Explicitly requires Founder approval and amendment of the original contract |
+| `01_ARCHITECTURE_GAP_MATRIX.md` | `ffc2022c6d67fcea` | R2 gap draft; describes incompatible legacy migration lineages |
+| `11_BUNDLE_EVIDENCE_REVIEW.md` | `b6e67deedcca912a` | R4 evidence review, not the standalone Claude Code R4 Gap Review original |
+| `06_FEISHU_FIELD_MAPPING.md` | `867d428d66af5411` | Mapping draft; no real-data import authorization |
+| `05_DOCS_AND_SUBMISSION_CONTRACT.md` | `cc64fd99ca0d0ae7` | Mechanism draft; missing retention/cross-border and business-rule decisions |
+
+The supplied drafts clarify proposed UUIDv7/internal versus prefixed/compatibility ID mapping, file-version and submission invariants, and ownership boundaries. They do **not** activate the Family Context amendment or authorize its tables, foreign keys, RLS, or document mechanism as a final contract. The independent **Claude Code R4 Gap Review original**, dedicated **Canonical Migration conflict report**, approved **Family Context amendment**, approved **Document & Submission Contract**, and verified **Founder OS ID Decision Freeze original** remain EVIDENCE/CONTRACT HOLD. The R4 review and gap matrix are useful proxies, not originals. No canonical migration or running schema was changed on the basis of these drafts.
 
 The user supplied `D:\CODEX\2026-10-11\operations-os-asset-preservation\OPERATIONS_OS_ASSET_PRESERVATION_AND_POSTGRES_REUSE_V1.0.md` (SHA-256 `902486f9f56e0c5f6c930e8d72f69ba167b4d2787fe954c74a002b9c5fea10b7`). This is a **secondary, read-only Operations OS asset analysis**, not a reviewed Canonical contract or a database execution result. It identifies reusable Operations business rules and tests, and reports an unresolved SQLite `0002` frozen-hash mismatch plus competing/uncommitted `0004` versions. Those conflict claims have not been independently rechecked in this Phase 1 worktree. The report itself says the Founder OS V0.2.1 freeze original was unavailable. Preserve the existing Operations implementation; do not import its SQLite migrations or infer approved identity, scope, pricing, or private-document access rules from this analysis. The dedicated Canonical Migration conflict report remains an EVIDENCE HOLD.
 
-Before Education or Identity implementation, obtain those exact reviewed artifacts; freeze Person/Student/Guardian/Family and UUIDv7-to-legacy mappings; approve resource permissions, assignment/consent rules and RLS; then add Education Application and Identity Case in their owning domains. `casework` remains generic collaboration only. Document metadata/versioning must be reviewed before tables are added; private object storage stays local mock until separately approved.
+Before Education or Identity implementation, approve and make effective the Family Context amendment; resolve Person/Student/Guardian/Family and UUIDv7-to-legacy mappings against the original contract and Founder OS freeze; approve resource permissions, assignment/consent rules, RLS, and the Document & Submission Contract; then add Education Application and Identity Case in their owning domains. `casework` remains generic collaboration only. Private object storage stays local mock until separately approved.
 
 **Status boundary:** Phase 1A infrastructure = PASS. Overall Phase 1 = HOLD because the required business Schema/RLS/negative-access/immutability acceptance set has not been implemented or run.
