@@ -12,6 +12,7 @@ This directory is a new development database namespace. It does not connect to l
 | `scripts/native-db.ps1` | Optional local fallback; PG17 was used for a supplemental check before Docker became available |
 | `tests/foundation.sql` | Schema, role and repeat-migration checks |
 | `tests/rls_probe.sql` | Transactional synthetic RLS engine check; leaves no canonical table |
+| `tests/docs_probe.sql` | Transactional synthetic version and submitted-manifest integrity check; leaves no canonical table |
 | `PHASE1_REPORT.md` | Executed evidence and contract holds |
 
 ## Run locally when Docker is available
@@ -48,7 +49,7 @@ The migration creates three `NOLOGIN` capability roles. The separate `provision-
 | `phoenix_canonical_reader_local` | Inherits only reader capability | No domain table rights or ledger access |
 | `phoenix_bootstrap` | Local container superuser for setup, migration and synthetic tests | All; never an application connection |
 
-The migration ledger is inaccessible to app and reader roles. Future tables must grant exact operations and enable RLS in their own reviewed migrations. The synthetic probe checks family, advisor, and partner scope filtering with test-only labels inside a rolled-back transaction. It proves PostgreSQL RLS behavior in both engines, not approved business authorization: its session settings are caller-controlled and cannot serve as a production identity source.
+The migration ledger is inaccessible to app and reader roles. Future tables must grant exact operations and enable RLS in their own reviewed migrations. The synthetic RLS probe checks family, advisor, and partner scope filtering with test-only labels inside a rolled-back transaction. It proves PostgreSQL RLS behavior in both engines, not approved business authorization: its session settings are caller-controlled and cannot serve as a production identity source. The synthetic docs probe checks version overwrite, submitted-manifest edits, version numbering and pinned references. It also rolls back, so it is not a built `docs` business schema.
 
 ## Contract holds
 

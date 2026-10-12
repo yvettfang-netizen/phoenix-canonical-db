@@ -164,7 +164,9 @@ switch ($Action) {
         Invoke-Psql $testDb $sql | Out-Null
         $rlsSql = [IO.File]::ReadAllText((Join-Path $root 'tests/rls_probe.sql'))
         Invoke-Psql $testDb $rlsSql | Out-Null
-        Write-Output "PASS PostgreSQL $Version foundation, repeat migration and synthetic RLS probe"
+        $docsSql = [IO.File]::ReadAllText((Join-Path $root 'tests/docs_probe.sql'))
+        Invoke-Psql $testDb $docsSql | Out-Null
+        Write-Output "PASS PostgreSQL $Version foundation, repeat migration, synthetic RLS and docs integrity probes"
     }
     'backup' {
         Start-Database
