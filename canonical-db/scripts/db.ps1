@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('init', 'health', 'migrate', 'reset-test', 'test', 'backup', 'restore-test')]
+    [ValidateSet('init', 'health', 'migrate', 'provision-local-roles', 'reset-test', 'test', 'backup', 'restore-test')]
     [string]$Action,
     [ValidateSet('16', '17')][string]$Version = '16',
     [string]$BackupPath
@@ -9,6 +9,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $root = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
 $envFile = Join-Path $root '.env'
+$localRolesFile = Join-Path $root '.local-roles.env'
 $service = if ($Version -eq '16') { 'pg16' } else { 'pg17' }
 $testDb = "phoenix_canonical_test_$Version"
 $restoreDb = "phoenix_canonical_restore_test_$Version"
@@ -40,6 +41,69 @@ function Invoke-Psql([string]$database, [string]$sql) {
 
 function Start-Database {
     Invoke-Docker ($compose + @('up', '-d', '--wait', $service))
+}
+
+function New-LocalSecret {
+    $bytes = New-Object byte[] 32
+    $rng = [Security.Cryptography.RandomNumberGenerator]::Create()
+    try { $rng.GetBytes($bytes) } finally { $rng.Dispose() }
+    return ([BitConverter]::ToString($bytes)).Replace('-', '').ToLowerInvariant()
+}
+
+function Provision-LocalRoles {
+    if (-not (Test-Path -LiteralPath $localRolesFile)) {
+        $content = @(
+            "PHOENIX_LOCAL_MIGRATOR_PASSWORD=$(New-LocalSecret)"
+            "PHOENIX_LOCAL_APP_PASSWORD=$(New-LocalSecret)"
+            "PHOENIX_LOCAL_READER_PASSWORD=$(New-LocalSecret)"
+        ) -join "`n"
+        [IO.File]::WriteAllText($localRolesFile, "$content`n")
+    }
+    $secrets = @{}
+    foreach ($line in [IO.File]::ReadAllLines($localRolesFile)) {
+        if ($line -match '^(PHOENIX_LOCAL_(?:MIGRATOR|APP|READER)_PASSWORD)=([0-9a-f]{64})$') {
+            $secrets[$Matches[1]] = $Matches[2]
+        }
+    }
+    foreach ($key in @('PHOENIX_LOCAL_MIGRATOR_PASSWORD', 'PHOENIX_LOCAL_APP_PASSWORD', 'PHOENIX_LOCAL_READER_PASSWORD')) {
+        if (-not $secrets.ContainsKey($key)) { throw "Missing or invalid local-only secret: $key" }
+    }
+    $sql = @'
+DO $roles$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'phoenix_canonical_migrator_local') THEN
+    CREATE ROLE phoenix_canonical_migrator_local LOGIN INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE PASSWORD '__MIGRATOR__';
+  ELSE
+    ALTER ROLE phoenix_canonical_migrator_local LOGIN INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE PASSWORD '__MIGRATOR__';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'phoenix_canonical_app_local') THEN
+    CREATE ROLE phoenix_canonical_app_local LOGIN INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE PASSWORD '__APP__';
+  ELSE
+    ALTER ROLE phoenix_canonical_app_local LOGIN INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE PASSWORD '__APP__';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'phoenix_canonical_reader_local') THEN
+    CREATE ROLE phoenix_canonical_reader_local LOGIN INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE PASSWORD '__READER__';
+  ELSE
+    ALTER ROLE phoenix_canonical_reader_local LOGIN INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE PASSWORD '__READER__';
+  END IF;
+END
+$roles$;
+GRANT phoenix_canonical_migrator TO phoenix_canonical_migrator_local WITH INHERIT TRUE, SET FALSE;
+GRANT phoenix_canonical_app TO phoenix_canonical_app_local WITH INHERIT TRUE, SET FALSE;
+GRANT phoenix_canonical_reader TO phoenix_canonical_reader_local WITH INHERIT TRUE, SET FALSE;
+'@
+    $sql = $sql.Replace('__MIGRATOR__', $secrets['PHOENIX_LOCAL_MIGRATOR_PASSWORD']).Replace('__APP__', $secrets['PHOENIX_LOCAL_APP_PASSWORD']).Replace('__READER__', $secrets['PHOENIX_LOCAL_READER_PASSWORD'])
+    Invoke-Psql $devDb $sql | Out-Null
+    $checks = @(
+        @{ Name = 'phoenix_canonical_migrator_local'; Password = $secrets['PHOENIX_LOCAL_MIGRATOR_PASSWORD']; Sql = "SELECT has_schema_privilege(current_user,'core','CREATE') AND has_table_privilege(current_user,'canonical_migrations.applied','INSERT') AND NOT (SELECT rolsuper FROM pg_roles WHERE rolname = current_user);" }
+        @{ Name = 'phoenix_canonical_app_local'; Password = $secrets['PHOENIX_LOCAL_APP_PASSWORD']; Sql = "SELECT has_schema_privilege(current_user,'core','USAGE') AND NOT has_schema_privilege(current_user,'core','CREATE') AND NOT has_schema_privilege(current_user,'canonical_migrations','USAGE') AND NOT (SELECT rolsuper FROM pg_roles WHERE rolname = current_user);" }
+        @{ Name = 'phoenix_canonical_reader_local'; Password = $secrets['PHOENIX_LOCAL_READER_PASSWORD']; Sql = "SELECT has_schema_privilege(current_user,'docs','USAGE') AND NOT has_schema_privilege(current_user,'docs','CREATE') AND NOT has_schema_privilege(current_user,'canonical_migrations','USAGE') AND NOT (SELECT rolsuper FROM pg_roles WHERE rolname = current_user);" }
+    )
+    foreach ($check in $checks) {
+        $result = & docker @compose exec -T -e "PGPASSWORD=$($check.Password)" $service psql -X -h 127.0.0.1 -U $check.Name -d $devDb -v ON_ERROR_STOP=1 -At -c $check.Sql
+        if ($LASTEXITCODE -ne 0 -or (@($result) -join '').Trim() -ne 't') { throw "Local login or privilege test failed: $($check.Name)" }
+    }
+    Write-Output "PASS local-only login and least-privilege checks on PostgreSQL $Version"
 }
 
 function Migrate([string]$database) {
@@ -82,6 +146,11 @@ switch ($Action) {
         Invoke-Docker ($compose + @('exec', '-T', $service, 'pg_isready', '-U', 'phoenix_bootstrap', '-d', $devDb))
     }
     'migrate' { Migrate $devDb }
+    'provision-local-roles' {
+        Start-Database
+        Migrate $devDb
+        Provision-LocalRoles
+    }
     'reset-test' {
         Start-Database
         Reset-TestDatabase $testDb
@@ -93,7 +162,9 @@ switch ($Action) {
         Migrate $testDb
         $sql = [IO.File]::ReadAllText((Join-Path $root 'tests/foundation.sql'))
         Invoke-Psql $testDb $sql | Out-Null
-        Write-Output "PASS PostgreSQL $Version foundation and repeat migration"
+        $rlsSql = [IO.File]::ReadAllText((Join-Path $root 'tests/rls_probe.sql'))
+        Invoke-Psql $testDb $rlsSql | Out-Null
+        Write-Output "PASS PostgreSQL $Version foundation, repeat migration and synthetic RLS probe"
     }
     'backup' {
         Start-Database

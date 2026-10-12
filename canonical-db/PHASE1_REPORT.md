@@ -1,6 +1,6 @@
 # Phoenix Canonical PostgreSQL Phase 1 — actual execution report
 
-**PHASE 1 DATABASE FOUNDATION = HOLD** (2026-10-11, Asia/Shanghai)
+**PHASE 1 DATABASE FOUNDATION = HOLD** (updated 2026-10-12, Asia/Shanghai)
 
 Phase 1A's isolated database foundation is running and its migration, repeat execution, backup, and restore checks pass on PostgreSQL 16 and 17. Phase 1B's contract-dependent business tables and Phase 1C's required business access and immutability tests remain on CONTRACT HOLD. No design document is counted as a built table or tested RLS policy.
 
@@ -29,16 +29,19 @@ Phase 1A's isolated database foundation is running and its migration, repeat exe
 | Domain RLS policies | **Zero**, because no contract-dependent domain tables are approved |
 | Legacy `006` | Not reused |
 
-The new `canonical/0001_foundation.sql` creates the ledger, six empty domain schemas and three `NOLOGIN` capability roles. The migration runner records SHA-256 and rejects changed migration files. On both versions, a fresh synthetic test database applied `0001` once and skipped it safely on the second run.
+The new `canonical/0001_foundation.sql` creates the ledger, six empty domain schemas and three `NOLOGIN` capability roles. The migration runner records SHA-256 and rejects changed migration files. On both versions, a fresh synthetic test database applied `0001` once and skipped it safely on the second run. There is no `0002` migration or domain table.
 
 | Role | Actual grants | Login |
 |---|---|---|
 | `phoenix_canonical_migrator` | Connect; usage/create in six domain schemas; usage and select/insert on migration ledger | Disabled |
 | `phoenix_canonical_app` | Connect and schema usage only; no create or ledger access | Disabled |
 | `phoenix_canonical_reader` | Connect and schema usage only; no create or ledger access | Disabled |
+| `phoenix_canonical_migrator_local` | Inherits migrator capability only; ledger insert and domain schema create verified | Enabled; local synthetic password |
+| `phoenix_canonical_app_local` | Inherits app capability only; no schema create or ledger usage verified | Enabled; local synthetic password |
+| `phoenix_canonical_reader_local` | Inherits reader capability only; no schema create or ledger usage verified | Enabled; local synthetic password |
 | `phoenix_bootstrap` | Local container superuser used by foundation scripts | Enabled; never an application connection |
 
-Application, migration and reader login identities and table grants are still pending reviewed access contracts. The foundation test confirms app/reader cannot create domain tables, app cannot access the migration ledger schema, migrator can register a migration, and the ledger contains exactly one row.
+Local login identities are now provisioned with separate random passwords in ignored `.local-roles.env`; password-authenticated connections and effective grants passed on both versions. They are not production identities. Domain table grants remain pending reviewed access contracts. The foundation test confirms app/reader cannot create domain tables, app cannot access the migration ledger schema, migrator can register a migration, and the ledger contains exactly one row.
 
 ## Executed test results
 
@@ -48,14 +51,16 @@ Application, migration and reader login identities and table grants are still pe
 | Forward `0001` migration | PASS | PASS | `APPLIED phoenix_canonical_dev 0001_foundation.sql` |
 | Fresh test database and repeat migration | PASS | PASS | `APPLIED`, then `SKIP ... checksum verified` |
 | Foundation schema/role assertions | PASS | PASS | `tests/foundation.sql` executed in each test database |
+| Local login password and privilege matrix | PASS | PASS | Three actual container-local TCP logins on each version; repeat provisioning passed |
+| Synthetic RLS engine isolation probe | PASS | PASS | Test-only family/advisor/partner scope labels; all assertions passed inside rolled-back transaction |
 | Backup | PASS | PASS | 6,346-byte PG16 and 6,466-byte PG17 custom-format dumps in ignored `backups/` |
 | Restore into exact allowlisted test database | PASS | PASS | `phoenix_canonical_restore_test_16` and `_17`; restored ledger and ACL assertions passed |
 | Domain FK, uniqueness and UUIDv7/legacy ID mapping | HOLD | HOLD | Reviewed amendment and mapping semantics missing |
-| Cross-family, advisor and partner RLS denial | HOLD | HOLD | No approved tables, actor/relationship contract or RLS policy |
+| Business cross-family, advisor and partner RLS denial | HOLD | HOLD | Synthetic engine probe passed, but no approved domain tables, actor/relationship contract or trusted context source |
 | Consent withdrawal and guardian authority expiry | HOLD | HOLD | No approved core/consent identity semantics |
 | Document version and Submission Manifest immutability | HOLD | HOLD | Final Document & Submission Contract missing |
 
-The backup contains the foundation schema, permissions and one synthetic migration-ledger row; it contains **no customer data**. Restores retained ACLs. An initial supplementary native PG17 restore test failed because the draft native script used `--no-privileges`; the script was corrected and its restore retest passed. The corrected Docker restore script passed on both container versions.
+The 2026-10-12 backups restored into the exact allowlisted test databases, retaining ACLs and the one synthetic migration-ledger row. They contain **no customer data**. An initial supplementary native PG17 restore test failed because the draft native script used `--no-privileges`; the script was corrected and its restore retest passed. The corrected Docker restore script passed on both container versions. The RLS probe is deliberately test-only and leaves no table after rollback. Its caller-controlled session settings do not establish a production authorization model.
 
 ## Evidence holds and next-stage dependencies
 

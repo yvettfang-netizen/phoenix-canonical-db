@@ -8,9 +8,10 @@ This directory is a new development database namespace. It does not connect to l
 |---|---|
 | `compose.yaml` | PostgreSQL 16 and optional PostgreSQL 17 compatibility service on an internal Compose network |
 | `migrations/canonical/0001_foundation.sql` | New `canonical_migrations` ledger, seven schemas, restricted capability roles |
-| `scripts/db.ps1` | Initialization, migration, exact-name test reset, health, backup and restore test |
+| `scripts/db.ps1` | Initialization, migration, local login provisioning, exact-name test reset, health, backup and restore test |
 | `scripts/native-db.ps1` | Optional local fallback; PG17 was used for a supplemental check before Docker became available |
 | `tests/foundation.sql` | Schema, role and repeat-migration checks |
+| `tests/rls_probe.sql` | Transactional synthetic RLS engine check; leaves no canonical table |
 | `PHASE1_REPORT.md` | Executed evidence and contract holds |
 
 ## Run locally when Docker is available
@@ -19,9 +20,11 @@ The script creates an ignored `.env` containing a random local bootstrap passwor
 
 ```powershell
 pwsh -File ./scripts/db.ps1 -Action init -Version 16
+pwsh -File ./scripts/db.ps1 -Action provision-local-roles -Version 16
 pwsh -File ./scripts/db.ps1 -Action health -Version 16
 pwsh -File ./scripts/db.ps1 -Action test -Version 16
 pwsh -File ./scripts/db.ps1 -Action init -Version 17
+pwsh -File ./scripts/db.ps1 -Action provision-local-roles -Version 17
 pwsh -File ./scripts/db.ps1 -Action test -Version 17
 pwsh -File ./scripts/db.ps1 -Action backup -Version 16
 pwsh -File ./scripts/db.ps1 -Action restore-test -Version 16 -BackupPath ./backups/<actual-backup-file>.dump
@@ -33,16 +36,19 @@ The containers expose PostgreSQL only within the Compose `internal` network; no 
 
 ## Role boundary
 
-The migration creates three `NOLOGIN` capability roles. No application credentials are provisioned while identity and access contracts remain unresolved.
+The migration creates three `NOLOGIN` capability roles. The separate `provision-local-roles` action creates three local development logins with random passwords in ignored `.local-roles.env`. It repeats safely and verifies actual password connections and effective grants over container-local TCP. These credentials are for these isolated clusters only.
 
 | Role | Database/schema rights | Table rights |
 |---|---|---|
 | `phoenix_canonical_migrator` | Connect to development database; usage and create in six domain schemas; usage of ledger schema | Select and insert in migration ledger; no domain table rights until explicitly granted |
 | `phoenix_canonical_app` | Connect; usage in six domain schemas | None until explicitly granted in a reviewed migration |
 | `phoenix_canonical_reader` | Connect; usage in six domain schemas | None until explicitly granted in a reviewed migration |
+| `phoenix_canonical_migrator_local` | Inherits only migrator capability | Ledger select/insert; domain schema create |
+| `phoenix_canonical_app_local` | Inherits only app capability | No domain table rights or ledger access |
+| `phoenix_canonical_reader_local` | Inherits only reader capability | No domain table rights or ledger access |
 | `phoenix_bootstrap` | Local container superuser for setup, migration and synthetic tests | All; never an application connection |
 
-The migration ledger is inaccessible to app and reader roles. Future login roles must be provisioned separately with reviewed credentials and grants. Future tables must grant exact operations and enable RLS in their own reviewed migrations.
+The migration ledger is inaccessible to app and reader roles. Future tables must grant exact operations and enable RLS in their own reviewed migrations. The synthetic probe checks family, advisor, and partner scope filtering with test-only labels inside a rolled-back transaction. It proves PostgreSQL RLS behavior in both engines, not approved business authorization: its session settings are caller-controlled and cannot serve as a production identity source.
 
 ## Contract holds
 

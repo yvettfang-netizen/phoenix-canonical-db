@@ -1,3 +1,4 @@
 .env
+.local-roles.env
 backups/
 runtime/
