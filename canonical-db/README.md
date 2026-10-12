@@ -14,6 +14,7 @@ This directory is a new development database namespace. It does not connect to l
 | `tests/rls_probe.sql` | Transactional synthetic RLS engine check; leaves no canonical table |
 | `tests/docs_probe.sql` | Transactional synthetic version and submitted-manifest integrity check; leaves no canonical table |
 | `PHASE1_REPORT.md` | Executed evidence and contract holds |
+| `phase2-gate/` | Four source-checked iteration files and the bounded Phase 2A start gate |
 
 ## Run locally when Docker is available
 
