@@ -17,9 +17,11 @@ This directory is a new development database namespace. It does not connect to l
 | `tests/docs_probe.sql` | Transactional synthetic version and submitted-manifest integrity check; leaves no canonical table |
 | `tests/contract_neutral_probe.sql` | Transactional synthetic legacy-ID refusal, Consent withdrawal and guardian-expiry decisions with audit reasons |
 | `tests/trusted_context_probe.sql` | Phase 2B transactional protected-context RLS simulation; no Canonical business table |
+| `tests/9000_atomicity_probe.sql` | Deliberately failing synthetic migration used only by the audit action; never part of the Canonical migration directory |
 | `PHASE1_REPORT.md` | Executed evidence and contract holds |
 | `PHASE2A_EXECUTION_REPORT.md` | Executed Phase 2A empty-schema and mock-store results |
 | `PHASE2B_EXECUTION_REPORT.md` | Executed PG16/17 access-boundary simulation and remaining trust/contract gates |
+| `PHASE2B_AUDIT_REPORT.md` | Completion audit, migration/backup fixes, actual retest results and next-stage gate |
 | `phase2-gate/` | Four source-checked iteration files and the bounded Phase 2A start gate |
 
 ## Run locally when Docker is available
@@ -36,16 +38,20 @@ pwsh -File ./scripts/db.ps1 -Action provision-local-roles -Version 17
 pwsh -File ./scripts/db.ps1 -Action test -Version 17
 pwsh -File ./scripts/db.ps1 -Action probe -Version 16
 pwsh -File ./scripts/db.ps1 -Action probe -Version 17
+pwsh -File ./scripts/db.ps1 -Action audit-migration -Version 16
+pwsh -File ./scripts/db.ps1 -Action audit-migration -Version 17
 pwsh -File ./scripts/db.ps1 -Action backup -Version 16
 pwsh -File ./scripts/db.ps1 -Action restore-test -Version 16 -BackupPath ./backups/<actual-backup-file>.dump
+pwsh -File ./scripts/db.ps1 -Action backup -Version 17
+pwsh -File ./scripts/db.ps1 -Action restore-test -Version 17 -BackupPath ./backups/<actual-backup-file>.dump
 pwsh -File ./scripts/mock-object-store.ps1 -Action test
 ```
 
-`test` resets only `phoenix_canonical_test_16` or `phoenix_canonical_test_17`; `restore-test` resets only `phoenix_canonical_restore_test_16` or `_17`. The development database is never reset by those actions. `migrate` applies checksum-locked files in lexical order and checks applied file hashes on repeat runs. The SQL itself is transaction wrapped and repeat safe if interrupted before ledger registration.
+`test` resets only `phoenix_canonical_test_16` or `phoenix_canonical_test_17`; `restore-test` resets only `phoenix_canonical_restore_test_16` or `_17`. The development database is never reset by those actions. `migrate` applies checksum-locked files in lexical order and checks applied file hashes on repeat runs. Each migration body and its ledger registration now commit in the same transaction under an advisory lock. `audit-migration` verifies that a forced synthetic failure leaves neither schema nor ledger residue.
 
 `probe` runs the foundation and synthetic checks against the existing development database without resetting it. Every acceptance probe rolls back and the script verifies that its disposable schema is gone. It does not run a migration.
 
-`restore-test` checks the current two-migration schema, so use a backup made after `0002` for that action. Earlier Phase 1 dumps remain historical snapshots.
+`backup` is read-only with respect to the database: it requires all local migrations to be registered with matching hashes and zero non-ledger tables. It writes a unique dump plus a synthetic-only SHA-256 manifest under ignored `backups/`; it never overwrites an existing dump. `restore-test` accepts only a matching, manifest-verified dump from that directory, validates the archive before resetting an exact allowlisted restore-test database, and checks the current two-migration schema. Earlier Phase 1 dumps remain historical snapshots and are deliberately rejected by the automated restore action because they lack this provenance manifest.
 
 The containers expose PostgreSQL only within the Compose `internal` network; no host port is published. The scripts access PostgreSQL with `docker compose exec`. Do not publish these ports on a nonlocal interface.
 
