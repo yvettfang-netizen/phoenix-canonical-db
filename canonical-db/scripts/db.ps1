@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('init', 'health', 'migrate', 'provision-local-roles', 'reset-test', 'test', 'probe', 'audit-migration', 'backup', 'restore-test')]
+    [ValidateSet('init', 'health', 'migrate', 'provision-local-roles', 'reset-test', 'test', 'probe', 'audit-migration', 'backup', 'restore-test', 'audit-backup')]
     [string]$Action,
     [ValidateSet('16', '17')][string]$Version = '16',
     [string]$BackupPath
@@ -165,6 +165,117 @@ function Test-MigrationAtomicity([string]$database) {
     Write-Output "PASS PostgreSQL $Version atomic migration rollback"
 }
 
+function Test-MigrationChecksumDrift([string]$database) {
+    $source = Get-Item -LiteralPath (Join-Path $root 'migrations/canonical/0002_education_identity_skeleton.sql')
+    $auditDir = Join-Path $root "runtime/checksum-drift-$([guid]::NewGuid().ToString('N'))"
+    New-Item -ItemType Directory -Path $auditDir | Out-Null
+    $changed = Join-Path $auditDir $source.Name
+    Copy-Item -LiteralPath $source.FullName -Destination $changed
+    Add-Content -LiteralPath $changed -Value '-- SYNTHETIC CHECKSUM DRIFT; NEVER A CANONICAL MIGRATION'
+    $blocked = $false
+    try { Apply-Migration $database (Get-Item -LiteralPath $changed) | Out-Null }
+    catch {
+        if ($_.Exception.Message -notmatch '^Migration checksum changed: 0002_education_identity_skeleton\.sql$') { throw }
+        $blocked = $true
+    }
+    if (-not $blocked) { throw 'Altered applied migration was accepted.' }
+    $expected = (Get-FileHash -LiteralPath $source.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+    $registered = Invoke-Psql $database "SELECT sha256 FROM canonical_migrations.applied WHERE migration_name = '0002_education_identity_skeleton.sql';"
+    if ((@($registered) -join '').Trim() -ne $expected) { throw 'Applied migration checksum changed after drift test.' }
+    Write-Output "PASS PostgreSQL $Version applied-migration checksum drift refusal"
+}
+
+function New-CanonicalBackup {
+    Start-Database
+    Assert-MigrationsApplied $devDb
+    $nonLedgerTables = Invoke-Psql $devDb "SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE c.relkind IN ('r','p','m') AND n.nspname NOT IN ('pg_catalog','information_schema','pg_toast','canonical_migrations') AND n.nspname NOT LIKE 'pg_temp_%' AND n.nspname NOT LIKE 'pg_toast_temp_%';"
+    if ((@($nonLedgerTables) -join '').Trim() -ne '0') { throw 'Synthetic-only backup requires zero non-ledger tables.' }
+    $backupDir = Join-Path $root 'backups'
+    New-Item -ItemType Directory -Force -Path $backupDir | Out-Null
+    $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+    $runId = [guid]::NewGuid().ToString('N')
+    $destination = Join-Path $backupDir "phoenix_canonical_dev_pg${Version}_${stamp}_${runId}.dump"
+    $containerBackup = "/tmp/phoenix_canonical_backup_${runId}.dump"
+    if (Test-Path -LiteralPath $destination) { throw 'Refusing to overwrite an existing backup.' }
+    Invoke-Docker ($compose + @('exec', '-T', $service, 'pg_dump', '-U', 'phoenix_bootstrap', '-d', $devDb, '-Fc', '-f', $containerBackup))
+    $containerId = (& docker @compose ps -q $service).Trim()
+    if ($LASTEXITCODE -ne 0 -or -not $containerId) { throw 'Could not identify test container for backup copy.' }
+    try { Invoke-Docker @('cp', "${containerId}:$containerBackup", $destination) }
+    finally { & docker @compose exec -T $service rm -f $containerBackup | Out-Null }
+    $digest = (Get-FileHash -LiteralPath $destination -Algorithm SHA256).Hash.ToLowerInvariant()
+    $manifest = [ordered]@{ purpose = 'phoenix-canonical-local-synthetic'; database = $devDb; pg_major = $Version; dump_sha256 = $digest; non_ledger_tables = 0 }
+    [IO.File]::WriteAllText("$destination.manifest.json", ($manifest | ConvertTo-Json -Compress))
+    return $destination
+}
+
+function Restore-CanonicalBackup([string]$path) {
+    $resolvedBackup = (Resolve-Path -LiteralPath $path).Path
+    $backupDir = (Resolve-Path -LiteralPath (Join-Path $root 'backups')).Path
+    if (-not $resolvedBackup.StartsWith("$backupDir$([IO.Path]::DirectorySeparatorChar)", [StringComparison]::OrdinalIgnoreCase)) {
+        throw 'Restore source must be inside this isolated project backup directory.'
+    }
+    if ([IO.Path]::GetFileName($resolvedBackup) -notmatch "^phoenix_canonical_dev_pg${Version}_[0-9]{8}-[0-9]{6}_[0-9a-f]{32}\.dump$") {
+        throw 'Restore source does not match a versioned local synthetic backup name.'
+    }
+    $manifestPath = "$resolvedBackup.manifest.json"
+    if (-not (Test-Path -LiteralPath $manifestPath)) { throw 'Backup provenance manifest is missing.' }
+    $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+    $digest = (Get-FileHash -LiteralPath $resolvedBackup -Algorithm SHA256).Hash.ToLowerInvariant()
+    if ($manifest.purpose -ne 'phoenix-canonical-local-synthetic' -or $manifest.database -ne $devDb -or
+        $manifest.pg_major -ne $Version -or $manifest.non_ledger_tables -ne 0 -or $manifest.dump_sha256 -ne $digest) {
+        throw 'Backup provenance or digest check failed.'
+    }
+    Start-Database
+    $containerId = (& docker @compose ps -q $service).Trim()
+    if ($LASTEXITCODE -ne 0 -or -not $containerId) { throw 'Could not identify test container for restore copy.' }
+    $containerRestore = "/tmp/phoenix_canonical_restore_$([guid]::NewGuid().ToString('N')).dump"
+    Invoke-Docker @('cp', $resolvedBackup, "${containerId}:$containerRestore")
+    try {
+        Invoke-Docker ($compose + @('exec', '-T', $service, 'pg_restore', '-l', $containerRestore)) | Out-Null
+        Reset-TestDatabase $restoreDb
+        Invoke-Docker ($compose + @('exec', '-T', $service, 'pg_restore', '-U', 'phoenix_bootstrap', '-d', $restoreDb, '--no-owner', '--exit-on-error', $containerRestore))
+    } finally { & docker @compose exec -T $service rm -f $containerRestore | Out-Null }
+    $sql = [IO.File]::ReadAllText((Join-Path $root 'tests/foundation.sql'))
+    Invoke-Psql $restoreDb $sql | Out-Null
+}
+
+function Test-BackupTamperRefusal {
+    $source = New-CanonicalBackup
+    Start-Database
+    Reset-TestDatabase $restoreDb
+    Invoke-Psql $restoreDb "CREATE TABLE public.synthetic_restore_guard(marker text PRIMARY KEY); INSERT INTO public.synthetic_restore_guard VALUES ('preserve-before-refusal');" | Out-Null
+    $created = [Collections.Generic.List[string]]::new()
+    try {
+        $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
+        foreach ($kind in @('dump', 'manifest')) {
+            $candidate = Join-Path (Split-Path -Parent $source) "phoenix_canonical_dev_pg${Version}_${stamp}_$([guid]::NewGuid().ToString('N')).dump"
+            Copy-Item -LiteralPath $source -Destination $candidate
+            Copy-Item -LiteralPath "$source.manifest.json" -Destination "$candidate.manifest.json"
+            $created.Add($candidate); $created.Add("$candidate.manifest.json")
+            if ($kind -eq 'dump') {
+                $stream = [IO.File]::Open($candidate, [IO.FileMode]::Append, [IO.FileAccess]::Write, [IO.FileShare]::None)
+                try { $stream.WriteByte(0x50) } finally { $stream.Dispose() }
+            } else {
+                $badManifest = Get-Content -LiteralPath "$candidate.manifest.json" -Raw | ConvertFrom-Json
+                $badManifest.purpose = 'tampered-purpose'
+                [IO.File]::WriteAllText("$candidate.manifest.json", ($badManifest | ConvertTo-Json -Compress))
+            }
+            $blocked = $false
+            try { Restore-CanonicalBackup $candidate }
+            catch {
+                if ($_.Exception.Message -notmatch '^Backup provenance or digest check failed\.$') { throw }
+                $blocked = $true
+            }
+            if (-not $blocked) { throw "Tampered $kind backup was accepted." }
+            $guard = Invoke-Psql $restoreDb "SELECT marker FROM public.synthetic_restore_guard;"
+            if ((@($guard) -join '').Trim() -ne 'preserve-before-refusal') { throw "Restore database changed after tampered $kind refusal." }
+        }
+    } finally {
+        foreach ($path in $created) { Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue }
+    }
+    Write-Output "PASS PostgreSQL $Version backup digest/provenance tamper refusal with restore database preserved"
+}
+
 function Reset-TestDatabase([string]$database) {
     if ($database -notin @('phoenix_canonical_test_16', 'phoenix_canonical_test_17', 'phoenix_canonical_restore_test_16', 'phoenix_canonical_restore_test_17')) {
         throw 'Refusing to reset a database outside the exact synthetic test allowlist.'
@@ -218,59 +329,18 @@ switch ($Action) {
         Start-Database
         Migrate $devDb
         Test-MigrationAtomicity $devDb
+        Test-MigrationChecksumDrift $devDb
     }
     'backup' {
-        Start-Database
-        Assert-MigrationsApplied $devDb
-        $nonLedgerTables = Invoke-Psql $devDb "SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE c.relkind IN ('r','p','m') AND n.nspname NOT IN ('pg_catalog','information_schema','pg_toast','canonical_migrations') AND n.nspname NOT LIKE 'pg_temp_%' AND n.nspname NOT LIKE 'pg_toast_temp_%';"
-        if ((@($nonLedgerTables) -join '').Trim() -ne '0') { throw 'Synthetic-only backup requires zero non-ledger tables.' }
-        $backupDir = Join-Path $root 'backups'
-        New-Item -ItemType Directory -Force -Path $backupDir | Out-Null
-        $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
-        $runId = [guid]::NewGuid().ToString('N')
-        $destination = Join-Path $backupDir "phoenix_canonical_dev_pg${Version}_${stamp}_${runId}.dump"
-        $containerBackup = "/tmp/phoenix_canonical_backup_${runId}.dump"
-        if (Test-Path -LiteralPath $destination) { throw 'Refusing to overwrite an existing backup.' }
-        Invoke-Docker ($compose + @('exec', '-T', $service, 'pg_dump', '-U', 'phoenix_bootstrap', '-d', $devDb, '-Fc', '-f', $containerBackup))
-        $containerId = (& docker @compose ps -q $service).Trim()
-        if ($LASTEXITCODE -ne 0 -or -not $containerId) { throw 'Could not identify test container for backup copy.' }
-        try { Invoke-Docker @('cp', "${containerId}:$containerBackup", $destination) }
-        finally { & docker @compose exec -T $service rm -f $containerBackup | Out-Null }
-        $digest = (Get-FileHash -LiteralPath $destination -Algorithm SHA256).Hash.ToLowerInvariant()
-        $manifest = [ordered]@{ purpose = 'phoenix-canonical-local-synthetic'; database = $devDb; pg_major = $Version; dump_sha256 = $digest; non_ledger_tables = 0 }
-        [IO.File]::WriteAllText("$destination.manifest.json", ($manifest | ConvertTo-Json -Compress))
+        $destination = New-CanonicalBackup
         Write-Output "BACKUP $destination"
     }
     'restore-test' {
         if (-not $BackupPath) { throw 'Pass -BackupPath to an existing local test backup.' }
-        $resolvedBackup = (Resolve-Path -LiteralPath $BackupPath).Path
-        $backupDir = (Resolve-Path -LiteralPath (Join-Path $root 'backups')).Path
-        if (-not $resolvedBackup.StartsWith("$backupDir$([IO.Path]::DirectorySeparatorChar)", [StringComparison]::OrdinalIgnoreCase)) {
-            throw 'Restore source must be inside this isolated project backup directory.'
-        }
-        if ([IO.Path]::GetFileName($resolvedBackup) -notmatch "^phoenix_canonical_dev_pg${Version}_[0-9]{8}-[0-9]{6}_[0-9a-f]{32}\.dump$") {
-            throw 'Restore source does not match a versioned local synthetic backup name.'
-        }
-        $manifestPath = "$resolvedBackup.manifest.json"
-        if (-not (Test-Path -LiteralPath $manifestPath)) { throw 'Backup provenance manifest is missing.' }
-        $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
-        $digest = (Get-FileHash -LiteralPath $resolvedBackup -Algorithm SHA256).Hash.ToLowerInvariant()
-        if ($manifest.purpose -ne 'phoenix-canonical-local-synthetic' -or $manifest.database -ne $devDb -or
-            $manifest.pg_major -ne $Version -or $manifest.non_ledger_tables -ne 0 -or $manifest.dump_sha256 -ne $digest) {
-            throw 'Backup provenance or digest check failed.'
-        }
-        Start-Database
-        $containerId = (& docker @compose ps -q $service).Trim()
-        if ($LASTEXITCODE -ne 0 -or -not $containerId) { throw 'Could not identify test container for restore copy.' }
-        $containerRestore = "/tmp/phoenix_canonical_restore_$([guid]::NewGuid().ToString('N')).dump"
-        Invoke-Docker @('cp', $resolvedBackup, "${containerId}:$containerRestore")
-        try {
-            Invoke-Docker ($compose + @('exec', '-T', $service, 'pg_restore', '-l', $containerRestore)) | Out-Null
-            Reset-TestDatabase $restoreDb
-            Invoke-Docker ($compose + @('exec', '-T', $service, 'pg_restore', '-U', 'phoenix_bootstrap', '-d', $restoreDb, '--no-owner', '--exit-on-error', $containerRestore))
-        } finally { & docker @compose exec -T $service rm -f $containerRestore | Out-Null }
-        $sql = [IO.File]::ReadAllText((Join-Path $root 'tests/foundation.sql'))
-        Invoke-Psql $restoreDb $sql | Out-Null
+        Restore-CanonicalBackup $BackupPath
         Write-Output "PASS restore into $restoreDb"
+    }
+    'audit-backup' {
+        Test-BackupTamperRefusal
     }
 }

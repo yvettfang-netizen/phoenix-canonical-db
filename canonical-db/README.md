@@ -22,6 +22,7 @@ This directory is a new development database namespace. It does not connect to l
 | `PHASE2A_EXECUTION_REPORT.md` | Executed Phase 2A empty-schema and mock-store results |
 | `PHASE2B_EXECUTION_REPORT.md` | Executed PG16/17 access-boundary simulation and remaining trust/contract gates |
 | `PHASE2B_AUDIT_REPORT.md` | Completion audit, migration/backup fixes, actual retest results and next-stage gate |
+| `PHASE2C_EXECUTION_REPORT.md` | PG16/17 negative-acceptance closure, backup tamper refusal and Phase 3 entry audit |
 | `phase2-gate/` | Four source-checked iteration files and the bounded Phase 2A start gate |
 
 ## Run locally when Docker is available
@@ -40,6 +41,8 @@ pwsh -File ./scripts/db.ps1 -Action probe -Version 16
 pwsh -File ./scripts/db.ps1 -Action probe -Version 17
 pwsh -File ./scripts/db.ps1 -Action audit-migration -Version 16
 pwsh -File ./scripts/db.ps1 -Action audit-migration -Version 17
+pwsh -File ./scripts/db.ps1 -Action audit-backup -Version 16
+pwsh -File ./scripts/db.ps1 -Action audit-backup -Version 17
 pwsh -File ./scripts/db.ps1 -Action backup -Version 16
 pwsh -File ./scripts/db.ps1 -Action restore-test -Version 16 -BackupPath ./backups/<actual-backup-file>.dump
 pwsh -File ./scripts/db.ps1 -Action backup -Version 17
@@ -47,7 +50,7 @@ pwsh -File ./scripts/db.ps1 -Action restore-test -Version 17 -BackupPath ./backu
 pwsh -File ./scripts/mock-object-store.ps1 -Action test
 ```
 
-`test` resets only `phoenix_canonical_test_16` or `phoenix_canonical_test_17`; `restore-test` resets only `phoenix_canonical_restore_test_16` or `_17`. The development database is never reset by those actions. `migrate` applies checksum-locked files in lexical order and checks applied file hashes on repeat runs. Each migration body and its ledger registration now commit in the same transaction under an advisory lock. `audit-migration` verifies that a forced synthetic failure leaves neither schema nor ledger residue.
+`test` resets only `phoenix_canonical_test_16` or `phoenix_canonical_test_17`; `restore-test` resets only `phoenix_canonical_restore_test_16` or `_17`. The development database is never reset by those actions. `migrate` applies checksum-locked files in lexical order and checks applied file hashes on repeat runs. Each migration body and its ledger registration now commit in the same transaction under an advisory lock. `audit-migration` verifies that a forced synthetic failure leaves neither schema nor ledger residue and that an altered applied migration is rejected. `audit-backup` creates a new synthetic-only backup, rejects both dump-byte and provenance-manifest tampering before restore, and verifies that the allowlisted restore-test database remains unchanged.
 
 `probe` runs the foundation and synthetic checks against the existing development database without resetting it. Every acceptance probe rolls back and the script verifies that its disposable schema is gone. It does not run a migration.
 

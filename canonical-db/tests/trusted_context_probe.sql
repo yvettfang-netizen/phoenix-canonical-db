@@ -139,4 +139,26 @@ BEGIN
 END
 $test$;
 RESET ROLE;
+DELETE FROM acceptance_probe.bound_context WHERE backend_pid = pg_backend_pid();
+SET ROLE phoenix_canonical_app;
+DO $test$
+BEGIN
+  IF EXISTS (SELECT 1 FROM acceptance_probe.resources) THEN
+    RAISE EXCEPTION 'cleared pooled backend retained prior scope';
+  END IF;
+END
+$test$;
+RESET ROLE;
+
+INSERT INTO acceptance_probe.bound_context VALUES
+  (pg_backend_pid(),'family','synthetic-family-b',clock_timestamp() + interval '1 hour',false);
+SET ROLE phoenix_canonical_app;
+DO $test$
+BEGIN
+  IF (SELECT array_agg(resource_id ORDER BY resource_id) FROM acceptance_probe.resources) IS DISTINCT FROM ARRAY[2] THEN
+    RAISE EXCEPTION 'rebound backend leaked previous actor scope';
+  END IF;
+END
+$test$;
+RESET ROLE;
 ROLLBACK;
