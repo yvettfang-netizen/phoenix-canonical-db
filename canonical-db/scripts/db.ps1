@@ -56,16 +56,20 @@ function Provision-LocalRoles {
             "PHOENIX_LOCAL_MIGRATOR_PASSWORD=$(New-LocalSecret)"
             "PHOENIX_LOCAL_APP_PASSWORD=$(New-LocalSecret)"
             "PHOENIX_LOCAL_READER_PASSWORD=$(New-LocalSecret)"
+            "PHOENIX_LOCAL_BINDER_PASSWORD=$(New-LocalSecret)"
         ) -join "`n"
         [IO.File]::WriteAllText($localRolesFile, "$content`n")
     }
+    if (-not (Select-String -LiteralPath $localRolesFile -Pattern '^PHOENIX_LOCAL_BINDER_PASSWORD=[0-9a-f]{64}$' -Quiet)) {
+        [IO.File]::AppendAllText($localRolesFile, "PHOENIX_LOCAL_BINDER_PASSWORD=$(New-LocalSecret)`n")
+    }
     $secrets = @{}
     foreach ($line in [IO.File]::ReadAllLines($localRolesFile)) {
-        if ($line -match '^(PHOENIX_LOCAL_(?:MIGRATOR|APP|READER)_PASSWORD)=([0-9a-f]{64})$') {
+        if ($line -match '^(PHOENIX_LOCAL_(?:MIGRATOR|APP|READER|BINDER)_PASSWORD)=([0-9a-f]{64})$') {
             $secrets[$Matches[1]] = $Matches[2]
         }
     }
-    foreach ($key in @('PHOENIX_LOCAL_MIGRATOR_PASSWORD', 'PHOENIX_LOCAL_APP_PASSWORD', 'PHOENIX_LOCAL_READER_PASSWORD')) {
+    foreach ($key in @('PHOENIX_LOCAL_MIGRATOR_PASSWORD', 'PHOENIX_LOCAL_APP_PASSWORD', 'PHOENIX_LOCAL_READER_PASSWORD', 'PHOENIX_LOCAL_BINDER_PASSWORD')) {
         if (-not $secrets.ContainsKey($key)) { throw "Missing or invalid local-only secret: $key" }
     }
     $sql = @'
@@ -86,18 +90,25 @@ BEGIN
   ELSE
     ALTER ROLE phoenix_canonical_reader_local LOGIN INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE PASSWORD '__READER__';
   END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'phoenix_canonical_context_binder_local') THEN
+    CREATE ROLE phoenix_canonical_context_binder_local LOGIN INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE PASSWORD '__BINDER__';
+  ELSE
+    ALTER ROLE phoenix_canonical_context_binder_local LOGIN INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE PASSWORD '__BINDER__';
+  END IF;
 END
 $roles$;
 GRANT phoenix_canonical_migrator TO phoenix_canonical_migrator_local WITH INHERIT TRUE, SET FALSE;
 GRANT phoenix_canonical_app TO phoenix_canonical_app_local WITH INHERIT TRUE, SET FALSE;
 GRANT phoenix_canonical_reader TO phoenix_canonical_reader_local WITH INHERIT TRUE, SET FALSE;
+GRANT phoenix_canonical_context_binder TO phoenix_canonical_context_binder_local WITH INHERIT TRUE, SET FALSE;
 '@
-    $sql = $sql.Replace('__MIGRATOR__', $secrets['PHOENIX_LOCAL_MIGRATOR_PASSWORD']).Replace('__APP__', $secrets['PHOENIX_LOCAL_APP_PASSWORD']).Replace('__READER__', $secrets['PHOENIX_LOCAL_READER_PASSWORD'])
+    $sql = $sql.Replace('__MIGRATOR__', $secrets['PHOENIX_LOCAL_MIGRATOR_PASSWORD']).Replace('__APP__', $secrets['PHOENIX_LOCAL_APP_PASSWORD']).Replace('__READER__', $secrets['PHOENIX_LOCAL_READER_PASSWORD']).Replace('__BINDER__', $secrets['PHOENIX_LOCAL_BINDER_PASSWORD'])
     Invoke-Psql $devDb $sql | Out-Null
     $checks = @(
         @{ Name = 'phoenix_canonical_migrator_local'; Password = $secrets['PHOENIX_LOCAL_MIGRATOR_PASSWORD']; Sql = "SELECT has_schema_privilege(current_user,'core','CREATE') AND has_schema_privilege(current_user,'education','CREATE') AND has_schema_privilege(current_user,'identity','CREATE') AND has_table_privilege(current_user,'canonical_migrations.applied','INSERT') AND NOT (SELECT rolsuper FROM pg_roles WHERE rolname = current_user);" }
         @{ Name = 'phoenix_canonical_app_local'; Password = $secrets['PHOENIX_LOCAL_APP_PASSWORD']; Sql = "SELECT has_schema_privilege(current_user,'education','USAGE') AND has_schema_privilege(current_user,'identity','USAGE') AND NOT has_schema_privilege(current_user,'education','CREATE') AND NOT has_schema_privilege(current_user,'canonical_migrations','USAGE') AND NOT (SELECT rolsuper FROM pg_roles WHERE rolname = current_user);" }
         @{ Name = 'phoenix_canonical_reader_local'; Password = $secrets['PHOENIX_LOCAL_READER_PASSWORD']; Sql = "SELECT has_schema_privilege(current_user,'education','USAGE') AND has_schema_privilege(current_user,'identity','USAGE') AND NOT has_schema_privilege(current_user,'identity','CREATE') AND NOT has_schema_privilege(current_user,'canonical_migrations','USAGE') AND NOT (SELECT rolsuper FROM pg_roles WHERE rolname = current_user);" }
+        @{ Name = 'phoenix_canonical_context_binder_local'; Password = $secrets['PHOENIX_LOCAL_BINDER_PASSWORD']; Sql = "SELECT has_function_privilege(current_user,'auth.bind_context(uuid,uuid,uuid,text,timestamptz,uuid)','EXECUTE') AND NOT has_table_privilege(current_user,'auth.session_contexts','SELECT') AND NOT has_schema_privilege(current_user,'core','USAGE') AND NOT (SELECT rolsuper FROM pg_roles WHERE rolname = current_user);" }
     )
     foreach ($check in $checks) {
         $result = & docker @compose exec -T -e "PGPASSWORD=$($check.Password)" $service psql -X -h 127.0.0.1 -U $check.Name -d $devDb -v ON_ERROR_STOP=1 -At -c $check.Sql
@@ -188,8 +199,14 @@ function Test-MigrationChecksumDrift([string]$database) {
 function New-CanonicalBackup {
     Start-Database
     Assert-MigrationsApplied $devDb
-    $nonLedgerTables = Invoke-Psql $devDb "SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE c.relkind IN ('r','p','m') AND n.nspname NOT IN ('pg_catalog','information_schema','pg_toast','canonical_migrations') AND n.nspname NOT LIKE 'pg_temp_%' AND n.nspname NOT LIKE 'pg_toast_temp_%';"
-    if ((@($nonLedgerTables) -join '').Trim() -ne '0') { throw 'Synthetic-only backup requires zero non-ledger tables.' }
+    $domainTables = Invoke-Psql $devDb "SELECT format('%I.%I', n.nspname, c.relname) FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE c.relkind IN ('r','p') AND n.nspname IN ('auth','core','consent','audit','integration','docs','casework','education','identity') ORDER BY 1;"
+    $domainRows = 0L
+    foreach ($table in @($domainTables)) {
+        if (-not $table) { continue }
+        $rowCount = Invoke-Psql $devDb "SELECT count(*) FROM $table;"
+        $domainRows += [long]((@($rowCount) -join '').Trim())
+    }
+    if ($domainRows -ne 0) { throw 'Synthetic-only backup requires zero persistent domain rows.' }
     $backupDir = Join-Path $root 'backups'
     New-Item -ItemType Directory -Force -Path $backupDir | Out-Null
     $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
@@ -203,7 +220,8 @@ function New-CanonicalBackup {
     try { Invoke-Docker @('cp', "${containerId}:$containerBackup", $destination) }
     finally { & docker @compose exec -T $service rm -f $containerBackup | Out-Null }
     $digest = (Get-FileHash -LiteralPath $destination -Algorithm SHA256).Hash.ToLowerInvariant()
-    $manifest = [ordered]@{ purpose = 'phoenix-canonical-local-synthetic'; database = $devDb; pg_major = $Version; dump_sha256 = $digest; non_ledger_tables = 0 }
+    $migrationCount = (Get-ChildItem -LiteralPath (Join-Path $root 'migrations/canonical') -Filter '*.sql' -File).Count
+    $manifest = [ordered]@{ purpose = 'phoenix-canonical-local-synthetic'; database = $devDb; pg_major = $Version; dump_sha256 = $digest; domain_rows = 0; migration_count = $migrationCount }
     [IO.File]::WriteAllText("$destination.manifest.json", ($manifest | ConvertTo-Json -Compress))
     return $destination
 }
@@ -222,7 +240,7 @@ function Restore-CanonicalBackup([string]$path) {
     $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
     $digest = (Get-FileHash -LiteralPath $resolvedBackup -Algorithm SHA256).Hash.ToLowerInvariant()
     if ($manifest.purpose -ne 'phoenix-canonical-local-synthetic' -or $manifest.database -ne $devDb -or
-        $manifest.pg_major -ne $Version -or $manifest.non_ledger_tables -ne 0 -or $manifest.dump_sha256 -ne $digest) {
+        $manifest.pg_major -ne $Version -or $manifest.domain_rows -ne 0 -or $manifest.migration_count -ne 6 -or $manifest.dump_sha256 -ne $digest) {
         throw 'Backup provenance or digest check failed.'
     }
     Start-Database
@@ -286,7 +304,7 @@ function Reset-TestDatabase([string]$database) {
 }
 
 function Invoke-SyntheticProbes([string]$database) {
-    foreach ($name in @('foundation.sql', 'rls_probe.sql', 'docs_probe.sql', 'contract_neutral_probe.sql', 'trusted_context_probe.sql')) {
+    foreach ($name in @('foundation.sql', 'rls_probe.sql', 'docs_probe.sql', 'contract_neutral_probe.sql', 'trusted_context_probe.sql', 'phase3_acceptance.sql')) {
         $sql = [IO.File]::ReadAllText((Join-Path $root "tests/$name"))
         Invoke-Psql $database $sql | Out-Null
     }

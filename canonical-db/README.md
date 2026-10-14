@@ -1,6 +1,6 @@
-# Phoenix Canonical PostgreSQL — isolated Phase 1 foundation
+# Phoenix Canonical PostgreSQL — greenfield Canonical database
 
-This directory is a new development database namespace. It does not connect to legacy databases, Feishu, D1, COS, or production. All data used by the supplied tests is synthetic; the first migration creates no customer rows or identity master tables.
+This directory contains the implemented greenfield Canonical database. It does not connect to legacy databases, Feishu, D1 or COS. All acceptance data is synthetic. Migrations `0003`–`0006` implement the approved new Canonical business baseline while legacy migration remains separately held.
 
 ## Layout
 
@@ -8,7 +8,11 @@ This directory is a new development database namespace. It does not connect to l
 |---|---|
 | `compose.yaml` | PostgreSQL 16 and optional PostgreSQL 17 compatibility service on an internal Compose network |
 | `migrations/canonical/0001_foundation.sql` | New `canonical_migrations` ledger, seven schemas, restricted capability roles |
-| `migrations/canonical/0002_education_identity_skeleton.sql` | Phase 2A empty Education and Identity schemas with restricted grants |
+| `migrations/canonical/0002_education_identity_skeleton.sql` | Education and Identity namespaces |
+| `migrations/canonical/0003_core_consent_access.sql` | Identity, family, Consent, ID mapping, trusted context and base RLS |
+| `migrations/canonical/0004_casework_education_identity.sql` | Casework, Education and Identity tables, assignments and RLS |
+| `migrations/canonical/0005_documents_submissions.sql` | Document versions, immutable manifests, withdrawal and Legal Hold |
+| `migrations/canonical/0006_access_decision_api.sql` | Audited application authorization functions |
 | `scripts/db.ps1` | Initialization, migration, local login provisioning, exact-name test reset, health, backup and restore test |
 | `scripts/native-db.ps1` | Optional local fallback; PG17 was used for a supplemental check before Docker became available |
 | `scripts/mock-object-store.ps1` | Synthetic local object put/get, deduplication and backup/restore test |
@@ -17,13 +21,16 @@ This directory is a new development database namespace. It does not connect to l
 | `tests/docs_probe.sql` | Transactional synthetic version and submitted-manifest integrity check; leaves no canonical table |
 | `tests/contract_neutral_probe.sql` | Transactional synthetic legacy-ID refusal, Consent withdrawal and guardian-expiry decisions with audit reasons |
 | `tests/trusted_context_probe.sql` | Phase 2B transactional protected-context RLS simulation; no Canonical business table |
+| `tests/phase3_acceptance.sql` | Formal synthetic tests against the implemented Phase 3 business tables and RLS |
 | `tests/9000_atomicity_probe.sql` | Deliberately failing synthetic migration used only by the audit action; never part of the Canonical migration directory |
 | `PHASE1_REPORT.md` | Executed evidence and contract holds |
 | `PHASE2A_EXECUTION_REPORT.md` | Executed Phase 2A empty-schema and mock-store results |
 | `PHASE2B_EXECUTION_REPORT.md` | Executed PG16/17 access-boundary simulation and remaining trust/contract gates |
 | `PHASE2B_AUDIT_REPORT.md` | Completion audit, migration/backup fixes, actual retest results and next-stage gate |
 | `PHASE2C_EXECUTION_REPORT.md` | PG16/17 negative-acceptance closure, backup tamper refusal and Phase 3 entry audit |
-| `phase2-gate/` | Four source-checked iteration files and the bounded Phase 2A start gate |
+| `PHASE3_EXECUTION_REPORT.md` | Effective greenfield contract, applied business schema, RLS and PG16/17 formal acceptance |
+| `phase2-gate/` | Source evidence, the effective greenfield contract and approval register |
+| `deploy/tencent/` | No-public-port PostgreSQL 16 deployment, health and backup package |
 
 ## Run locally when Docker is available
 
@@ -54,26 +61,28 @@ pwsh -File ./scripts/mock-object-store.ps1 -Action test
 
 `probe` runs the foundation and synthetic checks against the existing development database without resetting it. Every acceptance probe rolls back and the script verifies that its disposable schema is gone. It does not run a migration.
 
-`backup` is read-only with respect to the database: it requires all local migrations to be registered with matching hashes and zero non-ledger tables. It writes a unique dump plus a synthetic-only SHA-256 manifest under ignored `backups/`; it never overwrites an existing dump. `restore-test` accepts only a matching, manifest-verified dump from that directory, validates the archive before resetting an exact allowlisted restore-test database, and checks the current two-migration schema. Earlier Phase 1 dumps remain historical snapshots and are deliberately rejected by the automated restore action because they lack this provenance manifest.
+`backup` is read-only with respect to the database: it requires all six local migrations to be registered with matching hashes and zero persistent domain rows. It writes a unique dump plus a synthetic-only SHA-256 manifest under ignored `backups/`; it never overwrites an existing dump. `restore-test` accepts only a matching, manifest-verified six-migration dump from that directory, validates the archive before resetting an exact allowlisted restore-test database, and checks the current business schema. Earlier Phase 1/2 dumps remain historical snapshots and are deliberately rejected because they lack the current manifest.
 
 The containers expose PostgreSQL only within the Compose `internal` network; no host port is published. The scripts access PostgreSQL with `docker compose exec`. Do not publish these ports on a nonlocal interface.
 
 ## Role boundary
 
-The migrations create three `NOLOGIN` capability roles and add empty Education/Identity schemas. The separate `provision-local-roles` action creates three local development logins with random passwords in ignored `.local-roles.env`. It repeats safely and verifies actual password connections and effective grants over container-local TCP. These credentials are for these isolated clusters only.
+The migrations create migrator, application, reader and trusted context-binder `NOLOGIN` capability roles. The separate `provision-local-roles` action creates four local development logins with random passwords in ignored `.local-roles.env`. It repeats safely and verifies actual password connections and effective grants over container-local TCP.
 
 | Role | Database/schema rights | Table rights |
 |---|---|---|
-| `phoenix_canonical_migrator` | Connect; usage and create in eight empty domain schemas; usage of ledger schema | Select and insert in migration ledger; no domain table rights until explicitly granted |
-| `phoenix_canonical_app` | Connect; usage in eight empty domain schemas | None until explicitly granted in a reviewed migration |
-| `phoenix_canonical_reader` | Connect; usage in eight empty domain schemas | None until explicitly granted in a reviewed migration |
+| `phoenix_canonical_migrator` | Connect; schema DDL and migration ledger | Migration execution only |
+| `phoenix_canonical_app` | Connect and exact schema usage | RLS-filtered reads and audited authorization functions |
+| `phoenix_canonical_reader` | Connect and exact schema usage | RLS-filtered metadata reads |
+| `phoenix_canonical_context_binder` | Auth schema usage | Bind/clear trusted backend context only |
 | `phoenix_canonical_migrator_local` | Inherits only migrator capability | Ledger select/insert; domain schema create |
 | `phoenix_canonical_app_local` | Inherits only app capability | No domain table rights or ledger access |
-| `phoenix_canonical_reader_local` | Inherits only reader capability | No domain table rights or ledger access |
+| `phoenix_canonical_reader_local` | Inherits only reader capability | RLS-filtered metadata reads; no ledger access |
+| `phoenix_canonical_context_binder_local` | Inherits only binder capability | No business-table access |
 | `phoenix_bootstrap` | Local container superuser for setup, migration and synthetic tests | All; never an application connection |
 
-The migration ledger is inaccessible to app and reader roles. Future tables must grant exact operations and enable RLS in their own reviewed migrations. The synthetic RLS probe checks family, advisor, and partner scope filtering with test-only labels inside a rolled-back transaction. Its session settings are caller-controlled and cannot serve as a production identity source. The Phase 2B protected-context probe instead ignores those caller settings and checks private context binding, scope, revocation and expiry; its binder is simulated by the test bootstrap role, so it also is not production authentication. The synthetic docs probe checks version overwrite, submitted-manifest edits and append, status reversion, version numbering, digest matching and pinned reuse. The contract-neutral probe checks source-qualified mapping refusal, UUIDv7 version rejection, Consent withdrawal on the next decision, expiry, evidence level and denial audit events. All probes roll back; they are not built business schemas or trusted session binding.
+The migration ledger is inaccessible to app and reader roles. Phase 3 RLS uses a private backend-bound context that the application role cannot forge. Family, advisor and partner access requires the applicable membership, assignment, subject grant, Consent and authority. Authorization functions append allow/deny reason codes to the audit table. All acceptance records roll back and leave the development database empty.
 
 ## Contract holds
 
-Only empty domain schemas are created. `core.people`, `core.students`, family membership/guardianship, consent grants, document metadata/version, submission manifests, casework, and legacy ID mappings remain pending the reviewed contracts. Their access and integrity acceptance tests are therefore pending too. No old `006` migration is copied into this namespace.
+The new Canonical business schema is implemented. Historical Family Context and Founder OS originals remain unavailable, so legacy compatibility, Founder OS/D1/Operations reuse, Feishu import, real-data migration and automatic identity reconciliation remain HOLD. No old `006` migration is copied into this namespace.

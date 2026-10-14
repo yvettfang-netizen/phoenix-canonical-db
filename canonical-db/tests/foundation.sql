@@ -2,7 +2,7 @@ DO $test$
 DECLARE
   schema_name text;
 BEGIN
-  FOREACH schema_name IN ARRAY ARRAY['core','consent','audit','integration','docs','casework','education','identity','canonical_migrations'] LOOP
+  FOREACH schema_name IN ARRAY ARRAY['auth','core','consent','audit','integration','docs','casework','education','identity','canonical_migrations'] LOOP
     IF NOT EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = schema_name) THEN
       RAISE EXCEPTION 'missing schema: %', schema_name;
     END IF;
@@ -25,11 +25,21 @@ BEGIN
   IF NOT has_table_privilege('phoenix_canonical_migrator','canonical_migrations.applied','INSERT') THEN
     RAISE EXCEPTION 'migration role cannot register a migration';
   END IF;
-  IF (SELECT count(*) FROM canonical_migrations.applied) <> 2 THEN
+  IF (SELECT count(*) FROM canonical_migrations.applied) <> 6 THEN
     RAISE EXCEPTION 'migration ledger is not repeat safe';
   END IF;
-  IF EXISTS (SELECT 1 FROM pg_tables WHERE schemaname IN ('core','consent','audit','integration','docs','casework','education','identity')) THEN
-    RAISE EXCEPTION 'contract-dependent domain table exists';
+  IF (SELECT count(*) FROM pg_tables WHERE schemaname IN ('auth','core','consent','audit','integration','docs','casework','education','identity')) <> 24 THEN
+    RAISE EXCEPTION 'unexpected Canonical business table count';
+  END IF;
+  IF (SELECT count(*) FROM pg_policies WHERE schemaname IN ('core','consent','audit','integration','docs','casework','education','identity')) <> 20 THEN
+    RAISE EXCEPTION 'unexpected Canonical RLS policy count';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'phoenix_canonical_context_binder' AND NOT rolcanlogin AND NOT rolsuper) THEN
+    RAISE EXCEPTION 'trusted context binder role missing or unsafe';
+  END IF;
+  IF has_table_privilege('phoenix_canonical_app','auth.session_contexts','SELECT') OR
+     has_function_privilege('phoenix_canonical_app','auth.bind_context(uuid,uuid,uuid,text,timestamptz,uuid)','EXECUTE') THEN
+    RAISE EXCEPTION 'application role can forge trusted context';
   END IF;
 END
 $test$;

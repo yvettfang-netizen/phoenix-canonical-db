@@ -16,7 +16,7 @@
 
 ## Phase 3 — approved Canonical business-schema build and formal acceptance
 
-**Entry is conditional and currently HOLD.** Before any dependent `0003+` migration, collect and hash the original Family Context V1, record an effective approved amendment resolving FC-1 through FC-5, decide `auth` versus `core` principal ownership and UUIDv7/public/legacy mapping, approve the Document/Submission contract resolving DS-1 through DS-5, approve Education/Identity field lists and states, and specify trusted application identity binding. Founder OS freeze original plus D1 reconciliation is required for any Founder/Operations ID or data reuse. Every approval record needs approver, date, exact file hash and changed clauses.
+**Entry status:** SATISFIED FOR GREENFIELD CANONICAL on 2026-10-14 by the prospective effective baseline and approval register. The absent historical original was not reconstructed. Founder OS freeze and D1 reconciliation remain required only for Founder/Operations ID or data reuse.
 
 **Execution sequence after entry:**
 
@@ -26,4 +26,4 @@
 4. Test immutable document versions, submitted manifest snapshots, withdrawal and legal hold against final tables and local mock storage. Verify database and object backup/restore together with synthetic records.
 5. Report each domain as PASS, CONDITIONAL, or HOLD with catalog readback and test evidence. Do not equate an approved design with an applied migration.
 
-**Phase 3 exit:** PG16/17 formal business acceptance passes for the approved scope; the exact applied migration list, tables, RLS policies, role grants, negative tests and restore results are documented. Any failed or unapproved domain remains HOLD. The Founder's 2026-10-14 instruction authorizes Tencent deployment only after all stages are complete. That deployment condition is not satisfied while the Phase 3 entry remains HOLD; real-data migration, COS, push and merge remain outside scope.
+**Phase 3 exit:** PASS FOR GREENFIELD CANONICAL on PostgreSQL 16.15 and 17.11. Six migrations, 24 business tables, 20 RLS policies, role grants, negative tests and restore evidence are documented in `../PHASE3_EXECUTION_REPORT.md`. Legacy migration, real data, COS, push and merge remain outside scope. The Founder-authorized Tencent deployment may proceed after authenticated server access and a non-destructive on-host inventory.

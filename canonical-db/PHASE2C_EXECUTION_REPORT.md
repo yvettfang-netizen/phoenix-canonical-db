@@ -2,7 +2,9 @@
 
 **Executed:** 2026-10-14 (Asia/Shanghai)  
 **Result:** `PHASE 2C LOCAL SYNTHETIC NEGATIVE ACCEPTANCE = PASS`  
-**Phase 3 entry:** `HOLD — REQUIRED CONTRACT DECISIONS AND SOURCE EVIDENCE ARE NOT PRESENT`
+**Phase 3 entry at execution time:** `HOLD — REQUIRED CONTRACT DECISIONS AND SOURCE EVIDENCE WERE NOT PRESENT`
+
+> Subsequent status: the Founder authorized a new prospective greenfield baseline on 2026-10-14. Phase 3 later passed under that new contract; see `PHASE3_EXECUTION_REPORT.md`. This does not turn the missing historical files into verified originals.
 
 ## Executed database evidence
 
