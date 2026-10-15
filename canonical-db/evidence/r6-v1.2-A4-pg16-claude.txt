@@ -1,0 +1,94 @@
+TASK A completion by Claude, 2026-10-15 16:43:37 +0800, PostgreSQL 16, service pg16, database phoenix_canonical_dev
+Method: bash equivalent of db.ps1 (pwsh unavailable on this host). No secret value is printed.
+
+### A2b start service (existing exact volume phoenix-canonical-foundation_pg16_data; created if absent)
+ Container phoenix-canonical-foundation-pg16-1 Running 
+ Container phoenix-canonical-foundation-pg16-1 Waiting 
+ Container phoenix-canonical-foundation-pg16-1 Healthy 
+phoenix-canonical-foundation_pg16_data
+
+### A2c install container-local pgpass (bootstrap + five local roles) via stdin
+pgpass_entries=6
+
+### A2d bootstrap connection over host SCRAM
+server_version=16.15 (Debian 16.15-1.pgdg13+2) user=phoenix_bootstrap
+
+### A3a local socket without pgpass must be refused
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: fe_sendauth: no password supplied
+hba local all - scram-sha-256
+hba host all 127.0.0.1 scram-sha-256
+hba host all ::1 scram-sha-256
+hba local all - scram-sha-256
+hba host all 127.0.0.1 scram-sha-256
+hba host all ::1 scram-sha-256
+hba host all all scram-sha-256
+
+### A3b migrations 0001-0009 (fresh)
+APPLIED 0001_foundation.sql sha256=eea8d1deece72afdc3832d075fcfb42b71b4c1fe4fdccc8900104a0e0ca78a2d
+APPLIED 0002_education_identity_skeleton.sql sha256=bef7d9a902e8ad34491b7455987d7791667dcb8a5ab31945cf609a6aa97e4e7f
+APPLIED 0003_core_consent_access.sql sha256=7dc0c5060237fae9069915ba8a1ecc39323cf74ab8ea0d49dd832ef9d8330618
+APPLIED 0004_casework_education_identity.sql sha256=aec2be38c6ad363f5594d65016b8a2dfcb79fe76e77a225271379bb991a443e9
+APPLIED 0005_documents_submissions.sql sha256=7bd581d16bb8c21278bd5bc013496779fe08f509d84bf74b652e5ce3b21cdbec
+APPLIED 0006_access_decision_api.sql sha256=2a3d6cd19febd62b7128c9ad4a2d7c94abdb9a4e11d499f36f4050eb2c2ed9d8
+psql:<stdin>:389: NOTICE:  trigger "protect_advisor_assignment" for relation "casework.advisor_assignments" does not exist, skipping
+psql:<stdin>:408: NOTICE:  trigger "protect_guardian_authority" for relation "core.guardian_authorities" does not exist, skipping
+psql:<stdin>:443: NOTICE:  trigger "validate_submission_target" for relation "docs.submission_manifests" does not exist, skipping
+APPLIED 0007_security_boundary_fixes.sql sha256=49ec737393a4a4bc5f1e287add369db4f04fbde1c021521e8b4cf781f966ff93
+APPLIED 0008_expiry_and_ephemeral_cleanup.sql sha256=51215c0b4d76e242c28197187bf1e017362700128ddd562e2da5d64980a8588d
+APPLIED 0009_application_write_api.sql sha256=2a48d016c0b2dd952d56a15853c8092895df057e6a0d69f5ab391803ca0747c2
+
+### A3c migrations 0001-0009 (repeat must skip)
+SKIP 0001_foundation.sql checksum verified
+SKIP 0002_education_identity_skeleton.sql checksum verified
+SKIP 0003_core_consent_access.sql checksum verified
+SKIP 0004_casework_education_identity.sql checksum verified
+SKIP 0005_documents_submissions.sql checksum verified
+SKIP 0006_access_decision_api.sql checksum verified
+SKIP 0007_security_boundary_fixes.sql checksum verified
+SKIP 0008_expiry_and_ephemeral_cleanup.sql checksum verified
+SKIP 0009_application_write_api.sql checksum verified
+
+### A3d provision local login roles (db.ps1 Provision-LocalRoles SQL; secrets substituted in-pipe)
+PASS roles provisioned
+
+### A3e least-privilege login checks (each role over its own SCRAM login)
+PASS phoenix_canonical_migrator_local
+PASS phoenix_canonical_app_local
+FAIL phoenix_canonical_reader_local: ERROR:  permission denied for schema canonical_migrations
+PASS phoenix_canonical_context_binder_local
+PASS phoenix_canonical_backup_local
+
+### A3f six original acceptance suites on the dev database (each rolls back)
+PASS foundation.sql
+PASS rls_probe.sql
+PASS docs_probe.sql
+PASS contract_neutral_probe.sql
+PASS trusted_context_probe.sql
+PASS phase3_acceptance.sql
+
+### A3g final catalog read-back
+ledger 0001_foundation.sql eea8d1deece72afdc3832d075fcfb42b71b4c1fe4fdccc8900104a0e0ca78a2d
+ledger 0002_education_identity_skeleton.sql bef7d9a902e8ad34491b7455987d7791667dcb8a5ab31945cf609a6aa97e4e7f
+ledger 0003_core_consent_access.sql 7dc0c5060237fae9069915ba8a1ecc39323cf74ab8ea0d49dd832ef9d8330618
+ledger 0004_casework_education_identity.sql aec2be38c6ad363f5594d65016b8a2dfcb79fe76e77a225271379bb991a443e9
+ledger 0005_documents_submissions.sql 7bd581d16bb8c21278bd5bc013496779fe08f509d84bf74b652e5ce3b21cdbec
+ledger 0006_access_decision_api.sql 2a3d6cd19febd62b7128c9ad4a2d7c94abdb9a4e11d499f36f4050eb2c2ed9d8
+ledger 0007_security_boundary_fixes.sql 49ec737393a4a4bc5f1e287add369db4f04fbde1c021521e8b4cf781f966ff93
+ledger 0008_expiry_and_ephemeral_cleanup.sql 51215c0b4d76e242c28197187bf1e017362700128ddd562e2da5d64980a8588d
+ledger 0009_application_write_api.sql 2a48d016c0b2dd952d56a15853c8092895df057e6a0d69f5ab391803ca0747c2
+ledger_count=9
+tables=25
+policies=20
+app_write_grants=0
+public_execute_functions=0
+probe_schema_absent=true
+domain_rows=0
+
+END TASK A PostgreSQL 16 2026-10-15 16:44:10 +0800
+### A3e-2 reader runtime ledger read, exactly as deploy/tencent/health.sh does it (2026-10-15 16:44:24 +0800)
+ERROR:  permission denied for schema canonical_migrations
+LINE 1: SELECT 'migrations='||count(*) FROM canonical_migrations.app...
+                                            ^
+### grants on schema canonical_migrations
+schema_acl=phoenix_bootstrap=UC/phoenix_bootstrap,phoenix_canonical_migrator=U/phoenix_bootstrap
+table_acl=phoenix_bootstrap=arwdDxt/phoenix_bootstrap,phoenix_canonical_migrator=ar/phoenix_bootstrap,phoenix_canonical_reader=r/phoenix_bootstrap

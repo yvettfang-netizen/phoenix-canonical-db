@@ -1,5 +1,12 @@
 # Phoenix Canonical PostgreSQL — V1.2 任务 B 执行报告
 
+> **状态更新（2026-10-15 15:10 +0800，Founder 决定；Claude 于 16:50 补记）：任务 B = PAUSED。**
+> 依据 Notion 任务页边界"不得部署到 A4 OPEN / NOT TRUSTED 服务器"，同见 `phase2-gate/CODEX_INSTRUCTION_R6_TENCENT_F10_V1.0.md` 文首。
+> - 14:49 之后无任何远端操作；不重试 `install.sh`，不再连接腾讯服务器。
+> - 服务器上已上传的文件、`…-deploy.bak-20261015T064812Z` 副本、B1 备份和 B0–B3 证据均原样保留。
+> - 腾讯隔离库仍为 0001–0006，0 业务行，无发布端口。
+> - 恢复任务 B 需 Founder 重新书面批准。届时须先修正 `deploy/tencent/*.sh` 的 CRLF 换行（见文末），并重做 B3–B7。
+
 **结论：B = HOLD。** 已完成腾讯隔离空库更新前采集、更新前备份、部署目录完整副本、从本地旧 HEAD 上传 0001–0008 的已跟踪文件。执行新 `install.sh` 时，上传文件的 shebang 实际为 `bash\r\n`，远端报 `/usr/bin/env: ‘bash\r’: No such file or directory`，退出码 127。按 B3 停止条件立即停止，没有执行 0007/0008、HBA 切换、恢复演练或 B7 验收。
 
 ## 已执行步骤和原始证据

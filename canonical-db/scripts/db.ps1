@@ -19,7 +19,7 @@ if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
     throw 'Docker CLI is unavailable. Install/start Docker Desktop before running database actions.'
 }
 if (-not (Test-Path -LiteralPath $envFile)) {
-    $bytes = New-Object byte[] 24
+    $bytes = New-Object byte[] 32
     $rng = [Security.Cryptography.RandomNumberGenerator]::Create()
     try { $rng.GetBytes($bytes) } finally { $rng.Dispose() }
     $password = ([BitConverter]::ToString($bytes)).Replace('-', '').ToLowerInvariant()
@@ -28,8 +28,11 @@ if (-not (Test-Path -LiteralPath $envFile)) {
 $compose = @('compose', '--env-file', $envFile, '-f', (Join-Path $root 'compose.yaml'))
 if ($Version -eq '17') { $compose += @('--profile', 'compat') }
 $containerPgpass = '/tmp/phoenix-canonical-db.pgpass'
-$bootstrapPassword = ((Get-Content -LiteralPath $envFile | Where-Object { $_ -match '^PHOENIX_DB_BOOTSTRAP_PASSWORD=([0-9a-f]{64})$' } | Select-Object -First 1) -replace '^PHOENIX_DB_BOOTSTRAP_PASSWORD=', '')
-if ($bootstrapPassword -notmatch '^[0-9a-f]{64}$') { throw 'Local bootstrap secret is missing or invalid.' }
+# Local .env files created before 2026-10-15 hold a 48-hex secret; new ones hold 64 hex. Accept both.
+# Cast to [string]: an empty pipeline yields an empty collection, which -notmatch would filter to a falsy
+# value and silently skip the guard, leaving an empty password in the container pgpass file.
+$bootstrapPassword = [string]((Get-Content -LiteralPath $envFile | Where-Object { $_ -match '^PHOENIX_DB_BOOTSTRAP_PASSWORD=([0-9a-f]{48}|[0-9a-f]{64})$' } | Select-Object -First 1) -replace '^PHOENIX_DB_BOOTSTRAP_PASSWORD=', '')
+if ($bootstrapPassword -notmatch '^([0-9a-f]{48}|[0-9a-f]{64})$') { throw 'Local bootstrap secret is missing or invalid.' }
 
 function Invoke-Docker([string[]]$arguments) {
     & docker @arguments
