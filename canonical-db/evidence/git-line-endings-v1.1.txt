@@ -1,0 +1,9 @@
+canonical-db/migrations/canonical/0001_foundation.sql: text: set
+canonical-db/migrations/canonical/0001_foundation.sql: eol: lf
+canonical-db/migrations/canonical/0007_security_boundary_fixes.sql: text: set
+canonical-db/migrations/canonical/0007_security_boundary_fixes.sql: eol: lf
+canonical-db/migrations/canonical/0008_expiry_and_ephemeral_cleanup.sql: text: set
+canonical-db/migrations/canonical/0008_expiry_and_ephemeral_cleanup.sql: eol: lf
+i/lf    w/lf    attr/text eol=lf      	canonical-db/migrations/canonical/0007_security_boundary_fixes.sql
+i/lf    w/lf    attr/text eol=lf      	canonical-db/migrations/canonical/0008_expiry_and_ephemeral_cleanup.sql
+51215C0B4D76E242C28197187BF1E017362700128DDD562E2DA5D64980A8588D

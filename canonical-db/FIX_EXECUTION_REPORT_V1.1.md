@@ -10,6 +10,8 @@
 
 依据为 `phase2-gate/CLAUDE_CANONICAL_DATABASE_REAUDIT_REPORT_V1.1.md` 第 4 节及附录 T6c–T6f。它是独立复审证据，不是业务合同批准件。本轮只新增 `migrations/canonical/0008_expiry_and_ephemeral_cleanup.sql`；`0001`–`0007` 未修改。完整哈希原始输出见 [`evidence/migration-hashes-v1.1.txt`](evidence/migration-hashes-v1.1.txt)。
 
+`migrations/canonical/.gitattributes` 将该目录 SQL 固定为 LF 换行，避免 Windows Git 自动换行改变摘要；检查后 0001–0008 的工作树哈希与本轮证据一致。Git 属性和 0008 哈希的原始输出见 [`evidence/git-line-endings-v1.1.txt`](evidence/git-line-endings-v1.1.txt)。
+
 | Migration | SHA-256 |
 |---|---|
 | `0008_expiry_and_ephemeral_cleanup.sql` | `51215c0b4d76e242c28197187bf1e017362700128ddd562e2da5d64980a8588d` |
