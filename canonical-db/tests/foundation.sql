@@ -25,7 +25,7 @@ BEGIN
   IF NOT has_table_privilege('phoenix_canonical_migrator','canonical_migrations.applied','INSERT') THEN
     RAISE EXCEPTION 'migration role cannot register a migration';
   END IF;
-  IF (SELECT count(*) FROM canonical_migrations.applied) < 7 THEN
+  IF (SELECT count(*) FROM canonical_migrations.applied) < 8 THEN
     RAISE EXCEPTION 'migration ledger is not repeat safe';
   END IF;
   IF (SELECT count(*) FROM pg_tables WHERE schemaname IN ('auth','core','consent','audit','integration','docs','casework','education','identity')) <> 25 THEN

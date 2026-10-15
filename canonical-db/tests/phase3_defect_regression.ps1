@@ -55,6 +55,16 @@ try {
     $fixture = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'phase3_defect_fixture.sql') -Raw
     Invoke-Psql 'phoenix_bootstrap' $fixture | Out-Null
 
+    # Grant a non-superuser LOGIN write access only inside the allowlisted,
+    # disposable synthetic test database. Production app write access stays HOLD.
+    Invoke-Psql 'phoenix_bootstrap' @"
+GRANT USAGE ON SCHEMA consent,casework,core TO phoenix_canonical_backup_local;
+GRANT SELECT,INSERT,UPDATE ON consent.grants,casework.advisor_assignments,core.guardian_authorities
+  TO phoenix_canonical_backup_local;
+GRANT EXECUTE ON FUNCTION core.is_uuid_v7(uuid) TO phoenix_canonical_backup_local;
+"@ | Out-Null
+    Assert-Equal 'synthetic writer uses separate non-superuser LOGIN' (Invoke-Psql 'phoenix_canonical_backup_local' "SELECT current_user || '|' || rolsuper::text FROM pg_roles WHERE rolname=current_user;") 'phoenix_canonical_backup_local|false'
+
     # F-01/T4b/T5: context is bound to backend start, not merely PID.
     Invoke-RegressionSql 'phoenix_bootstrap' @"
 DO `$test`$
@@ -166,6 +176,158 @@ END
 `$test`$;
 SELECT 'PASS';
 "@ 'T6 consent regrant and reactivation rules'
+
+    # R-1 / T6c: a naturally expired, unswept Consent must not block a new grant.
+    Invoke-RegressionSql 'phoenix_canonical_backup_local' @"
+DO `$test`$
+DECLARE old_status text; new_status text; active_count integer;
+BEGIN
+  INSERT INTO consent.grants(consent_id,family_id,grantor_person_id,grantee_person_id,subject_person_id,purpose,data_class,status,granted_at,expires_at)
+  VALUES ('01940000-0000-7000-8000-000000000904','01940000-0000-7000-8000-000000000002','01940000-0000-7000-8000-000000000105','01940000-0000-7000-8000-000000000106','01940000-0000-7000-8000-000000000105','IDENTITY_CASE','IDENTITY_SENSITIVE','ACTIVE',clock_timestamp()-interval '1 minute',clock_timestamp()+interval '250 milliseconds');
+  PERFORM pg_sleep(0.4);
+  INSERT INTO consent.grants(consent_id,family_id,grantor_person_id,grantee_person_id,subject_person_id,purpose,data_class,status,granted_at,expires_at)
+  VALUES ('01940000-0000-7000-8000-000000000905','01940000-0000-7000-8000-000000000002','01940000-0000-7000-8000-000000000105','01940000-0000-7000-8000-000000000106','01940000-0000-7000-8000-000000000105','IDENTITY_CASE','IDENTITY_SENSITIVE','ACTIVE',clock_timestamp(),'2035-01-01 UTC');
+  SELECT status INTO old_status FROM consent.grants WHERE consent_id='01940000-0000-7000-8000-000000000904';
+  SELECT status INTO new_status FROM consent.grants WHERE consent_id='01940000-0000-7000-8000-000000000905';
+  SELECT count(*) INTO active_count FROM consent.grants WHERE family_id='01940000-0000-7000-8000-000000000002' AND grantee_person_id='01940000-0000-7000-8000-000000000106' AND subject_person_id='01940000-0000-7000-8000-000000000105' AND purpose='IDENTITY_CASE' AND data_class='IDENTITY_SENSITIVE' AND status='ACTIVE';
+  IF old_status <> 'EXPIRED' OR new_status <> 'ACTIVE' OR active_count <> 1 THEN RAISE EXCEPTION 'T6c FAILED old=% new=% active=%',old_status,new_status,active_count; END IF;
+  INSERT INTO consent.grants(consent_id,family_id,grantor_person_id,grantee_person_id,subject_person_id,purpose,data_class,status,granted_at,expires_at)
+  VALUES ('01940000-0000-7000-8000-000000000906','01940000-0000-7000-8000-000000000002','01940000-0000-7000-8000-000000000105','01940000-0000-7000-8000-000000000106','01940000-0000-7000-8000-000000000105','DOCUMENT_READ','GENERAL','ACTIVE',clock_timestamp()-interval '2 days',clock_timestamp()-interval '1 day');
+  INSERT INTO consent.grants(consent_id,family_id,grantor_person_id,grantee_person_id,subject_person_id,purpose,data_class,status,granted_at,expires_at)
+  VALUES ('01940000-0000-7000-8000-000000000907','01940000-0000-7000-8000-000000000002','01940000-0000-7000-8000-000000000105','01940000-0000-7000-8000-000000000106','01940000-0000-7000-8000-000000000105','DOCUMENT_READ','GENERAL','ACTIVE',clock_timestamp(),'2035-01-01 UTC');
+  IF (SELECT status FROM consent.grants WHERE consent_id='01940000-0000-7000-8000-000000000906') <> 'EXPIRED'
+     OR (SELECT status FROM consent.grants WHERE consent_id='01940000-0000-7000-8000-000000000907') <> 'ACTIVE'
+  THEN RAISE EXCEPTION 'T6c FAILED consent expiry on INSERT'; END IF;
+END
+`$test`$;
+SELECT 'PASS T6c naturally expired Consent swept during new grant';
+"@ 'T6c naturally expired Consent regrant'
+
+    # R-1 / T6d: INSERT computes expiry, and natural expiry frees a later row.
+    Invoke-Psql 'phoenix_bootstrap' @"
+INSERT INTO casework.cases(case_id,family_id,subject_person_id,title,status)
+VALUES ('01940000-0000-7000-8000-000000000703','01940000-0000-7000-8000-000000000002','01940000-0000-7000-8000-000000000105','Synthetic expiry case 1','OPEN'),
+       ('01940000-0000-7000-8000-000000000704','01940000-0000-7000-8000-000000000002','01940000-0000-7000-8000-000000000105','Synthetic expiry case 2','OPEN');
+"@ | Out-Null
+    Invoke-RegressionSql 'phoenix_canonical_backup_local' @"
+DO `$test`$
+DECLARE expired_count integer; active_count integer;
+BEGIN
+  INSERT INTO casework.advisor_assignments(assignment_id,case_id,advisor_person_id,valid_from,valid_until)
+  VALUES ('01940000-0000-7000-8000-000000000803','01940000-0000-7000-8000-000000000703','01940000-0000-7000-8000-000000000106',clock_timestamp()-interval '2 days',clock_timestamp()-interval '1 day');
+  INSERT INTO casework.advisor_assignments(assignment_id,case_id,advisor_person_id,valid_from,valid_until)
+  VALUES ('01940000-0000-7000-8000-000000000804','01940000-0000-7000-8000-000000000703','01940000-0000-7000-8000-000000000106',clock_timestamp(),'2035-01-01 UTC');
+  INSERT INTO casework.advisor_assignments(assignment_id,case_id,advisor_person_id,valid_from,valid_until)
+  VALUES ('01940000-0000-7000-8000-000000000805','01940000-0000-7000-8000-000000000704','01940000-0000-7000-8000-000000000106',clock_timestamp()-interval '1 minute',clock_timestamp()+interval '250 milliseconds');
+  INSERT INTO core.guardian_authorities(authority_id,family_id,guardian_person_id,subject_person_id,evidence_level,scope,valid_from,valid_until)
+  VALUES ('01940000-0000-7000-8000-000000000405','01940000-0000-7000-8000-000000000002','01940000-0000-7000-8000-000000000104','01940000-0000-7000-8000-000000000105','VERIFIED','EDUCATION',clock_timestamp()-interval '1 minute',clock_timestamp()+interval '250 milliseconds');
+  IF (SELECT lifecycle_status FROM casework.advisor_assignments WHERE assignment_id='01940000-0000-7000-8000-000000000805') <> 'ACTIVE'
+     OR (SELECT lifecycle_status FROM core.guardian_authorities WHERE authority_id='01940000-0000-7000-8000-000000000405') <> 'ACTIVE'
+  THEN RAISE EXCEPTION 'T6d FAILED initial active status'; END IF;
+  PERFORM pg_sleep(0.4);
+  INSERT INTO casework.advisor_assignments(assignment_id,case_id,advisor_person_id,valid_from,valid_until)
+  VALUES ('01940000-0000-7000-8000-000000000806','01940000-0000-7000-8000-000000000704','01940000-0000-7000-8000-000000000106',clock_timestamp(),'2035-01-01 UTC');
+  INSERT INTO core.guardian_authorities(authority_id,family_id,guardian_person_id,subject_person_id,evidence_level,scope,valid_from,valid_until)
+  VALUES ('01940000-0000-7000-8000-000000000406','01940000-0000-7000-8000-000000000002','01940000-0000-7000-8000-000000000104','01940000-0000-7000-8000-000000000105','VERIFIED','EDUCATION',clock_timestamp(),'2035-01-01 UTC');
+  SELECT count(*) INTO expired_count FROM casework.advisor_assignments WHERE assignment_id IN ('01940000-0000-7000-8000-000000000803','01940000-0000-7000-8000-000000000805') AND lifecycle_status='EXPIRED';
+  SELECT count(*) INTO active_count FROM casework.advisor_assignments WHERE assignment_id IN ('01940000-0000-7000-8000-000000000804','01940000-0000-7000-8000-000000000806') AND lifecycle_status='ACTIVE';
+  IF expired_count <> 2 OR active_count <> 2 THEN RAISE EXCEPTION 'T6d FAILED assignments expired=% active=%',expired_count,active_count; END IF;
+  INSERT INTO core.guardian_authorities(authority_id,family_id,guardian_person_id,subject_person_id,evidence_level,scope,valid_from,valid_until)
+  VALUES ('01940000-0000-7000-8000-000000000403','01940000-0000-7000-8000-000000000002','01940000-0000-7000-8000-000000000104','01940000-0000-7000-8000-000000000105','VERIFIED','GENERAL',clock_timestamp()-interval '2 days',clock_timestamp()-interval '1 day');
+  INSERT INTO core.guardian_authorities(authority_id,family_id,guardian_person_id,subject_person_id,evidence_level,scope,valid_from,valid_until)
+  VALUES ('01940000-0000-7000-8000-000000000404','01940000-0000-7000-8000-000000000002','01940000-0000-7000-8000-000000000104','01940000-0000-7000-8000-000000000105','VERIFIED','GENERAL',clock_timestamp(),'2035-01-01 UTC');
+  IF (SELECT lifecycle_status FROM core.guardian_authorities WHERE authority_id='01940000-0000-7000-8000-000000000403') <> 'EXPIRED'
+     OR (SELECT lifecycle_status FROM core.guardian_authorities WHERE authority_id='01940000-0000-7000-8000-000000000404') <> 'ACTIVE'
+     OR (SELECT lifecycle_status FROM core.guardian_authorities WHERE authority_id='01940000-0000-7000-8000-000000000405') <> 'EXPIRED'
+     OR (SELECT lifecycle_status FROM core.guardian_authorities WHERE authority_id='01940000-0000-7000-8000-000000000406') <> 'ACTIVE'
+  THEN RAISE EXCEPTION 'T6d FAILED guardian insert expiry'; END IF;
+END
+`$test`$;
+SELECT 'PASS T6d expired-at-insert and naturally expired assignment; guardian insert expiry';
+"@ 'T6d assignment and guardian expiry on INSERT'
+
+    # R-2 / T6e: revoked assignment and expired history cannot be revived.
+    Invoke-RegressionSql 'phoenix_canonical_backup_local' @"
+DO `$test`$
+BEGIN
+  UPDATE casework.advisor_assignments SET revoked_at=clock_timestamp() WHERE assignment_id='01940000-0000-7000-8000-000000000804';
+  IF (SELECT lifecycle_status FROM casework.advisor_assignments WHERE assignment_id='01940000-0000-7000-8000-000000000804') <> 'REVOKED' THEN RAISE EXCEPTION 'T6e revoke failed'; END IF;
+  BEGIN
+    UPDATE casework.advisor_assignments SET revoked_at=NULL WHERE assignment_id='01940000-0000-7000-8000-000000000804';
+    RAISE EXCEPTION 'T6e revoked assignment restored';
+  EXCEPTION WHEN others THEN
+    IF SQLERRM NOT LIKE '%ADVISOR_ASSIGNMENT_HISTORY_IMMUTABLE%' THEN RAISE; END IF;
+  END;
+  BEGIN
+    UPDATE casework.advisor_assignments SET valid_until='2035-01-01 UTC' WHERE assignment_id='01940000-0000-7000-8000-000000000803';
+    RAISE EXCEPTION 'T6e expired assignment extended';
+  EXCEPTION WHEN others THEN
+    IF SQLERRM NOT LIKE '%ADVISOR_ASSIGNMENT_HISTORY_IMMUTABLE%' THEN RAISE; END IF;
+  END;
+  IF (SELECT lifecycle_status FROM casework.advisor_assignments WHERE assignment_id='01940000-0000-7000-8000-000000000804') <> 'REVOKED'
+     OR (SELECT revoked_at FROM casework.advisor_assignments WHERE assignment_id='01940000-0000-7000-8000-000000000804') IS NULL
+     OR (SELECT lifecycle_status FROM casework.advisor_assignments WHERE assignment_id='01940000-0000-7000-8000-000000000803') <> 'EXPIRED'
+  THEN RAISE EXCEPTION 'T6e terminal history changed'; END IF;
+END
+`$test`$;
+SELECT 'PASS T6e revoked assignment cannot clear revoked_at; expired assignment cannot extend';
+"@ 'T6e assignment terminal history immutable'
+
+    # R-2 / T6f: identical terminal protections apply to guardian authority.
+    Invoke-RegressionSql 'phoenix_canonical_backup_local' @"
+DO `$test`$
+BEGIN
+  UPDATE core.guardian_authorities SET revoked_at=clock_timestamp() WHERE authority_id='01940000-0000-7000-8000-000000000404';
+  IF (SELECT lifecycle_status FROM core.guardian_authorities WHERE authority_id='01940000-0000-7000-8000-000000000404') <> 'REVOKED' THEN RAISE EXCEPTION 'T6f revoke failed'; END IF;
+  BEGIN
+    UPDATE core.guardian_authorities SET revoked_at=NULL WHERE authority_id='01940000-0000-7000-8000-000000000404';
+    RAISE EXCEPTION 'T6f revoked guardian restored';
+  EXCEPTION WHEN others THEN
+    IF SQLERRM NOT LIKE '%GUARDIAN_AUTHORITY_HISTORY_IMMUTABLE%' THEN RAISE; END IF;
+  END;
+  BEGIN
+    UPDATE core.guardian_authorities SET valid_until='2035-01-01 UTC' WHERE authority_id='01940000-0000-7000-8000-000000000403';
+    RAISE EXCEPTION 'T6f expired guardian extended';
+  EXCEPTION WHEN others THEN
+    IF SQLERRM NOT LIKE '%GUARDIAN_AUTHORITY_HISTORY_IMMUTABLE%' THEN RAISE; END IF;
+  END;
+  IF (SELECT lifecycle_status FROM core.guardian_authorities WHERE authority_id='01940000-0000-7000-8000-000000000404') <> 'REVOKED'
+     OR (SELECT revoked_at FROM core.guardian_authorities WHERE authority_id='01940000-0000-7000-8000-000000000404') IS NULL
+     OR (SELECT lifecycle_status FROM core.guardian_authorities WHERE authority_id='01940000-0000-7000-8000-000000000403') <> 'EXPIRED'
+  THEN RAISE EXCEPTION 'T6f terminal history changed'; END IF;
+END
+`$test`$;
+SELECT 'PASS T6f revoked guardian cannot clear revoked_at; expired guardian cannot extend';
+"@ 'T6f guardian terminal history immutable'
+
+    # R-3: PUBLIC cannot execute the four functions named by the reaudit.
+    Assert-Equal 'R-3 PUBLIC function grants revoked' (Invoke-Psql 'phoenix_bootstrap' @"
+SELECT CASE WHEN count(*)=0 THEN 'PASS' ELSE 'FAIL' END
+  FROM pg_proc p CROSS JOIN LATERAL aclexplode(p.proacl) acl
+ WHERE p.oid IN ('core.can_read_subject_basics(uuid)'::regprocedure,
+                 'casework.protect_advisor_assignment()'::regprocedure,
+                 'core.protect_guardian_authority()'::regprocedure,
+                 'docs.validate_submission_target()'::regprocedure)
+   AND acl.grantee=0 AND acl.privilege_type='EXECUTE';
+"@) 'PASS'
+    Assert-Equal 'R-3 app and reader exact execute grants' (Invoke-Psql 'phoenix_canonical_app_local' @"
+SELECT CASE WHEN has_function_privilege(current_user,'core.can_read_subject_basics(uuid)','EXECUTE')
+ AND NOT has_function_privilege(current_user,'casework.protect_advisor_assignment()','EXECUTE')
+ AND NOT has_function_privilege(current_user,'core.protect_guardian_authority()','EXECUTE')
+ AND NOT has_function_privilege(current_user,'docs.validate_submission_target()','EXECUTE')
+ THEN 'PASS' ELSE 'FAIL' END;
+"@) 'PASS'
+    Assert-Equal 'R-3 reader subject basics grant' (Invoke-Psql 'phoenix_canonical_reader_local' "SELECT CASE WHEN has_function_privilege(current_user,'core.can_read_subject_basics(uuid)','EXECUTE') THEN 'PASS' ELSE 'FAIL' END;") 'PASS'
+
+    # R-4: a binder maintenance call removes both dead contexts and expired tickets.
+    Invoke-Psql 'phoenix_bootstrap' @"
+INSERT INTO auth.session_contexts(backend_pid,backend_start,principal_id,actor_person_id,family_id,channel,request_nonce,expires_at)
+VALUES (2147483001,'2000-01-01 UTC','01940000-0000-7000-8000-000000000201','01940000-0000-7000-8000-000000000101','01940000-0000-7000-8000-000000000001','FAMILY','01940000-0000-7000-8000-000000000c98',clock_timestamp()+interval '1 day');
+INSERT INTO auth.context_exchange_tickets(ticket_id,principal_id,actor_person_id,family_id,channel,request_nonce,issued_at,expires_at,intended_principal_id)
+VALUES ('01940000-0000-7000-8000-000000000c97','01940000-0000-7000-8000-000000000201','01940000-0000-7000-8000-000000000101','01940000-0000-7000-8000-000000000001','FAMILY','01940000-0000-7000-8000-000000000c96',clock_timestamp()-interval '1 day',clock_timestamp()-interval '1 day'+interval '30 seconds','01940000-0000-7000-8000-000000000201');
+"@ | Out-Null
+    Assert-Equal 'R-4 binder cleanup counts' (Invoke-Psql 'phoenix_canonical_context_binder_local' "SELECT context_rows::text||'|'||ticket_rows::text FROM auth.cleanup_ephemeral_state();") '1|1'
+    Assert-Equal 'R-4 dead context and expired ticket absent' (Invoke-Psql 'phoenix_bootstrap' "SELECT count(*)::text FROM auth.session_contexts WHERE backend_pid=2147483001 UNION ALL SELECT count(*)::text FROM auth.context_exchange_tickets WHERE ticket_id='01940000-0000-7000-8000-000000000c97';") "0`n0"
 
     # F-07/T8/T8b: target existence and family/subject consistency.
     Invoke-RegressionSql 'phoenix_bootstrap' @"

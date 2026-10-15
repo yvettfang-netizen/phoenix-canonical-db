@@ -1,6 +1,6 @@
 # Phoenix Canonical PostgreSQL — greenfield Canonical database
 
-This directory contains the implemented greenfield Canonical database. It does not connect to legacy databases, Feishu, D1 or COS. All acceptance data is synthetic. Migrations `0003`–`0007` implement the approved new Canonical business baseline while legacy migration remains separately held. Migration `0007` contains the post-audit security boundary fixes; `0001`–`0006` are byte-preserved.
+This directory contains the implemented greenfield Canonical database. It does not connect to legacy databases, Feishu, D1 or COS. All acceptance data is synthetic. Migrations `0003`–`0007` implement the new Canonical business baseline while legacy migration remains separately held. Migration `0007` contains the post-audit security boundary fixes; `0008` closes the local reaudit's expiry and cleanup findings. Migrations `0001`–`0007` are byte-preserved in this fix.
 
 ## Layout
 
@@ -14,6 +14,7 @@ This directory contains the implemented greenfield Canonical database. It does n
 | `migrations/canonical/0005_documents_submissions.sql` | Document versions, immutable manifests, withdrawal and Legal Hold |
 | `migrations/canonical/0006_access_decision_api.sql` | Audited application authorization functions |
 | `migrations/canonical/0007_security_boundary_fixes.sql` | Session identity, context tickets, scoped RLS, regrant protection, target validation and guardian scope fixes |
+| `migrations/canonical/0008_expiry_and_ephemeral_cleanup.sql` | Natural-expiry normalization, terminal-history protection, function grants and ephemeral cleanup |
 | `scripts/db.ps1` | Initialization, migration, local login provisioning, exact-name test reset, health, backup and restore test |
 | `scripts/native-db.ps1` | Optional local fallback; PG17 was used for a supplemental check before Docker became available |
 | `scripts/mock-object-store.ps1` | Synthetic local object put/get, deduplication and backup/restore test |
@@ -23,7 +24,7 @@ This directory contains the implemented greenfield Canonical database. It does n
 | `tests/contract_neutral_probe.sql` | Transactional synthetic legacy-ID refusal, Consent withdrawal and guardian-expiry decisions with audit reasons |
 | `tests/trusted_context_probe.sql` | Phase 2B transactional protected-context RLS simulation; no Canonical business table |
 | `tests/phase3_acceptance.sql` | Formal synthetic tests against the implemented Phase 3 business tables and RLS |
-| `tests/phase3_defect_regression.ps1` | Separate-login regression coverage for F-01/F-02/F-03/F-04/F-05/F-06/F-07/F-09 and Appendix A cases |
+| `tests/phase3_defect_regression.ps1` | Separate-login regression coverage for F-01/F-02/F-03/F-04/F-05/F-06/F-07/F-09, reaudit T6c–T6f and cleanup/ACL checks |
 | `tests/phase3_fresh_cluster_restore.ps1` | Backup-role export, fresh-cluster restore and post-restore acceptance on PG16/17 |
 | `tests/phase3_pg_hba_auth_regression.ps1` | Fresh-container proof that local and host authentication require SCRAM and protected pgpass |
 | `tests/9000_atomicity_probe.sql` | Deliberately failing synthetic migration used only by the audit action; never part of the Canonical migration directory |
@@ -65,7 +66,7 @@ pwsh -File ./scripts/mock-object-store.ps1 -Action test
 
 `probe` runs the foundation and synthetic checks against the existing development database without resetting it. Every acceptance probe rolls back and the script verifies that its disposable schema is gone. It does not run a migration.
 
-`backup` is read-only with respect to the database: it requires all seven local migrations to be registered with matching hashes and zero persistent domain rows. It writes a unique dump plus a synthetic-only SHA-256 manifest under ignored `backups/`; it never overwrites an existing dump. `restore-test` accepts only a matching, manifest-verified seven-migration dump from that directory, validates the archive before resetting an exact allowlisted restore-test database, and checks the current business schema. Earlier Phase 1/2 dumps remain historical snapshots and are deliberately rejected because they lack the current manifest. The manifest is an integrity check, not a signature; retention, encryption and remote-copy policy remain FD-7/HOLD.
+`backup` is read-only with respect to the database: it requires all eight local migrations to be registered with matching hashes and zero persistent domain rows. It writes a unique dump plus a synthetic-only SHA-256 manifest under ignored `backups/`; it never overwrites an existing dump. `restore-test` accepts only a matching, manifest-verified eight-migration dump from that directory, validates the archive before resetting an exact allowlisted restore-test database, and checks the current business schema. Earlier Phase 1/2 dumps remain historical snapshots and are deliberately rejected because they lack the current manifest. The manifest is an integrity check, not a signature; retention, encryption and remote-copy policy remain FD-7/HOLD.
 
 The containers expose PostgreSQL only within the Compose `internal` network; no host port is published. The scripts access PostgreSQL with `docker compose exec`. Do not publish these ports on a nonlocal interface.
 
@@ -88,6 +89,8 @@ The migrations create migrator, application, reader and trusted context-binder `
 | `phoenix_bootstrap` | Local container superuser for setup, migration and synthetic tests | All; never an application connection |
 
 The migration ledger is inaccessible to app and reader roles. Phase 3 RLS uses a private backend-bound context that the application role cannot forge. Family, advisor and partner access requires the applicable membership, assignment, subject grant, Consent and authority. Authorization functions append allow/deny reason codes to the audit table. All acceptance records roll back and leave the development database empty.
+
+The existing PG16/17 development databases contain an earlier 0007 checksum and old local authentication settings (reaudit R-6). They are not acceptance evidence. Do not run `init`, `migrate`, `provision-local-roles`, or `probe` against them until the Founder separately authorizes rebuilding those development data volumes. The synthetic `test` action resets only its exact-name test database and applies 0001–0008 afresh.
 
 ## Contract holds
 

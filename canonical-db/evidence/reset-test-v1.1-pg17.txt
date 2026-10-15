@@ -1,0 +1,4 @@
+ Container phoenix-canonical-foundation-pg17-1 Running 
+ Container phoenix-canonical-foundation-pg17-1 Waiting 
+ Container phoenix-canonical-foundation-pg17-1 Healthy 
+RESET phoenix_canonical_test_17

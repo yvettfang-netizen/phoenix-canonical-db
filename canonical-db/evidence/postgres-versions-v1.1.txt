@@ -1,0 +1,2 @@
+postgres (PostgreSQL) 16.15 (Debian 16.15-1.pgdg13+2)
+postgres (PostgreSQL) 17.11 (Debian 17.11-1.pgdg13+2)

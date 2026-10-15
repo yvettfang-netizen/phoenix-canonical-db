@@ -55,7 +55,7 @@ try {
     & docker @compose exec -T -e "PGPASSFILE=$pgpass" $service pg_dump -h 127.0.0.1 -U phoenix_canonical_backup_local -d $sourceDb -Fc > $dump
     if ($LASTEXITCODE -ne 0) { throw 'backup role export failed' }
     $digest = (Get-FileHash -LiteralPath $dump -Algorithm SHA256).Hash.ToLowerInvariant()
-    @{ purpose='phoenix-canonical-fresh-cluster-test'; database='phoenix_canonical_test_' + $Version; format='pg_custom'; sha256=$digest; migration_count=7 } | ConvertTo-Json -Compress | Set-Content -NoNewline -Path $manifest
+    @{ purpose='phoenix-canonical-fresh-cluster-test'; database='phoenix_canonical_test_' + $Version; format='pg_custom'; sha256=$digest; migration_count=8 } | ConvertTo-Json -Compress | Set-Content -NoNewline -Path $manifest
     Write-Output "BACKUP_ROLE_EXPORT digest=$digest"
 
     $freshPassword = [Convert]::ToHexString([Security.Cryptography.RandomNumberGenerator]::GetBytes(32)).ToLowerInvariant()
@@ -95,7 +95,7 @@ GRANT pg_read_all_data TO phoenix_canonical_backup_runtime WITH INHERIT TRUE, SE
     if ($LASTEXITCODE -ne 0) { throw 'fresh-cluster pg_restore failed' }
     $catalog = Fresh-Psql 'postgres' "SELECT 'ledger='||count(*) FROM canonical_migrations.applied; SELECT 'tables='||count(*) FROM pg_tables WHERE schemaname IN ('auth','core','consent','audit','integration','docs','casework','education','identity'); SELECT 'policies='||count(*) FROM pg_policies WHERE schemaname IN ('core','consent','audit','integration','docs','casework','education','identity'); SELECT 'roles='||count(*) FROM pg_roles WHERE rolname LIKE 'phoenix_canonical_%';"
     Write-Output $catalog
-    if ($catalog -notmatch 'ledger=7' -or $catalog -notmatch 'tables=25' -or $catalog -notmatch 'policies=20' -or $catalog -notmatch 'roles=10') { throw 'fresh-cluster catalog verification failed' }
+    if ($catalog -notmatch 'ledger=8' -or $catalog -notmatch 'tables=25' -or $catalog -notmatch 'policies=20' -or $catalog -notmatch 'roles=10') { throw 'fresh-cluster catalog verification failed' }
     foreach($name in @('foundation.sql','rls_probe.sql','docs_probe.sql','contract_neutral_probe.sql','trusted_context_probe.sql','phase3_acceptance.sql')) {
         $sql = Get-Content -LiteralPath (Join-Path $root "tests/$name") -Raw
         Fresh-Psql 'postgres' $sql | Out-Null

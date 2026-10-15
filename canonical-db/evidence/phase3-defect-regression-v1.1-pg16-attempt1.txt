@@ -1,0 +1,54 @@
+ Container phoenix-canonical-foundation-pg16-1 Running 
+ Container phoenix-canonical-foundation-pg16-1 Waiting 
+ Container phoenix-canonical-foundation-pg16-1 Healthy 
+RESET phoenix_canonical_test_16
+APPLIED phoenix_canonical_test_16 0001_foundation.sql
+APPLIED phoenix_canonical_test_16 0002_education_identity_skeleton.sql
+APPLIED phoenix_canonical_test_16 0003_core_consent_access.sql
+APPLIED phoenix_canonical_test_16 0004_casework_education_identity.sql
+APPLIED phoenix_canonical_test_16 0005_documents_submissions.sql
+APPLIED phoenix_canonical_test_16 0006_access_decision_api.sql
+psql:<stdin>:11: NOTICE:  role "phoenix_canonical_backup_runtime" has already been granted membership in role "pg_read_all_data" by role "phoenix_bootstrap"
+psql:<stdin>:388: NOTICE:  trigger "protect_advisor_assignment" for relation "casework.advisor_assignments" does not exist, skipping
+psql:<stdin>:407: NOTICE:  trigger "protect_guardian_authority" for relation "core.guardian_authorities" does not exist, skipping
+psql:<stdin>:442: NOTICE:  trigger "validate_submission_target" for relation "docs.submission_manifests" does not exist, skipping
+APPLIED phoenix_canonical_test_16 0007_security_boundary_fixes.sql
+APPLIED phoenix_canonical_test_16 0008_expiry_and_ephemeral_cleanup.sql
+SKIP phoenix_canonical_test_16 0001_foundation.sql checksum verified
+SKIP phoenix_canonical_test_16 0002_education_identity_skeleton.sql checksum verified
+SKIP phoenix_canonical_test_16 0003_core_consent_access.sql checksum verified
+SKIP phoenix_canonical_test_16 0004_casework_education_identity.sql checksum verified
+SKIP phoenix_canonical_test_16 0005_documents_submissions.sql checksum verified
+SKIP phoenix_canonical_test_16 0006_access_decision_api.sql checksum verified
+SKIP phoenix_canonical_test_16 0007_security_boundary_fixes.sql checksum verified
+SKIP phoenix_canonical_test_16 0008_expiry_and_ephemeral_cleanup.sql checksum verified
+PASS PostgreSQL 16 foundation, repeat migration, and all synthetic probes
+PASS synthetic writer uses separate non-superuser LOGIN = phoenix_canonical_backup_local|false
+PASS F-01 stale pid/start mismatch refused
+PASS F-02 correct ticket redeemed on separate LOGIN
+PASS F-02 app clear_context = NULL
+PASS F-02 forged ticket refused
+PASS F-02 wrong intended principal refused
+PASS F-02 expired ticket refused
+PASS F-02 one-time ticket reuse refused
+PASS T1 family assignment visibility
+PASS T3 advisor subject-only visibility
+PASS T3 advisor subject membership only
+PASS T2 partner subject-only visibility
+PASS T2 partner subject membership and family name hidden
+PASS T7 forged audit event refused
+PASS T7 controlled authorization audit
+PASS T6 consent regrant and reactivation rules
+psql:<stdin>:14: ERROR:  permission denied for function is_uuid_v7
+CONTEXT:  SQL statement "INSERT INTO consent.grants(consent_id,family_id,grantor_person_id,grantee_person_id,subject_person_id,purpose,data_class,status,granted_at,expires_at)
+  VALUES ('01940000-0000-7000-8000-000000000904','01940000-0000-7000-8000-000000000002','01940000-0000-7000-8000-000000000105','01940000-0000-7000-8000-000000000106','01940000-0000-7000-8000-000000000105','IDENTITY_CASE','IDENTITY_SENSITIVE','ACTIVE',clock_timestamp()-interval '1 minute',clock_timestamp()+interval '250 milliseconds')"
+PL/pgSQL function inline_code_block line 4 at SQL statement
+ Container phoenix-canonical-foundation-pg16-1 Running 
+ Container phoenix-canonical-foundation-pg16-1 Waiting 
+ Container phoenix-canonical-foundation-pg16-1 Healthy 
+RESET phoenix_canonical_test_16
+Exception: D:\CODEX\01_PHOENIX\01_NOVA\_worktrees\canonical-postgresql-phase1\canonical-db\tests\phase3_defect_regression.ps1:35
+Line |
+  35 |      if ($LASTEXITCODE -ne 0) { throw "psql failed for $user" }
+     |                                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | psql failed for phoenix_canonical_backup_local

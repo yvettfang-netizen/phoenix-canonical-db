@@ -1,0 +1,59 @@
+ Container phoenix-canonical-foundation-pg16-1 Running 
+ Container phoenix-canonical-foundation-pg16-1 Waiting 
+ Container phoenix-canonical-foundation-pg16-1 Healthy 
+RESET phoenix_canonical_test_16
+APPLIED phoenix_canonical_test_16 0001_foundation.sql
+APPLIED phoenix_canonical_test_16 0002_education_identity_skeleton.sql
+APPLIED phoenix_canonical_test_16 0003_core_consent_access.sql
+APPLIED phoenix_canonical_test_16 0004_casework_education_identity.sql
+APPLIED phoenix_canonical_test_16 0005_documents_submissions.sql
+APPLIED phoenix_canonical_test_16 0006_access_decision_api.sql
+psql:<stdin>:11: NOTICE:  role "phoenix_canonical_backup_runtime" has already been granted membership in role "pg_read_all_data" by role "phoenix_bootstrap"
+psql:<stdin>:388: NOTICE:  trigger "protect_advisor_assignment" for relation "casework.advisor_assignments" does not exist, skipping
+psql:<stdin>:407: NOTICE:  trigger "protect_guardian_authority" for relation "core.guardian_authorities" does not exist, skipping
+psql:<stdin>:442: NOTICE:  trigger "validate_submission_target" for relation "docs.submission_manifests" does not exist, skipping
+APPLIED phoenix_canonical_test_16 0007_security_boundary_fixes.sql
+APPLIED phoenix_canonical_test_16 0008_expiry_and_ephemeral_cleanup.sql
+SKIP phoenix_canonical_test_16 0001_foundation.sql checksum verified
+SKIP phoenix_canonical_test_16 0002_education_identity_skeleton.sql checksum verified
+SKIP phoenix_canonical_test_16 0003_core_consent_access.sql checksum verified
+SKIP phoenix_canonical_test_16 0004_casework_education_identity.sql checksum verified
+SKIP phoenix_canonical_test_16 0005_documents_submissions.sql checksum verified
+SKIP phoenix_canonical_test_16 0006_access_decision_api.sql checksum verified
+SKIP phoenix_canonical_test_16 0007_security_boundary_fixes.sql checksum verified
+SKIP phoenix_canonical_test_16 0008_expiry_and_ephemeral_cleanup.sql checksum verified
+PASS PostgreSQL 16 foundation, repeat migration, and all synthetic probes
+PASS synthetic writer uses separate non-superuser LOGIN = phoenix_canonical_backup_local|false
+PASS F-01 stale pid/start mismatch refused
+PASS F-02 correct ticket redeemed on separate LOGIN
+PASS F-02 app clear_context = NULL
+PASS F-02 forged ticket refused
+PASS F-02 wrong intended principal refused
+PASS F-02 expired ticket refused
+PASS F-02 one-time ticket reuse refused
+PASS T1 family assignment visibility
+PASS T3 advisor subject-only visibility
+PASS T3 advisor subject membership only
+PASS T2 partner subject-only visibility
+PASS T2 partner subject membership and family name hidden
+PASS T7 forged audit event refused
+PASS T7 controlled authorization audit
+PASS T6 consent regrant and reactivation rules
+PASS T6c naturally expired Consent regrant
+PASS T6d assignment and guardian expiry on INSERT
+PASS T6e assignment terminal history immutable
+PASS T6f guardian terminal history immutable
+PASS R-3 PUBLIC function grants revoked = PASS
+PASS R-3 app and reader exact execute grants = PASS
+PASS R-3 reader subject basics grant = PASS
+PASS R-4 binder cleanup counts = 1|1
+PASS R-4 dead context and expired ticket absent = 0
+0
+PASS T8/T8b manifest target validation
+PASS T13 EDUCATION guardian scope
+PASS T12 purge decision remains guarded
+PASS PostgreSQL 16 defect regression using separate LOGIN connections
+ Container phoenix-canonical-foundation-pg16-1 Running 
+ Container phoenix-canonical-foundation-pg16-1 Waiting 
+ Container phoenix-canonical-foundation-pg16-1 Healthy 
+RESET phoenix_canonical_test_16
