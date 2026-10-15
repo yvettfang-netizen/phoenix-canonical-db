@@ -127,5 +127,5 @@ pwsh -File .\canonical-db\scripts\db.ps1 -Action audit-backup -Version 17
 
 ## 8. 本地提交
 
-本报告生成时尚未创建本地 commit；完成最终静态检查后创建一个本地 commit，并在此处回填提交哈希。不会 push、merge 或改变 PR 状态。
+本轮工程修复已创建本地提交 `eea5ac62da4f26d5c04cc1f6f1be1aa0895448c6`（`fix(canonical-db): close audit findings with 0007`）。本报告的回填提交随后产生；最终工作树仍只保留本地提交，不会 push、merge 或改变 PR 状态。
 
