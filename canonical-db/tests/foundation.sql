@@ -25,10 +25,10 @@ BEGIN
   IF NOT has_table_privilege('phoenix_canonical_migrator','canonical_migrations.applied','INSERT') THEN
     RAISE EXCEPTION 'migration role cannot register a migration';
   END IF;
-  IF (SELECT count(*) FROM canonical_migrations.applied) <> 6 THEN
+  IF (SELECT count(*) FROM canonical_migrations.applied) < 7 THEN
     RAISE EXCEPTION 'migration ledger is not repeat safe';
   END IF;
-  IF (SELECT count(*) FROM pg_tables WHERE schemaname IN ('auth','core','consent','audit','integration','docs','casework','education','identity')) <> 24 THEN
+  IF (SELECT count(*) FROM pg_tables WHERE schemaname IN ('auth','core','consent','audit','integration','docs','casework','education','identity')) <> 25 THEN
     RAISE EXCEPTION 'unexpected Canonical business table count';
   END IF;
   IF (SELECT count(*) FROM pg_policies WHERE schemaname IN ('core','consent','audit','integration','docs','casework','education','identity')) <> 20 THEN
@@ -38,8 +38,15 @@ BEGIN
     RAISE EXCEPTION 'trusted context binder role missing or unsafe';
   END IF;
   IF has_table_privilege('phoenix_canonical_app','auth.session_contexts','SELECT') OR
-     has_function_privilege('phoenix_canonical_app','auth.bind_context(uuid,uuid,uuid,text,timestamptz,uuid)','EXECUTE') THEN
+     has_function_privilege('phoenix_canonical_app','auth.bind_context(uuid,uuid,uuid,text,timestamptz,uuid)','EXECUTE') OR
+     has_function_privilege('phoenix_canonical_app','auth.issue_context_ticket(uuid,uuid,uuid,text,timestamptz,uuid,uuid)','EXECUTE') THEN
     RAISE EXCEPTION 'application role can forge trusted context';
+  END IF;
+  IF NOT has_function_privilege('phoenix_canonical_app','auth.redeem_context_ticket(uuid,uuid)','EXECUTE') THEN
+    RAISE EXCEPTION 'application role cannot redeem trusted context ticket';
+  END IF;
+  IF has_function_privilege('phoenix_canonical_app','audit.record_access_event(text,text,uuid,text,text)','EXECUTE') THEN
+    RAISE EXCEPTION 'application role can forge audit events';
   END IF;
 END
 $test$;

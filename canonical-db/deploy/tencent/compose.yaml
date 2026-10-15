@@ -1,12 +1,12 @@
 services:
   postgres:
-    image: postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d
+    image: mirror.ccs.tencentyun.com/library/postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${PHOENIX_DB_NAME}
       POSTGRES_USER: phoenix_bootstrap
       POSTGRES_PASSWORD: ${PHOENIX_DB_BOOTSTRAP_PASSWORD}
-      POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C.UTF-8 --auth-host=scram-sha-256
+      POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C.UTF-8 --auth-local=scram-sha-256 --auth-host=scram-sha-256
     volumes:
       - phoenix_canonical_pg16_data:/var/lib/postgresql/data
       - ../../migrations/canonical:/opt/phoenix/migrations:ro

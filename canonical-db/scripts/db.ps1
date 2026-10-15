@@ -27,6 +27,9 @@ if (-not (Test-Path -LiteralPath $envFile)) {
 }
 $compose = @('compose', '--env-file', $envFile, '-f', (Join-Path $root 'compose.yaml'))
 if ($Version -eq '17') { $compose += @('--profile', 'compat') }
+$containerPgpass = '/tmp/phoenix-canonical-db.pgpass'
+$bootstrapPassword = ((Get-Content -LiteralPath $envFile | Where-Object { $_ -match '^PHOENIX_DB_BOOTSTRAP_PASSWORD=([0-9a-f]{64})$' } | Select-Object -First 1) -replace '^PHOENIX_DB_BOOTSTRAP_PASSWORD=', '')
+if ($bootstrapPassword -notmatch '^[0-9a-f]{64}$') { throw 'Local bootstrap secret is missing or invalid.' }
 
 function Invoke-Docker([string[]]$arguments) {
     & docker @arguments
@@ -34,13 +37,21 @@ function Invoke-Docker([string[]]$arguments) {
 }
 
 function Invoke-Psql([string]$database, [string]$sql) {
-    $result = $sql | & docker @compose exec -T $service psql -X -U phoenix_bootstrap -d $database -v ON_ERROR_STOP=1 -At -f -
+    $result = $sql | & docker @compose exec -T -e "PGPASSFILE=$containerPgpass" $service psql -X -h 127.0.0.1 -U phoenix_bootstrap -d $database -v ON_ERROR_STOP=1 -At -f -
     if ($LASTEXITCODE -ne 0) { throw "psql failed for database $database" }
     return $result
 }
 
 function Start-Database {
     Invoke-Docker ($compose + @('up', '-d', '--wait', $service))
+    Set-ContainerPgpass @{ phoenix_bootstrap = $bootstrapPassword }
+}
+
+function Set-ContainerPgpass([hashtable]$entries) {
+    $lines = foreach ($entry in $entries.GetEnumerator()) { "*:*:*:$($entry.Key):$($entry.Value)" }
+    $content = ($lines -join "`n") + "`n"
+    $content | & docker @compose exec -T $service sh -c "umask 077; cat > '$containerPgpass'; chmod 600 '$containerPgpass'"
+    if ($LASTEXITCODE -ne 0) { throw 'Failed to install the container-local pgpass file.' }
 }
 
 function New-LocalSecret {
@@ -63,13 +74,16 @@ function Provision-LocalRoles {
     if (-not (Select-String -LiteralPath $localRolesFile -Pattern '^PHOENIX_LOCAL_BINDER_PASSWORD=[0-9a-f]{64}$' -Quiet)) {
         [IO.File]::AppendAllText($localRolesFile, "PHOENIX_LOCAL_BINDER_PASSWORD=$(New-LocalSecret)`n")
     }
+    if (-not (Select-String -LiteralPath $localRolesFile -Pattern '^PHOENIX_LOCAL_BACKUP_PASSWORD=[0-9a-f]{64}$' -Quiet)) {
+        [IO.File]::AppendAllText($localRolesFile, "PHOENIX_LOCAL_BACKUP_PASSWORD=$(New-LocalSecret)`n")
+    }
     $secrets = @{}
     foreach ($line in [IO.File]::ReadAllLines($localRolesFile)) {
-        if ($line -match '^(PHOENIX_LOCAL_(?:MIGRATOR|APP|READER|BINDER)_PASSWORD)=([0-9a-f]{64})$') {
+        if ($line -match '^(PHOENIX_LOCAL_(?:MIGRATOR|APP|READER|BINDER|BACKUP)_PASSWORD)=([0-9a-f]{64})$') {
             $secrets[$Matches[1]] = $Matches[2]
         }
     }
-    foreach ($key in @('PHOENIX_LOCAL_MIGRATOR_PASSWORD', 'PHOENIX_LOCAL_APP_PASSWORD', 'PHOENIX_LOCAL_READER_PASSWORD', 'PHOENIX_LOCAL_BINDER_PASSWORD')) {
+    foreach ($key in @('PHOENIX_LOCAL_MIGRATOR_PASSWORD', 'PHOENIX_LOCAL_APP_PASSWORD', 'PHOENIX_LOCAL_READER_PASSWORD', 'PHOENIX_LOCAL_BINDER_PASSWORD', 'PHOENIX_LOCAL_BACKUP_PASSWORD')) {
         if (-not $secrets.ContainsKey($key)) { throw "Missing or invalid local-only secret: $key" }
     }
     $sql = @'
@@ -95,15 +109,22 @@ BEGIN
   ELSE
     ALTER ROLE phoenix_canonical_context_binder_local LOGIN INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE PASSWORD '__BINDER__';
   END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'phoenix_canonical_backup_local') THEN
+    CREATE ROLE phoenix_canonical_backup_local LOGIN INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE BYPASSRLS PASSWORD '__BACKUP__';
+  ELSE
+    ALTER ROLE phoenix_canonical_backup_local LOGIN INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE BYPASSRLS PASSWORD '__BACKUP__';
+  END IF;
 END
 $roles$;
 GRANT phoenix_canonical_migrator TO phoenix_canonical_migrator_local WITH INHERIT TRUE, SET FALSE;
 GRANT phoenix_canonical_app TO phoenix_canonical_app_local WITH INHERIT TRUE, SET FALSE;
 GRANT phoenix_canonical_reader TO phoenix_canonical_reader_local WITH INHERIT TRUE, SET FALSE;
 GRANT phoenix_canonical_context_binder TO phoenix_canonical_context_binder_local WITH INHERIT TRUE, SET FALSE;
+GRANT phoenix_canonical_backup_runtime TO phoenix_canonical_backup_local WITH INHERIT TRUE, SET FALSE;
 '@
-    $sql = $sql.Replace('__MIGRATOR__', $secrets['PHOENIX_LOCAL_MIGRATOR_PASSWORD']).Replace('__APP__', $secrets['PHOENIX_LOCAL_APP_PASSWORD']).Replace('__READER__', $secrets['PHOENIX_LOCAL_READER_PASSWORD']).Replace('__BINDER__', $secrets['PHOENIX_LOCAL_BINDER_PASSWORD'])
+    $sql = $sql.Replace('__MIGRATOR__', $secrets['PHOENIX_LOCAL_MIGRATOR_PASSWORD']).Replace('__APP__', $secrets['PHOENIX_LOCAL_APP_PASSWORD']).Replace('__READER__', $secrets['PHOENIX_LOCAL_READER_PASSWORD']).Replace('__BINDER__', $secrets['PHOENIX_LOCAL_BINDER_PASSWORD']).Replace('__BACKUP__', $secrets['PHOENIX_LOCAL_BACKUP_PASSWORD'])
     Invoke-Psql $devDb $sql | Out-Null
+    Set-ContainerPgpass @{ phoenix_bootstrap = $bootstrapPassword; phoenix_canonical_migrator_local = $secrets['PHOENIX_LOCAL_MIGRATOR_PASSWORD']; phoenix_canonical_app_local = $secrets['PHOENIX_LOCAL_APP_PASSWORD']; phoenix_canonical_reader_local = $secrets['PHOENIX_LOCAL_READER_PASSWORD']; phoenix_canonical_context_binder_local = $secrets['PHOENIX_LOCAL_BINDER_PASSWORD']; phoenix_canonical_backup_local = $secrets['PHOENIX_LOCAL_BACKUP_PASSWORD'] }
     $checks = @(
         @{ Name = 'phoenix_canonical_migrator_local'; Password = $secrets['PHOENIX_LOCAL_MIGRATOR_PASSWORD']; Sql = "SELECT has_schema_privilege(current_user,'core','CREATE') AND has_schema_privilege(current_user,'education','CREATE') AND has_schema_privilege(current_user,'identity','CREATE') AND has_table_privilege(current_user,'canonical_migrations.applied','INSERT') AND NOT (SELECT rolsuper FROM pg_roles WHERE rolname = current_user);" }
         @{ Name = 'phoenix_canonical_app_local'; Password = $secrets['PHOENIX_LOCAL_APP_PASSWORD']; Sql = "SELECT has_schema_privilege(current_user,'education','USAGE') AND has_schema_privilege(current_user,'identity','USAGE') AND NOT has_schema_privilege(current_user,'education','CREATE') AND NOT has_schema_privilege(current_user,'canonical_migrations','USAGE') AND NOT (SELECT rolsuper FROM pg_roles WHERE rolname = current_user);" }
@@ -111,7 +132,7 @@ GRANT phoenix_canonical_context_binder TO phoenix_canonical_context_binder_local
         @{ Name = 'phoenix_canonical_context_binder_local'; Password = $secrets['PHOENIX_LOCAL_BINDER_PASSWORD']; Sql = "SELECT has_function_privilege(current_user,'auth.bind_context(uuid,uuid,uuid,text,timestamptz,uuid)','EXECUTE') AND NOT has_table_privilege(current_user,'auth.session_contexts','SELECT') AND NOT has_schema_privilege(current_user,'core','USAGE') AND NOT (SELECT rolsuper FROM pg_roles WHERE rolname = current_user);" }
     )
     foreach ($check in $checks) {
-        $result = & docker @compose exec -T -e "PGPASSWORD=$($check.Password)" $service psql -X -h 127.0.0.1 -U $check.Name -d $devDb -v ON_ERROR_STOP=1 -At -c $check.Sql
+        $result = & docker @compose exec -T -e "PGPASSFILE=$containerPgpass" $service psql -X -h 127.0.0.1 -U $check.Name -d $devDb -v ON_ERROR_STOP=1 -At -c $check.Sql
         if ($LASTEXITCODE -ne 0 -or (@($result) -join '').Trim() -ne 't') { throw "Local login or privilege test failed: $($check.Name)" }
     }
     Write-Output "PASS local-only login and least-privilege checks on PostgreSQL $Version"
@@ -196,10 +217,10 @@ function Test-MigrationChecksumDrift([string]$database) {
     Write-Output "PASS PostgreSQL $Version applied-migration checksum drift refusal"
 }
 
-function New-CanonicalBackup {
+function New-CanonicalBackup([string]$sourceDatabase = $devDb) {
     Start-Database
-    Assert-MigrationsApplied $devDb
-    $domainTables = Invoke-Psql $devDb "SELECT format('%I.%I', n.nspname, c.relname) FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE c.relkind IN ('r','p') AND n.nspname IN ('auth','core','consent','audit','integration','docs','casework','education','identity') ORDER BY 1;"
+    Assert-MigrationsApplied $sourceDatabase
+    $domainTables = Invoke-Psql $sourceDatabase "SELECT format('%I.%I', n.nspname, c.relname) FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE c.relkind IN ('r','p') AND n.nspname IN ('auth','core','consent','audit','integration','docs','casework','education','identity') ORDER BY 1;"
     $domainRows = 0L
     foreach ($table in @($domainTables)) {
         if (-not $table) { continue }
@@ -211,36 +232,38 @@ function New-CanonicalBackup {
     New-Item -ItemType Directory -Force -Path $backupDir | Out-Null
     $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
     $runId = [guid]::NewGuid().ToString('N')
-    $destination = Join-Path $backupDir "phoenix_canonical_dev_pg${Version}_${stamp}_${runId}.dump"
+    $destination = Join-Path $backupDir "${sourceDatabase}_pg${Version}_${stamp}_${runId}.dump"
     $containerBackup = "/tmp/phoenix_canonical_backup_${runId}.dump"
     if (Test-Path -LiteralPath $destination) { throw 'Refusing to overwrite an existing backup.' }
-    Invoke-Docker ($compose + @('exec', '-T', $service, 'pg_dump', '-U', 'phoenix_bootstrap', '-d', $devDb, '-Fc', '-f', $containerBackup))
+    Invoke-Docker ($compose + @('exec', '-T', '-e', "PGPASSFILE=$containerPgpass", $service, 'pg_dump', '-h', '127.0.0.1', '-U', 'phoenix_canonical_backup_local', '-d', $sourceDatabase, '-Fc', '-f', $containerBackup))
     $containerId = (& docker @compose ps -q $service).Trim()
     if ($LASTEXITCODE -ne 0 -or -not $containerId) { throw 'Could not identify test container for backup copy.' }
     try { Invoke-Docker @('cp', "${containerId}:$containerBackup", $destination) }
     finally { & docker @compose exec -T $service rm -f $containerBackup | Out-Null }
     $digest = (Get-FileHash -LiteralPath $destination -Algorithm SHA256).Hash.ToLowerInvariant()
     $migrationCount = (Get-ChildItem -LiteralPath (Join-Path $root 'migrations/canonical') -Filter '*.sql' -File).Count
-    $manifest = [ordered]@{ purpose = 'phoenix-canonical-local-synthetic'; database = $devDb; pg_major = $Version; dump_sha256 = $digest; domain_rows = 0; migration_count = $migrationCount }
+    $manifest = [ordered]@{ purpose = 'phoenix-canonical-local-synthetic'; database = $sourceDatabase; pg_major = $Version; dump_sha256 = $digest; domain_rows = 0; migration_count = $migrationCount }
     [IO.File]::WriteAllText("$destination.manifest.json", ($manifest | ConvertTo-Json -Compress))
     return $destination
 }
 
-function Restore-CanonicalBackup([string]$path) {
+function Restore-CanonicalBackup([string]$path, [string]$sourceDatabase = $devDb) {
     $resolvedBackup = (Resolve-Path -LiteralPath $path).Path
     $backupDir = (Resolve-Path -LiteralPath (Join-Path $root 'backups')).Path
     if (-not $resolvedBackup.StartsWith("$backupDir$([IO.Path]::DirectorySeparatorChar)", [StringComparison]::OrdinalIgnoreCase)) {
         throw 'Restore source must be inside this isolated project backup directory.'
     }
-    if ([IO.Path]::GetFileName($resolvedBackup) -notmatch "^phoenix_canonical_dev_pg${Version}_[0-9]{8}-[0-9]{6}_[0-9a-f]{32}\.dump$") {
+    $backupPrefix = [regex]::Escape($sourceDatabase)
+    if ([IO.Path]::GetFileName($resolvedBackup) -notmatch "^${backupPrefix}_pg${Version}_[0-9]{8}-[0-9]{6}_[0-9a-f]{32}\.dump$") {
         throw 'Restore source does not match a versioned local synthetic backup name.'
     }
     $manifestPath = "$resolvedBackup.manifest.json"
     if (-not (Test-Path -LiteralPath $manifestPath)) { throw 'Backup provenance manifest is missing.' }
     $manifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
     $digest = (Get-FileHash -LiteralPath $resolvedBackup -Algorithm SHA256).Hash.ToLowerInvariant()
-    if ($manifest.purpose -ne 'phoenix-canonical-local-synthetic' -or $manifest.database -ne $devDb -or
-        $manifest.pg_major -ne $Version -or $manifest.domain_rows -ne 0 -or $manifest.migration_count -ne 6 -or $manifest.dump_sha256 -ne $digest) {
+    $currentMigrationCount = (Get-ChildItem -LiteralPath (Join-Path $root 'migrations/canonical') -Filter '*.sql' -File).Count
+    if ($manifest.purpose -ne 'phoenix-canonical-local-synthetic' -or $manifest.database -ne $sourceDatabase -or
+        $manifest.pg_major -ne $Version -or $manifest.domain_rows -ne 0 -or $manifest.migration_count -ne $currentMigrationCount -or $manifest.dump_sha256 -ne $digest) {
         throw 'Backup provenance or digest check failed.'
     }
     Start-Database
@@ -251,14 +274,17 @@ function Restore-CanonicalBackup([string]$path) {
     try {
         Invoke-Docker ($compose + @('exec', '-T', $service, 'pg_restore', '-l', $containerRestore)) | Out-Null
         Reset-TestDatabase $restoreDb
-        Invoke-Docker ($compose + @('exec', '-T', $service, 'pg_restore', '-U', 'phoenix_bootstrap', '-d', $restoreDb, '--no-owner', '--exit-on-error', $containerRestore))
+        Invoke-Docker ($compose + @('exec', '-T', '-e', "PGPASSFILE=$containerPgpass", $service, 'pg_restore', '-h', '127.0.0.1', '-U', 'phoenix_bootstrap', '-d', $restoreDb, '--no-owner', '--exit-on-error', $containerRestore))
     } finally { & docker @compose exec -T $service rm -f $containerRestore | Out-Null }
     $sql = [IO.File]::ReadAllText((Join-Path $root 'tests/foundation.sql'))
     Invoke-Psql $restoreDb $sql | Out-Null
 }
 
 function Test-BackupTamperRefusal {
-    $source = New-CanonicalBackup
+    Start-Database
+    Reset-TestDatabase $testDb
+    Migrate $testDb
+    $source = New-CanonicalBackup $testDb
     Start-Database
     Reset-TestDatabase $restoreDb
     Invoke-Psql $restoreDb "CREATE TABLE public.synthetic_restore_guard(marker text PRIMARY KEY); INSERT INTO public.synthetic_restore_guard VALUES ('preserve-before-refusal');" | Out-Null
@@ -266,7 +292,7 @@ function Test-BackupTamperRefusal {
     try {
         $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
         foreach ($kind in @('dump', 'manifest')) {
-            $candidate = Join-Path (Split-Path -Parent $source) "phoenix_canonical_dev_pg${Version}_${stamp}_$([guid]::NewGuid().ToString('N')).dump"
+            $candidate = Join-Path (Split-Path -Parent $source) "${testDb}_pg${Version}_${stamp}_$([guid]::NewGuid().ToString('N')).dump"
             Copy-Item -LiteralPath $source -Destination $candidate
             Copy-Item -LiteralPath "$source.manifest.json" -Destination "$candidate.manifest.json"
             $created.Add($candidate); $created.Add("$candidate.manifest.json")
@@ -279,7 +305,7 @@ function Test-BackupTamperRefusal {
                 [IO.File]::WriteAllText("$candidate.manifest.json", ($badManifest | ConvertTo-Json -Compress))
             }
             $blocked = $false
-            try { Restore-CanonicalBackup $candidate }
+            try { Restore-CanonicalBackup $candidate $testDb }
             catch {
                 if ($_.Exception.Message -notmatch '^Backup provenance or digest check failed\.$') { throw }
                 $blocked = $true
@@ -290,7 +316,9 @@ function Test-BackupTamperRefusal {
         }
     } finally {
         foreach ($path in $created) { Remove-Item -LiteralPath $path -Force -ErrorAction SilentlyContinue }
+        Remove-Item -LiteralPath $source,"${source}.manifest.json" -Force -ErrorAction SilentlyContinue
     }
+    Reset-TestDatabase $restoreDb
     Write-Output "PASS PostgreSQL $Version backup digest/provenance tamper refusal with restore database preserved"
 }
 
@@ -345,9 +373,11 @@ switch ($Action) {
     }
     'audit-migration' {
         Start-Database
-        Migrate $devDb
-        Test-MigrationAtomicity $devDb
-        Test-MigrationChecksumDrift $devDb
+        Reset-TestDatabase $testDb
+        Migrate $testDb
+        Migrate $testDb
+        Test-MigrationAtomicity $testDb
+        Test-MigrationChecksumDrift $testDb
     }
     'backup' {
         $destination = New-CanonicalBackup

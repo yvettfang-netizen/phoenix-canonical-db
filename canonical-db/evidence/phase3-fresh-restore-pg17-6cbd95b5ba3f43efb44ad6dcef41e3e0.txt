@@ -1,0 +1,55 @@
+**********************
+PowerShell transcript start
+Start time: 20261015112510
+Username: PHOENIX\phoen
+RunAs User: PHOENIX\phoen
+Configuration Name: 
+Machine: PHOENIX (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Users\phoen\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.dll -NoLogo -NoProfile -File .\canonical-db\tests\phase3_fresh_cluster_restore.ps1 -Version 17
+Process ID: 21600
+PSVersion: 7.6.5
+PSEdition: Core
+GitCommitId: 7.6.5
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.4
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+RESET phoenix_canonical_test_17
+APPLIED phoenix_canonical_test_17 0001_foundation.sql
+APPLIED phoenix_canonical_test_17 0002_education_identity_skeleton.sql
+APPLIED phoenix_canonical_test_17 0003_core_consent_access.sql
+APPLIED phoenix_canonical_test_17 0004_casework_education_identity.sql
+APPLIED phoenix_canonical_test_17 0005_documents_submissions.sql
+APPLIED phoenix_canonical_test_17 0006_access_decision_api.sql
+APPLIED phoenix_canonical_test_17 0007_security_boundary_fixes.sql
+SKIP phoenix_canonical_test_17 0001_foundation.sql checksum verified
+SKIP phoenix_canonical_test_17 0002_education_identity_skeleton.sql checksum verified
+SKIP phoenix_canonical_test_17 0003_core_consent_access.sql checksum verified
+SKIP phoenix_canonical_test_17 0004_casework_education_identity.sql checksum verified
+SKIP phoenix_canonical_test_17 0005_documents_submissions.sql checksum verified
+SKIP phoenix_canonical_test_17 0006_access_decision_api.sql checksum verified
+SKIP phoenix_canonical_test_17 0007_security_boundary_fixes.sql checksum verified
+PASS PostgreSQL 17 foundation, repeat migration, and all synthetic probes
+BACKUP_ROLE_EXPORT digest=ec0309b66637bab631c309445c98113d83fa1ec738dbd2a8b19bc5635bfbebc7
+038d2ad6970d4c76a9450bebc2300ad60208d9f4f3ea446a50db0ef735d0c217
+FRESH_CONTAINER_NAME=phoenix-canonical-fresh-restore-17-25653e57
+PS>TerminatingError(): "fresh psql failed"
+ledger=7
+tables=25
+policies=20
+roles=10
+PASS fresh-cluster foundation.sql
+PASS fresh-cluster rls_probe.sql
+PASS fresh-cluster docs_probe.sql
+PASS fresh-cluster contract_neutral_probe.sql
+PASS fresh-cluster trusted_context_probe.sql
+PASS fresh-cluster phase3_acceptance.sql
+PASS PostgreSQL 17 fresh-cluster restore using backup role export
+phoenix-canonical-fresh-restore-17-25653e57
+**********************
+PowerShell transcript end
+End time: 20261015112533
+**********************

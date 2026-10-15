@@ -1,0 +1,11 @@
+d44bea3f634bb09bb88b3741fdf3b307512e40c23b25a14537c57595f2560c9e
+PASS local socket without pgpass rejected
+local|scram-sha-256
+host|scram-sha-256
+host|scram-sha-256
+local|scram-sha-256
+host|scram-sha-256
+host|scram-sha-256
+host|scram-sha-256
+PASS PostgreSQL 17 local socket and host authentication require SCRAM/pgpass
+phoenix-canonical-hba-17-2cde088e

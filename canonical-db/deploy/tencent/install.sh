@@ -9,7 +9,7 @@ set -a
 set +a
 
 test "${PHOENIX_DB_NAME:-}" = "phoenix_canonical_dev" || { echo "unexpected database name" >&2; exit 1; }
-for name in PHOENIX_DB_BOOTSTRAP_PASSWORD PHOENIX_DB_MIGRATOR_PASSWORD PHOENIX_DB_APP_PASSWORD PHOENIX_DB_READER_PASSWORD PHOENIX_DB_BINDER_PASSWORD; do
+for name in PHOENIX_DB_BOOTSTRAP_PASSWORD PHOENIX_DB_MIGRATOR_PASSWORD PHOENIX_DB_APP_PASSWORD PHOENIX_DB_READER_PASSWORD PHOENIX_DB_BINDER_PASSWORD PHOENIX_DB_BACKUP_PASSWORD; do
   value="${!name:-}"
   [[ "$value" =~ ^[0-9a-f]{64}$ ]] || { echo "invalid or missing $name" >&2; exit 1; }
 done
@@ -20,9 +20,17 @@ chmod 700 backups
 
 docker compose --env-file .env up -d --wait postgres
 
+bootstrap_pgpass="/tmp/phoenix-bootstrap.pgpass"
+runtime_pgpass="/tmp/phoenix-runtime.pgpass"
+printf '%s\n' "*:*:*:phoenix_bootstrap:$PHOENIX_DB_BOOTSTRAP_PASSWORD" |
+  docker compose --env-file .env exec -T postgres sh -c "umask 077; cat > '$bootstrap_pgpass'; chmod 600 '$bootstrap_pgpass'"
+cleanup_pgpass() {
+  docker compose --env-file .env exec -T postgres sh -c "rm -f '$bootstrap_pgpass' '$runtime_pgpass'" >/dev/null 2>&1 || true
+}
+trap cleanup_pgpass EXIT
+
 psql_exec() {
-  docker compose --env-file .env exec -T postgres \
-    env PGPASSWORD="$PHOENIX_DB_BOOTSTRAP_PASSWORD" \
+  docker compose --env-file .env exec -T -e "PGPASSFILE=$bootstrap_pgpass" postgres \
     psql -X -h 127.0.0.1 -U phoenix_bootstrap -d "$PHOENIX_DB_NAME" -v ON_ERROR_STOP=1 "$@"
 }
 
@@ -44,6 +52,8 @@ for migration in ../../migrations/canonical/*.sql; do
   first="$(awk 'NF { print; exit }' "$migration")"
   last="$(awk 'NF { line=$0 } END { print line }' "$migration")"
   [ "$first" = "BEGIN;" ] && [ "$last" = "COMMIT;" ] || { echo "migration wrapper invalid: $name" >&2; exit 1; }
+  nested="$(sed '1{/^[[:space:]]*BEGIN;[[:space:]]*$/d;}; ${/^[[:space:]]*COMMIT;[[:space:]]*$/d;}' "$migration" | grep -E '^[[:space:]]*(BEGIN|COMMIT|ROLLBACK)[[:space:]]*;' || true)"
+  [ -z "$nested" ] || { echo "nested transaction command in migration: $name" >&2; exit 1; }
   atomic="$(mktemp)"
   {
     echo "BEGIN;"
@@ -84,12 +94,19 @@ BEGIN
   ELSE
     ALTER ROLE phoenix_canonical_binder_runtime PASSWORD '$PHOENIX_DB_BINDER_PASSWORD';
   END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='phoenix_canonical_backup_runtime') THEN
+    CREATE ROLE phoenix_canonical_backup_runtime LOGIN INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE BYPASSRLS PASSWORD '$PHOENIX_DB_BACKUP_PASSWORD';
+  ELSE
+    ALTER ROLE phoenix_canonical_backup_runtime LOGIN INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE BYPASSRLS PASSWORD '$PHOENIX_DB_BACKUP_PASSWORD';
+  END IF;
 END
 \$roles\$;
 GRANT phoenix_canonical_migrator TO phoenix_canonical_migrator_runtime WITH INHERIT TRUE, SET FALSE;
 GRANT phoenix_canonical_app TO phoenix_canonical_app_runtime WITH INHERIT TRUE, SET FALSE;
 GRANT phoenix_canonical_reader TO phoenix_canonical_reader_runtime WITH INHERIT TRUE, SET FALSE;
 GRANT phoenix_canonical_context_binder TO phoenix_canonical_binder_runtime WITH INHERIT TRUE, SET FALSE;
+GRANT pg_read_all_data TO phoenix_canonical_backup_runtime WITH INHERIT TRUE, SET FALSE;
+GRANT CONNECT ON DATABASE "$PHOENIX_DB_NAME" TO phoenix_canonical_backup_runtime;
 SQL
 psql_exec -f - < "$sql"
 rm -f "$sql"

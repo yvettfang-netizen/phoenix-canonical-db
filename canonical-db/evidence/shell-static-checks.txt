@@ -1,0 +1,26 @@
+PASS bash syntax for install/health/backup/restore
+canonical-db/deploy/tencent/backup.sh:14:printf '%s\n' "*:*:*:phoenix_canonical_backup_runtime:$PHOENIX_DB_BACKUP_PASSWORD" |
+canonical-db/deploy/tencent/backup.sh:18:docker compose --env-file .env exec -T -e "PGPASSFILE=$runtime_pgpass" postgres \
+canonical-db/deploy/tencent/backup.sh:19:  pg_dump -h 127.0.0.1 -U phoenix_canonical_backup_runtime -d "$PHOENIX_DB_NAME" -Fc > "$dump"
+canonical-db/deploy/tencent/health.sh:9:printf '%s\n' "*:*:*:phoenix_canonical_reader_runtime:$PHOENIX_DB_READER_PASSWORD" |
+canonical-db/deploy/tencent/health.sh:13:docker compose --env-file .env exec -T -e "PGPASSFILE=$runtime_pgpass" postgres pg_isready -h 127.0.0.1 -U phoenix_canonical_reader_runtime -d "$PHOENIX_DB_NAME"
+canonical-db/deploy/tencent/health.sh:14:docker compose --env-file .env exec -T -e "PGPASSFILE=$runtime_pgpass" postgres \
+canonical-db/deploy/tencent/health.sh:15:  psql -X -h 127.0.0.1 -U phoenix_canonical_reader_runtime -d "$PHOENIX_DB_NAME" -v ON_ERROR_STOP=1 -Atqc \
+canonical-db/deploy/tencent/install.sh:33:  docker compose --env-file .env exec -T -e "PGPASSFILE=$bootstrap_pgpass" postgres \
+canonical-db/deploy/tencent/install.sh:54:  [ "$first" = "BEGIN;" ] && [ "$last" = "COMMIT;" ] || { echo "migration wrapper invalid: $name" >&2; exit 1; }
+canonical-db/deploy/tencent/install.sh:55:  nested="$(sed '1{/^[[:space:]]*BEGIN;[[:space:]]*$/d;}; ${/^[[:space:]]*COMMIT;[[:space:]]*$/d;}' "$migration" | grep -E '^[[:space:]]*(BEGIN|COMMIT|ROLLBACK)[[:space:]]*;' || true)"
+canonical-db/deploy/tencent/install.sh:56:  [ -z "$nested" ] || { echo "nested transaction command in migration: $name" >&2; exit 1; }
+canonical-db/deploy/tencent/install.sh:59:    echo "BEGIN;"
+canonical-db/deploy/tencent/install.sh:62:      echo "DO \$guard\$ BEGIN IF EXISTS (SELECT 1 FROM canonical_migrations.applied WHERE migration_name='$name') THEN RAISE EXCEPTION 'migration registered while waiting for lock: $name'; END IF; END \$guard\$;"
+canonical-db/deploy/tencent/install.sh:64:    sed '1{/^[[:space:]]*BEGIN;[[:space:]]*$/d;}; ${/^[[:space:]]*COMMIT;[[:space:]]*$/d;}' "$migration"
+canonical-db/deploy/tencent/install.sh:66:    echo "COMMIT;"
+canonical-db/deploy/tencent/install.sh:76:BEGIN
+canonical-db/deploy/tencent/install.sh:87:  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='phoenix_canonical_reader_runtime') THEN
+canonical-db/deploy/tencent/install.sh:88:    CREATE ROLE phoenix_canonical_reader_runtime LOGIN INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE PASSWORD '$PHOENIX_DB_READER_PASSWORD';
+canonical-db/deploy/tencent/install.sh:90:    ALTER ROLE phoenix_canonical_reader_runtime PASSWORD '$PHOENIX_DB_READER_PASSWORD';
+canonical-db/deploy/tencent/install.sh:97:  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='phoenix_canonical_backup_runtime') THEN
+canonical-db/deploy/tencent/install.sh:98:    CREATE ROLE phoenix_canonical_backup_runtime LOGIN INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE BYPASSRLS PASSWORD '$PHOENIX_DB_BACKUP_PASSWORD';
+canonical-db/deploy/tencent/install.sh:100:    ALTER ROLE phoenix_canonical_backup_runtime LOGIN INHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE BYPASSRLS PASSWORD '$PHOENIX_DB_BACKUP_PASSWORD';
+canonical-db/deploy/tencent/install.sh:106:GRANT phoenix_canonical_reader TO phoenix_canonical_reader_runtime WITH INHERIT TRUE, SET FALSE;
+canonical-db/deploy/tencent/install.sh:108:GRANT pg_read_all_data TO phoenix_canonical_backup_runtime WITH INHERIT TRUE, SET FALSE;
+canonical-db/deploy/tencent/install.sh:109:GRANT CONNECT ON DATABASE "$PHOENIX_DB_NAME" TO phoenix_canonical_backup_runtime;

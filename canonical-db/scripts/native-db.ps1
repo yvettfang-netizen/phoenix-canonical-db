@@ -14,6 +14,7 @@ $bin = (Resolve-Path -LiteralPath $BinPath).Path
 $runtime = Join-Path $root "runtime/native_$Version"
 $data = Join-Path $runtime 'data'
 $passwordFile = Join-Path $runtime 'bootstrap-password.txt'
+$pgpassFile = Join-Path $runtime 'bootstrap.pgpass'
 $port = if ($Version -eq '16') { 55416 } else { 55417 }
 $devDb = 'phoenix_canonical_dev'
 $testDb = "phoenix_canonical_test_$Version"
@@ -28,7 +29,9 @@ if (-not (Test-Path -LiteralPath $passwordFile)) {
     try { $rng.GetBytes($bytes) } finally { $rng.Dispose() }
     [IO.File]::WriteAllText($passwordFile, ([BitConverter]::ToString($bytes)).Replace('-', '').ToLowerInvariant() + "`n")
 }
-$env:PGPASSWORD = [IO.File]::ReadAllText($passwordFile).Trim()
+$bootstrapPassword = [IO.File]::ReadAllText($passwordFile).Trim()
+[IO.File]::WriteAllText($pgpassFile, "*:*:*:phoenix_bootstrap:$bootstrapPassword`n")
+$env:PGPASSFILE = $pgpassFile
 
 function Invoke-Pg([string]$tool, [string[]]$arguments) {
     & (Join-Path $bin "$tool.exe") @arguments
@@ -131,5 +134,5 @@ try {
         }
     }
 } finally {
-    Remove-Item Env:PGPASSWORD -ErrorAction SilentlyContinue
+    Remove-Item Env:PGPASSFILE -ErrorAction SilentlyContinue
 }

@@ -1,0 +1,23 @@
+ Container phoenix-canonical-foundation-pg16-1 Running 
+ Container phoenix-canonical-foundation-pg16-1 Waiting 
+ Container phoenix-canonical-foundation-pg16-1 Healthy 
+RESET phoenix_canonical_test_16
+APPLIED phoenix_canonical_test_16 0001_foundation.sql
+APPLIED phoenix_canonical_test_16 0002_education_identity_skeleton.sql
+APPLIED phoenix_canonical_test_16 0003_core_consent_access.sql
+APPLIED phoenix_canonical_test_16 0004_casework_education_identity.sql
+APPLIED phoenix_canonical_test_16 0005_documents_submissions.sql
+APPLIED phoenix_canonical_test_16 0006_access_decision_api.sql
+psql:<stdin>:11: NOTICE:  role "phoenix_canonical_backup_runtime" has already been granted membership in role "pg_read_all_data" by role "phoenix_bootstrap"
+psql:<stdin>:388: NOTICE:  trigger "protect_advisor_assignment" for relation "casework.advisor_assignments" does not exist, skipping
+psql:<stdin>:407: NOTICE:  trigger "protect_guardian_authority" for relation "core.guardian_authorities" does not exist, skipping
+psql:<stdin>:442: NOTICE:  trigger "validate_submission_target" for relation "docs.submission_manifests" does not exist, skipping
+APPLIED phoenix_canonical_test_16 0007_security_boundary_fixes.sql
+SKIP phoenix_canonical_test_16 0001_foundation.sql checksum verified
+SKIP phoenix_canonical_test_16 0002_education_identity_skeleton.sql checksum verified
+SKIP phoenix_canonical_test_16 0003_core_consent_access.sql checksum verified
+SKIP phoenix_canonical_test_16 0004_casework_education_identity.sql checksum verified
+SKIP phoenix_canonical_test_16 0005_documents_submissions.sql checksum verified
+SKIP phoenix_canonical_test_16 0006_access_decision_api.sql checksum verified
+SKIP phoenix_canonical_test_16 0007_security_boundary_fixes.sql checksum verified
+PASS PostgreSQL 16 foundation, repeat migration, and all synthetic probes

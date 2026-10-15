@@ -1,0 +1,121 @@
+**********************
+PowerShell transcript start
+Start time: 20261015111841
+Username: PHOENIX\phoen
+RunAs User: PHOENIX\phoen
+Configuration Name: 
+Machine: PHOENIX (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Users\phoen\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.dll -NoLogo -NoProfile -File .\canonical-db\tests\phase3_fresh_cluster_restore.ps1 -Version 16
+Process ID: 22548
+PSVersion: 7.6.5
+PSEdition: Core
+GitCommitId: 7.6.5
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.4
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+RESET phoenix_canonical_test_16
+APPLIED phoenix_canonical_test_16 0001_foundation.sql
+APPLIED phoenix_canonical_test_16 0002_education_identity_skeleton.sql
+APPLIED phoenix_canonical_test_16 0003_core_consent_access.sql
+APPLIED phoenix_canonical_test_16 0004_casework_education_identity.sql
+APPLIED phoenix_canonical_test_16 0005_documents_submissions.sql
+APPLIED phoenix_canonical_test_16 0006_access_decision_api.sql
+APPLIED phoenix_canonical_test_16 0007_security_boundary_fixes.sql
+SKIP phoenix_canonical_test_16 0001_foundation.sql checksum verified
+SKIP phoenix_canonical_test_16 0002_education_identity_skeleton.sql checksum verified
+SKIP phoenix_canonical_test_16 0003_core_consent_access.sql checksum verified
+SKIP phoenix_canonical_test_16 0004_casework_education_identity.sql checksum verified
+SKIP phoenix_canonical_test_16 0005_documents_submissions.sql checksum verified
+SKIP phoenix_canonical_test_16 0006_access_decision_api.sql checksum verified
+SKIP phoenix_canonical_test_16 0007_security_boundary_fixes.sql checksum verified
+PASS PostgreSQL 16 foundation, repeat migration, and all synthetic probes
+BACKUP_ROLE_EXPORT digest=5b4c59cc6238bdc1364e597911c1bd7902c863af989a22816ead0d3df4926549
+3b247320dc95377905758aacf1133b62b0a05bd286b332e99740c59152791cbc
+FRESH_CONTAINER_NAME=phoenix-canonical-fresh-restore-16-246b5208
+PS>TerminatingError(): "fresh psql failed"
+PS>TerminatingError(): "fresh psql failed"
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "digest": "sha256:75adc2a65806c96bc0e59030230bfe3f1c1b0d6d8f8181a8913e2b8b53bdc166",
+            "size": 3628,
+            "annotations": {
+                "com.docker.official-images.bashbrew.arch": "amd64",
+                "org.opencontainers.image.base.digest": "sha256:918311b7b6c4c6f68b232ba516584925f6c78ad82b6fd534b98979df6438e483",
+                "org.opencontainers.image.base.name": "debian:trixie-slim",
+                "org.opencontainers.image.created": "2026-10-06T01:33:02Z",
+                "org.opencontainers.image.revision": "9d15534160ade17f2b6c455a39ee967c49b1937d",
+                "org.opencontainers.image.source": "https://github.com/docker-library/postgres.git#9d15534160ade17f2b6c455a39ee967c49b1937d:16/trixie",
+                "org.opencontainers.image.url": "https://hub.docker.com/_/postgres",
+                "org.opencontainers.image.version": "16.15"
+            },
+            "platform": {
+                "architecture": "amd64",
+                "os": "linux"
+            }
+        }
+    }
+]
+The files belonging to this database system will be owned by user "postgres".
+This user must also own the server process.
+
+The database cluster will be initialized with locale "C.UTF-8".
+The default text search configuration will be set to "english".
+
+Data page checksums are disabled.
+
+fixing permissions on existing directory /var/lib/postgresql/data ... ok
+creating subdirectories ... ok
+selecting dynamic shared memory implementation ... posix
+selecting default max_connections ... 100
+selecting default shared_buffers ... 128MB
+selecting default time zone ... Etc/UTC
+creating configuration files ... ok
+running bootstrap script ... ok
+performing post-bootstrap initialization ... ok
+syncing data to disk ... ok
+
+Success. You can now start the database server using:
+
+    pg_ctl -D /var/lib/postgresql/data -l logfile start
+
+waiting for server to start....2026-10-15 03:19:01.700 UTC [54] LOG:  starting PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+2026-10-15 03:19:01.702 UTC [54] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2026-10-15 03:19:01.706 UTC [57] LOG:  database system was shut down at 2026-10-15 03:19:01 UTC
+2026-10-15 03:19:01.710 UTC [54] LOG:  database system is ready to accept connections
+ done
+server started
+CREATE DATABASE
+
+
+/usr/local/bin/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/*
+
+waiting for server to shut down....2026-10-15 03:19:01.856 UTC [54] LOG:  received fast shutdown request
+2026-10-15 03:19:01.857 UTC [54] LOG:  aborting any active transactions
+2026-10-15 03:19:01.858 UTC [54] LOG:  background worker "logical replication launcher" (PID 60) exited with exit code 1
+2026-10-15 03:19:01.859 UTC [55] LOG:  shutting down
+2026-10-15 03:19:01.860 UTC [55] LOG:  checkpoint starting: shutdown immediate
+2026-10-15 03:19:01.973 UTC [1] LOG:  starting PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+2026-10-15 03:19:01.902 UTC [55] LOG:  checkpoint complete: wrote 926 buffers (5.7%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.010 s, sync=0.029 s, total=0.043 s; sync files=301, longest=0.003 s, average=0.001 s; distance=4273 kB, estimate=4273 kB; lsn=0/191F040, redo lsn=0/191F040
+2026-10-15 03:19:01.905 UTC [54] LOG:  database system is shut down
+ done
+server stopped
+
+PostgreSQL init process complete; ready for start up.
+
+2026-10-15 03:19:01.973 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+2026-10-15 03:19:01.973 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+2026-10-15 03:19:01.976 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2026-10-15 03:19:01.979 UTC [70] LOG:  database system was shut down at 2026-10-15 03:19:01 UTC
+2026-10-15 03:19:01.982 UTC [1] LOG:  database system is ready to accept connections
+2026-10-15 03:19:02.747 UTC [87] ERROR:  syntax error at or near "$" at character 4
+2026-10-15 03:19:02.747 UTC [87] STATEMENT:  DO $
+	BEGIN
+	  CREATE ROLE phoenix_canonical_migrator NOLOGIN NOINHERIT;
+phoenix-canonical-fresh-restore-16-246b5208
+**********************
+PowerShell transcript end
+End time: 20261015111903
+**********************

@@ -1,0 +1,7 @@
+PASS local and Tencent compose config
+canonical-db/deploy/tencent/compose.yaml:3:    image: mirror.ccs.tencentyun.com/library/postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d
+canonical-db/deploy/tencent/compose.yaml:9:      POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C.UTF-8 --auth-local=scram-sha-256 --auth-host=scram-sha-256
+canonical-db/compose.yaml:4:    image: postgres:16@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d
+canonical-db/compose.yaml:9:      POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C.UTF-8 --auth-local=scram-sha-256 --auth-host=scram-sha-256
+canonical-db/compose.yaml:20:    image: postgres:17@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3
+canonical-db/compose.yaml:25:      POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C.UTF-8 --auth-local=scram-sha-256 --auth-host=scram-sha-256
