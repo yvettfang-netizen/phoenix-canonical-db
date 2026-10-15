@@ -1,0 +1,5 @@
+COMMAND: ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=8 -i <phoenix_tencent_ed25519> ubuntu@1.12.77.180 whoami/hostname/date
+ubuntu
+VM-0-15-ubuntu
+2026-10-15T04:42:08Z
+EXIT_CODE=0

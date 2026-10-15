@@ -1,0 +1,13 @@
+COMMAND: ssh -o StrictHostKeyChecking=yes -i <phoenix_tencent_ed25519> ubuntu@1.12.77.180
+REMOTE: read-only status of exact canonical container, published port, migration ledger, and business row count after failed shebang
+tencent-postgres-1|Up 21 hours (healthy)|ca0bd484cb98
+PORT_BEGIN
+PORT_END
+0001_foundation.sql|eea8d1deece72afdc3832d075fcfb42b71b4c1fe4fdccc8900104a0e0ca78a2d
+0002_education_identity_skeleton.sql|bef7d9a902e8ad34491b7455987d7791667dcb8a5ab31945cf609a6aa97e4e7f
+0003_core_consent_access.sql|7dc0c5060237fae9069915ba8a1ecc39323cf74ab8ea0d49dd832ef9d8330618
+0004_casework_education_identity.sql|aec2be38c6ad363f5594d65016b8a2dfcb79fe76e77a225271379bb991a443e9
+0005_documents_submissions.sql|7bd581d16bb8c21278bd5bc013496779fe08f509d84bf74b652e5ce3b21cdbec
+0006_access_decision_api.sql|2a3d6cd19febd62b7128c9ad4a2d7c94abdb9a4e11d499f36f4050eb2c2ed9d8
+domain_rows|0
+EXIT_CODE=0

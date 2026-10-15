@@ -1,0 +1,32 @@
+COMMAND: docker exec exact ephemeral PG16 bash /tmp/f10-init.sh (repeat)
+COMMAND: append synthetic comment only to container copy of 0009; rerun init expecting DRIFT_REFUSED; restore copy from local source
+COMMAND: psql bootstrap -f /opt/tests/9000_atomicity_probe.sql expecting failure; read-only verify no schema or ledger residue
+SKIP 0001_foundation.sql checksum verified
+SKIP 0002_education_identity_skeleton.sql checksum verified
+SKIP 0003_core_consent_access.sql checksum verified
+SKIP 0004_casework_education_identity.sql checksum verified
+SKIP 0005_documents_submissions.sql checksum verified
+SKIP 0006_access_decision_api.sql checksum verified
+SKIP 0007_security_boundary_fixes.sql checksum verified
+SKIP 0008_expiry_and_ephemeral_cleanup.sql checksum verified
+SKIP 0009_application_write_api.sql checksum verified
+ledger=9
+tables=25
+policies=20
+REPEAT_EXIT_CODE=0
+SKIP 0001_foundation.sql checksum verified
+SKIP 0002_education_identity_skeleton.sql checksum verified
+SKIP 0003_core_consent_access.sql checksum verified
+SKIP 0004_casework_education_identity.sql checksum verified
+SKIP 0005_documents_submissions.sql checksum verified
+SKIP 0006_access_decision_api.sql checksum verified
+SKIP 0007_security_boundary_fixes.sql checksum verified
+SKIP 0008_expiry_and_ephemeral_cleanup.sql checksum verified
+DRIFT_REFUSED 0009_application_write_api.sql
+DRIFT_EXIT_CODE=1
+psql:/opt/tests/9000_atomicity_probe.sql:9: ERROR:  SYNTHETIC FORCED MIGRATION FAILURE
+CONTEXT:  PL/pgSQL function inline_code_block line 3 at RAISE
+ATOMIC_PROBE_EXIT_CODE=3
+atomic_schema_exists=false
+ledger=9
+VERIFY_EXIT_CODE=0

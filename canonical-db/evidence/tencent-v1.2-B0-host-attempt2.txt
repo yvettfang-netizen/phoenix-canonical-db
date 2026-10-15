@@ -1,0 +1,80 @@
+COMMAND: normalized LF script tencent-v1.2-B0-host-readonly.sh | ssh -i <phoenix_tencent_ed25519> ubuntu@1.12.77.180 bash -s
+COMMAND whoami; hostname; date -u
+ubuntu
+VM-0-15-ubuntu
+2026-10-15T04:43:55Z
+COMMAND docker ps -a
+CONTAINER ID   IMAGE          COMMAND                  CREATED        STATUS                  PORTS      NAMES
+3bcb5f3d6ff0   ca0bd484cb98   "docker-entrypoint.s…"   19 hours ago   Up 19 hours (healthy)   5432/tcp   tencent-postgres-1
+COMMAND docker port tencent-postgres-1 (empty required)
+COMMAND docker inspect selected fields (no environment)
+name=/tencent-postgres-1 image_ref=mirror.ccs.tencentyun.com/library/postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d image_id=sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d network={"phoenix_canonical_private":{"IPAMConfig":null,"Links":null,"Aliases":["tencent-postgres-1","postgres"],"DriverOpts":null,"GwPriority":0,"NetworkID":"3cc3855987a2ec55645ec5b6d2c4b72788d2272454d2b8503440c780a1b189d5","EndpointID":"50f64f26b38fda5c02b6d5f1a88f666a1c370c9c5e89722563566e012b72ba9b","Gateway":"","IPAddress":"172.18.0.2","MacAddress":"6a:43:09:7a:e2:80","IPPrefixLen":16,"IPv6Gateway":"","GlobalIPv6Address":"","GlobalIPv6PrefixLen":0,"DNSNames":["tencent-postgres-1","postgres","3bcb5f3d6ff0"]}} port_bindings={} mounts=[{"Type":"volume","Name":"phoenix_canonical_pg16_data","Source":"/var/lib/docker/volumes/phoenix_canonical_pg16_data/_data","Destination":"/var/lib/postgresql/data","Driver":"local","Mode":"rw","RW":true,"Propagation":""},{"Type":"bind","Source":"/home/ubuntu/phoenix-canonical-db-deploy/migrations/canonical","Destination":"/opt/phoenix/migrations","Mode":"ro","RW":false,"Propagation":"rprivate"},{"Type":"bind","Source":"/home/ubuntu/phoenix-canonical-db-deploy/deploy/tencent/backups","Destination":"/backups","Mode":"rw","RW":true,"Propagation":"rprivate"}]
+COMMAND docker volume ls canonical names
+phoenix_canonical_pg16_data
+COMMAND ss -lnt
+State  Recv-Q Send-Q Local Address:Port  Peer Address:PortProcess
+LISTEN 0      511          0.0.0.0:80         0.0.0.0:*          
+LISTEN 0      4096         0.0.0.0:22         0.0.0.0:*          
+LISTEN 0      511        127.0.0.1:4300       0.0.0.0:*          
+LISTEN 0      511        127.0.0.1:4311       0.0.0.0:*          
+LISTEN 0      511        127.0.0.1:4310       0.0.0.0:*          
+LISTEN 0      511          0.0.0.0:443        0.0.0.0:*          
+LISTEN 0      4096       127.0.0.1:38419      0.0.0.0:*          
+LISTEN 0      4096      127.0.0.54:53         0.0.0.0:*          
+LISTEN 0      200        127.0.0.1:5432       0.0.0.0:*          
+LISTEN 0      511        127.0.0.1:3003       0.0.0.0:*          
+LISTEN 0      511        127.0.0.1:3002       0.0.0.0:*          
+LISTEN 0      511        127.0.0.1:3001       0.0.0.0:*          
+LISTEN 0      511        127.0.0.1:3020       0.0.0.0:*          
+LISTEN 0      511        127.0.0.1:3010       0.0.0.0:*          
+LISTEN 0      4096   127.0.0.53%lo:53         0.0.0.0:*          
+LISTEN 0      511             [::]:80            [::]:*          
+LISTEN 0      4096            [::]:22            [::]:*          
+LISTEN 0      511             [::]:443           [::]:*          
+COMMAND list deployment directory metadata, no file contents
+|775|4096
+deploy|775|4096
+deploy/tencent|755|4096
+deploy/tencent/backups|700|4096
+deploy/tencent/backup.sh|700|555
+deploy/tencent/compose.yaml|644|1047
+deploy/tencent/.env|600|500
+deploy/tencent/.env.example|644|330
+deploy/tencent/health.sh|700|771
+deploy/tencent/install.sh|700|5169
+deploy/tencent/README.md|644|1278
+migrations|775|4096
+migrations/canonical/0001_foundation.sql|644|2032
+migrations/canonical/0002_education_identity_skeleton.sql|644|410
+migrations/canonical/0003_core_consent_access.sql|644|16570
+migrations/canonical/0004_casework_education_identity.sql|644|13772
+migrations/canonical/0005_documents_submissions.sql|644|8102
+migrations/canonical/0006_access_decision_api.sql|644|3915
+migrations/canonical|755|4096
+COMMAND list old directory metadata, no file contents
+|755|4096
+compose.yaml|644|1082
+deploy|755|4096
+deploy/tencent|755|4096
+.env.example|644|141
+.gitignore|644|40
+migrations|755|4096
+migrations/canonical|755|4096
+PHASE1_REPORT.md|644|13456
+PHASE2A_EXECUTION_REPORT.md|644|5815
+PHASE2B_AUDIT_REPORT.md|644|4500
+PHASE2B_EXECUTION_REPORT.md|644|2751
+PHASE2C_EXECUTION_REPORT.md|644|4590
+phase2-gate|755|4096
+phase2-gate/CANONICAL_BUSINESS_CONTRACT_V1.0_EFFECTIVE.md|644|7027
+phase2-gate/CANONICAL_MIGRATION_CONFLICT_REPORT_V1.1.md|644|4763
+phase2-gate/DOCUMENT_SUBMISSION_CONTRACT_V1.1_REVIEW_CANDIDATE.md|644|4745
+phase2-gate/FAMILY_CONTEXT_AMENDMENT_V1.1_REVIEW_CANDIDATE.md|644|4859
+phase2-gate/FOUNDER_OS_FREEZE_EVIDENCE_V1.1.md|644|2652
+phase2-gate/PHASE2A_START_GATE.md|644|3656
+phase2-gate/PHASE2C_AND_PHASE3_EXECUTION_GATES.md|644|3851
+phase2-gate/PHASE3_APPROVAL_REGISTER.md|644|2216
+PHASE3_EXECUTION_REPORT.md|644|3318
+README.md|644|8705
+bash: line 29: $'\r': command not found
+EXIT_CODE=127

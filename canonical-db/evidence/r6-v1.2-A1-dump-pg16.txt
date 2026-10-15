@@ -1,0 +1,9 @@
+COMMAND: docker compose exec -T -u postgres -e PGOPTIONS=<read-only> pg16 pg_dump -Fc -f /tmp/r6-v1.2-A1-pg16.dump
+COMMAND: docker cp phoenix-canonical-foundation-pg16-1:/tmp/r6-v1.2-A1-pg16.dump <ignored backups path>
+COMMAND: Get-FileHash -Algorithm SHA256 <ignored backup>
+BACKUP=canonical-db/backups/r6-v1.2-A1-pg16-20261015T044226Z-f42736673e344442b16bac72bc312865.dump
+BYTES=152001
+SHA256=40abfe76e8e4319f37e1d03e745b78deccd7aea255f00b06fb96ab4ad1b60d09
+COMMAND: pg_restore -l <container dump> | Measure-Object -Line
+RESTORE_LIST_LINES=324
+EXIT_CODE=0

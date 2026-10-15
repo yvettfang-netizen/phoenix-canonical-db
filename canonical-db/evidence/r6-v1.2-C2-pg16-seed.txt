@@ -1,0 +1,4 @@
+COMMAND: docker cp canonical-db/tests/f10_ephemeral_seed.sh <exact ephemeral container>:/tmp/f10-seed.sh
+COMMAND: docker exec <exact ephemeral container> bash /tmp/f10-seed.sh; role credentials CSPRNG-generated in container and never output
+SEED synthetic actors=6 families=2 guardian_authorities=2 assignments=2
+EXIT_CODE=0

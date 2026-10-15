@@ -1,0 +1,4 @@
+COMMAND: ssh-keygen -lf known_hosts (ED25519 line)
+
+256 SHA256:QzSzzs9PHpgxQ97LrYgjzLMVXTjQHQrrceogacOVcF8 1.12.77.180 (ED25519)
+

@@ -1,0 +1,24 @@
+COMMAND: verify exact backup files and SHA256
+PASS both verified
+COMMAND: verify exact volume attachments
+PG16_ATTACHMENT=phoenix-canonical-foundation-pg16-1
+PG17_ATTACHMENT=phoenix-canonical-foundation-pg17-1
+COMMAND: docker compose --profile compat stop pg16 pg17
+ Container phoenix-canonical-foundation-pg16-1 Stopping 
+ Container phoenix-canonical-foundation-pg17-1 Stopping 
+ Container phoenix-canonical-foundation-pg17-1 Stopped 
+ Container phoenix-canonical-foundation-pg16-1 Stopped 
+COMMAND: docker compose --profile compat rm -f -s pg16 pg17
+ Container phoenix-canonical-foundation-pg17-1 Stopping 
+ Container phoenix-canonical-foundation-pg16-1 Stopping 
+ Container phoenix-canonical-foundation-pg17-1 Stopped 
+ Container phoenix-canonical-foundation-pg16-1 Stopped 
+Going to remove phoenix-canonical-foundation-pg17-1, phoenix-canonical-foundation-pg16-1
+ Container phoenix-canonical-foundation-pg16-1 Removing 
+ Container phoenix-canonical-foundation-pg17-1 Removing 
+ Container phoenix-canonical-foundation-pg16-1 Removed 
+ Container phoenix-canonical-foundation-pg17-1 Removed 
+COMMAND: docker volume rm phoenix-canonical-foundation_pg16_data phoenix-canonical-foundation_pg17_data
+phoenix-canonical-foundation_pg16_data
+phoenix-canonical-foundation_pg17_data
+PASS exact local development volumes removed; backups retained

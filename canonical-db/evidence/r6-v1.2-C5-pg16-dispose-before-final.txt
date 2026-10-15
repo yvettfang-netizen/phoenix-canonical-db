@@ -1,0 +1,7 @@
+COMMAND: docker stop phoenix-canonical-f10-pg16-v12
+COMMAND: docker rm phoenix-canonical-f10-pg16-v12
+COMMAND: exact synthetic env file deleted separately
+Error response from daemon: No such container: phoenix-canonical-f10-pg16-v12
+STOP_EXIT_CODE=1
+Error response from daemon: No such container: phoenix-canonical-f10-pg16-v12
+RM_EXIT_CODE=1

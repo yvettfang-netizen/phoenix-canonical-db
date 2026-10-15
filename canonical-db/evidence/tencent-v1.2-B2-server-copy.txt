@@ -1,0 +1,22 @@
+COMMAND: ssh -o StrictHostKeyChecking=yes -i <phoenix_tencent_ed25519> ubuntu@1.12.77.180
+REMOTE: verify exact deploy directory; cp -a it to sibling .bak-<UTC>; hash copied non-secret files; report .env mode/size only
+COPY_PATH=/home/ubuntu/phoenix-canonical-db-deploy.bak-20261015T064812Z
+ENV_MODE=600 ENV_SIZE=500
+78d51e755f178623f2efaf7aa60395d4c126fbc388ee55637725dc465f9ff176  /home/ubuntu/phoenix-canonical-db-deploy.bak-20261015T064812Z/deploy/tencent/backup.sh
+4d80b7504e0fea6849f84d012809dfe1633fd0dbd543fb58d0d8b348d9db9439  /home/ubuntu/phoenix-canonical-db-deploy.bak-20261015T064812Z/deploy/tencent/backups/phoenix_canonical_20261014T092721Z.dump
+21cf24aa9354fce6685a095c4cc1601278e6341887b4b846b8d6163e6b64dca7  /home/ubuntu/phoenix-canonical-db-deploy.bak-20261015T064812Z/deploy/tencent/backups/phoenix_canonical_20261014T092721Z.dump.manifest.json
+40792174c2f4d9e675ab63a1a50ad0c0ffa5564c075cd3679901fb38ed0ec758  /home/ubuntu/phoenix-canonical-db-deploy.bak-20261015T064812Z/deploy/tencent/backups/phoenix_canonical_20261015T064743Z.dump
+8c21daad493c53914e55957a50810b5d5798e8c0fd20fb1435326d6202e4e666  /home/ubuntu/phoenix-canonical-db-deploy.bak-20261015T064812Z/deploy/tencent/backups/phoenix_canonical_20261015T064743Z.dump.manifest.json
+377fef87424f51944d52bf38ec59acc46178eb335bf598003415872a66029fb1  /home/ubuntu/phoenix-canonical-db-deploy.bak-20261015T064812Z/deploy/tencent/compose.yaml
+cb0405675ab1ec7e9c260e9c6a3298a2e9b78d49c0ff40e396b4ea0d20d495a4  /home/ubuntu/phoenix-canonical-db-deploy.bak-20261015T064812Z/deploy/tencent/.env.example
+82d3f05394a6dfbb20e70ba227b4848e541173147a98f9f9237f4f06aa3ce286  /home/ubuntu/phoenix-canonical-db-deploy.bak-20261015T064812Z/deploy/tencent/health.sh
+a6a747dd91dbc027a63212ade0037fc5ea70f6fd307bef71924fba1e76442614  /home/ubuntu/phoenix-canonical-db-deploy.bak-20261015T064812Z/deploy/tencent/install.sh
+a187a2f008d3ebceb20dbe33b5fa1dcd07e5ac617b52ffa890428347be33e06b  /home/ubuntu/phoenix-canonical-db-deploy.bak-20261015T064812Z/deploy/tencent/README.md
+eea8d1deece72afdc3832d075fcfb42b71b4c1fe4fdccc8900104a0e0ca78a2d  /home/ubuntu/phoenix-canonical-db-deploy.bak-20261015T064812Z/migrations/canonical/0001_foundation.sql
+bef7d9a902e8ad34491b7455987d7791667dcb8a5ab31945cf609a6aa97e4e7f  /home/ubuntu/phoenix-canonical-db-deploy.bak-20261015T064812Z/migrations/canonical/0002_education_identity_skeleton.sql
+7dc0c5060237fae9069915ba8a1ecc39323cf74ab8ea0d49dd832ef9d8330618  /home/ubuntu/phoenix-canonical-db-deploy.bak-20261015T064812Z/migrations/canonical/0003_core_consent_access.sql
+aec2be38c6ad363f5594d65016b8a2dfcb79fe76e77a225271379bb991a443e9  /home/ubuntu/phoenix-canonical-db-deploy.bak-20261015T064812Z/migrations/canonical/0004_casework_education_identity.sql
+7bd581d16bb8c21278bd5bc013496779fe08f509d84bf74b652e5ce3b21cdbec  /home/ubuntu/phoenix-canonical-db-deploy.bak-20261015T064812Z/migrations/canonical/0005_documents_submissions.sql
+2a3d6cd19febd62b7128c9ad4a2d7c94abdb9a4e11d499f36f4050eb2c2ed9d8  /home/ubuntu/phoenix-canonical-db-deploy.bak-20261015T064812Z/migrations/canonical/0006_access_decision_api.sql
+COPY_PASS
+EXIT_CODE=0

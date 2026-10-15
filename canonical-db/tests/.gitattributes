@@ -1,0 +1,2 @@
+f10_*.sh text eol=lf
+f10_*.sql text eol=lf

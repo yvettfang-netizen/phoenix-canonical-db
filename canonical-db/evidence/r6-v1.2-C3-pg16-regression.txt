@@ -1,0 +1,14 @@
+COMMAND: docker cp canonical-db/tests/. <exact ephemeral container>:/opt/tests
+COMMAND: docker exec <exact ephemeral container> bash /opt/tests/f10_ephemeral_regression.sh
+CREDENTIALS: two independent LOGIN roles with CSPRNG passwords in container-only 0600 pgpass files; no SET ROLE
+TEST separate LOGIN accounts; no SET ROLE; one-use binder ticket exchanged on app connection
+psql:/opt/tests/f10_no_context_regression.sql:12: NOTICE:  PASS GUC forgery without trusted context denied
+SESSION SERVICE_A binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:33: ERROR:  student_profile positive
+CONTEXT:  PL/pgSQL function inline_code_block line 8 at RAISE
+EXIT_CODE=3

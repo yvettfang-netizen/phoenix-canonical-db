@@ -1,0 +1,42 @@
+COMMAND: docker volume ls
+DRIVER    VOLUME NAME
+local     0a26ae51c7bc935fcf45ec2fc22f908482f9a70403444e07623af5932afd20c4
+local     0a958e19260610052d9b4b00982e0fdb4d3498e2437ebbd2cf2506225906d5a5
+local     0e4710a0bee1c21e7e2b31f8e2edaa81f31f07e9d12932ef500739e1b435fc77
+local     2ac8836b29358cc179914ca77eca5f81ab6ba89c36adab50e3f40df22f98a3a8
+local     2daacc1b502ef8139101587c1a674f8365826d358fcfa1890257c78e3359f453
+local     7caf16a2f82e9bc113ab5b0916cac146560c3d47ee277e1547d5251ec80924a1
+local     8a900f53db51b11e35ee8aace9a57b44ab147ceac07a8563b6532bed091227ee
+local     9ddc967d43725db13062942bcdebfe1f92fb63c36e4c273b7f94c61685d9cea2
+local     11e9b85805ec9e776aa50bf05b3c4b47db6adac8eef2cae2848e11b28d0e867f
+local     67ac4e65d987a643d310382f0f9c0a282b96b57c886c0066830d6da977ecf945
+local     81a47181d795eb01d82ea261abb48c91445e826d5c38c3d8dbc4e529c2bf163e
+local     895aed3d6e39aa0b6fbc716e61079b9c5c9b2b46be60ce099139aa5bce4353a8
+local     5391ac66577aded41db71a1b643064ac89f975204e2246f33b9e8f3d6fbb8211
+local     11118a9df6c03b6f07920fd9bf2b7aa1097c38183a12ef3a7bb01375dd5e2e1c
+local     26693ce1135e5a508b8d62b85356d6473f1145f1998418bbc9b65fa21858a4f0
+local     084227ddaa6ef0880fdf502081da633c6cb48f9e22b54d02140c85e5be309788
+local     3158320e7963b10a1433a3c01ff520a2f5356ac2230d496ca45bc9a7f3153e8a
+local     a9807460483f45e3b1054fe1d6fadd97d8b0d9ded42bfb38a6f41f7c0c81808a
+local     b21f9145390650d67bf44ba87cb8ecd72dfdbf3a3c08ef1131141863d7736fcb
+local     c1edd36139a193969cd401551c57459cfd28b411b5e8eeee2d45540efe28b337
+local     c7d0c1d9abef9355bcd4eceab30d5664e7d9bb5f24d729d65f4cfb1d2534cbcd
+local     c129e4cbc395e0351553eae649ed46f9103a8ac2bc07eb217d26519eaa58bccb
+local     d0e37e8713fe0daf16a145dc1abcbdfd4723519c8ece66110e1861a4925caf6e
+local     d631bb3de15019c0e783646ea8202539c218b8ba99e67c2f070f56992212c3be
+local     e0f1dc0ae222744acc70cdbbd0e14dbd012cba1dedab4298d47e7c8ed1699c4c
+local     e2d7ca1e0133ddc166f0769db3c5c4cbdc6976c3b9e7b01b0fd750930ba7df7c
+local     ea987049db665d8f6195ae22eded14d49a8af0cda1130228ded39943682c71e8
+local     ec1c6caca8da859e38da89dbf994e6d846600b70a4fe42c6de5e47d2570592a3
+local     f859cd4159ea244d1e42f018d92d181679ced3cee2b39f86331404d0f73abd33
+local     fa9787d9bff0051fa299ce12959a6508972c56f6e062ce681a6ade2544285568
+local     fad1fc4fe48a879ba34641838f9e382bc98cd09df175131737a81457ad2a6712
+local     faf8d5dcb9bec4d19309d4c390a4c544070a6b612dd8ff8f0142b282815c6512
+local     phoenix-canonical-foundation_pg16_data
+local     phoenix-canonical-foundation_pg17_data
+EXIT_CODE=0
+COMMAND: docker compose --env-file canonical-db/.env -f canonical-db/compose.yaml --profile compat ps
+NAME                                  IMAGE                                                                                 COMMAND                  SERVICE   CREATED       STATUS                 PORTS
+phoenix-canonical-foundation-pg16-1   postgres:16@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d   "docker-entrypoint.s…"   pg16      2 hours ago   Up 2 hours (healthy)   5432/tcp
+phoenix-canonical-foundation-pg17-1   postgres:17@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3   "docker-entrypoint.s…"   pg17      2 hours ago   Up 2 hours (healthy)   5432/tcp
+EXIT_CODE=0

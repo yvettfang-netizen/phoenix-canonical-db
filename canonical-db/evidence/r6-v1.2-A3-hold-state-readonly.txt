@@ -1,0 +1,7 @@
+COMMAND: docker ps -a --filter name=phoenix-canonical-foundation --format names/status only
+COMMAND: docker volume ls --format names, filtered by exact two development volume names
+COMMAND: docker inspect exact pg16 container mounts and network names only; no environment
+phoenix-canonical-foundation-pg16-1|Up 3 hours (healthy)
+phoenix-canonical-foundation_pg16_data|exists=True
+phoenix-canonical-foundation_pg17_data|exists=False
+MOUNTS=phoenix-canonical-foundation_pg16_data:/var/lib/postgresql/data; NETWORK=phoenix-canonical-foundation_canonical_test;

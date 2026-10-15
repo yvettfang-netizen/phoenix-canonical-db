@@ -1,0 +1,9 @@
+COMMAND: ssh -o StrictHostKeyChecking=yes -i <phoenix_tencent_ed25519> ubuntu@1.12.77.180
+REMOTE: cd /home/ubuntu/phoenix-canonical-db-deploy/deploy/tencent && timeout --signal=TERM --kill-after=5s 120s ./backup.sh
+REMOTE: list newest backup mode/SHA/pg_restore entries and manifest digest check
+BACKUP backups/phoenix_canonical_20261015T064743Z.dump
+BACKUP_FILE=backups/phoenix_canonical_20261015T064743Z.dump MODE=600 SIZE=133047
+40792174c2f4d9e675ab63a1a50ad0c0ffa5564c075cd3679901fb38ed0ec758  backups/phoenix_canonical_20261015T064743Z.dump
+PG_RESTORE_ENTRIES=284
+MANIFEST_MATCH=True
+EXIT_CODE=0

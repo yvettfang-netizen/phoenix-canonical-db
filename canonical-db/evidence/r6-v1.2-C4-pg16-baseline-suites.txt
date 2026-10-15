@@ -1,0 +1,54 @@
+COMMAND: docker exec -e PGPASSFILE=/tmp/f10-bootstrap.pgpass exact ephemeral PG16 psql -h 127.0.0.1 -U phoenix_bootstrap -d phoenix_canonical_dev -v ON_ERROR_STOP=1 -f /opt/tests/<suite>
+SUITES: foundation.sql, rls_probe.sql, docs_probe.sql, contract_neutral_probe.sql, trusted_context_probe.sql, phase3_acceptance.sql
+RUN=foundation.sql
+EXIT_CODE=0
+RUN=rls_probe.sql
+EXIT_CODE=0
+RUN=docs_probe.sql
+EXIT_CODE=0
+RUN=contract_neutral_probe.sql
+EXIT_CODE=0
+RUN=trusted_context_probe.sql
+EXIT_CODE=0
+RUN=phase3_acceptance.sql
+ bind_context 
+--------------
+ 
+(1 row)
+
+ clear_context 
+---------------
+ 
+(1 row)
+
+ bind_context 
+--------------
+ 
+(1 row)
+
+ clear_context 
+---------------
+ 
+(1 row)
+
+ bind_context 
+--------------
+ 
+(1 row)
+
+ clear_context 
+---------------
+ 
+(1 row)
+
+ bind_context 
+--------------
+ 
+(1 row)
+
+ clear_context 
+---------------
+ 
+(1 row)
+
+EXIT_CODE=0

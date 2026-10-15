@@ -1,0 +1,20 @@
+COMMAND: docker run exact one-off PG16 --network none --env-file ignored synthetic secret file; pinned digest
+COMMAND: docker cp current migrations and init/seed/test scripts; docker exec bash f10_ephemeral_init.sh
+2aee26d37c49a547a56c46815b4c659dfd5b88676e2a029947a0a7bb433c6f47
+APPLIED 0001_foundation.sql eea8d1deece72afdc3832d075fcfb42b71b4c1fe4fdccc8900104a0e0ca78a2d
+APPLIED 0002_education_identity_skeleton.sql bef7d9a902e8ad34491b7455987d7791667dcb8a5ab31945cf609a6aa97e4e7f
+APPLIED 0003_core_consent_access.sql 7dc0c5060237fae9069915ba8a1ecc39323cf74ab8ea0d49dd832ef9d8330618
+APPLIED 0004_casework_education_identity.sql aec2be38c6ad363f5594d65016b8a2dfcb79fe76e77a225271379bb991a443e9
+APPLIED 0005_documents_submissions.sql 7bd581d16bb8c21278bd5bc013496779fe08f509d84bf74b652e5ce3b21cdbec
+APPLIED 0006_access_decision_api.sql 2a3d6cd19febd62b7128c9ad4a2d7c94abdb9a4e11d499f36f4050eb2c2ed9d8
+psql:/tmp/f10-atomic.sql:388: NOTICE:  trigger "protect_advisor_assignment" for relation "casework.advisor_assignments" does not exist, skipping
+psql:/tmp/f10-atomic.sql:407: NOTICE:  trigger "protect_guardian_authority" for relation "core.guardian_authorities" does not exist, skipping
+psql:/tmp/f10-atomic.sql:442: NOTICE:  trigger "validate_submission_target" for relation "docs.submission_manifests" does not exist, skipping
+APPLIED 0007_security_boundary_fixes.sql 49ec737393a4a4bc5f1e287add369db4f04fbde1c021521e8b4cf781f966ff93
+APPLIED 0008_expiry_and_ephemeral_cleanup.sql 51215c0b4d76e242c28197187bf1e017362700128ddd562e2da5d64980a8588d
+APPLIED 0009_application_write_api.sql 9aad988c9d8e177f34b1fa4aa5764db606338e983ba19c19fea0dd61d02d68ba
+ledger=9
+tables=25
+policies=20
+MIGRATION_EXIT_CODE=0
+NETWORK=none PORTS={}

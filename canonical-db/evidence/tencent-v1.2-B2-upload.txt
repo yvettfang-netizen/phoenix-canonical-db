@@ -1,0 +1,44 @@
+COMMAND: scp -o StrictHostKeyChecking=yes -i <phoenix_tencent_ed25519> <HEAD git archive> ubuntu@1.12.77.180:/home/ubuntu/phoenix-canonical-db-deploy/.codex-upload-v1.2.tar
+COMMAND: verify archive SHA and entries; extract --strip-components=1 under exact deploy dir; chmod scripts 700; append CSPRNG-generated PHOENIX_DB_BACKUP_PASSWORD to 0600 .env without output; verify deployed tracked file hashes
+SCP_EXIT_CODE=0
+ARCHIVE_SHA=ce39ff41cc2ddfb48abc7502a9f082d34af9f6d549e55d8b4cf25faf8b6e08c2
+canonical-db/
+canonical-db/deploy/
+canonical-db/deploy/tencent/
+canonical-db/deploy/tencent/.env.example
+canonical-db/deploy/tencent/README.md
+canonical-db/deploy/tencent/backup.sh
+canonical-db/deploy/tencent/compose.yaml
+canonical-db/deploy/tencent/health.sh
+canonical-db/deploy/tencent/install.sh
+canonical-db/deploy/tencent/restore.sh
+canonical-db/migrations/
+canonical-db/migrations/canonical/
+canonical-db/migrations/canonical/.gitattributes
+canonical-db/migrations/canonical/0001_foundation.sql
+canonical-db/migrations/canonical/0002_education_identity_skeleton.sql
+canonical-db/migrations/canonical/0003_core_consent_access.sql
+canonical-db/migrations/canonical/0004_casework_education_identity.sql
+canonical-db/migrations/canonical/0005_documents_submissions.sql
+canonical-db/migrations/canonical/0006_access_decision_api.sql
+canonical-db/migrations/canonical/0007_security_boundary_fixes.sql
+canonical-db/migrations/canonical/0008_expiry_and_ephemeral_cleanup.sql
+ENV_MODE=600 ENV_SIZE=593
+53a6da488ac1b9c052c2b96ae20dde7802b896fe9b9ced55498dbf4bab7a5400  /home/ubuntu/phoenix-canonical-db-deploy/deploy/tencent/backup.sh
+4bfbe457f4a4913a66733f53c39f52527ffee9c106e7c0131158389dd748959b  /home/ubuntu/phoenix-canonical-db-deploy/deploy/tencent/compose.yaml
+b5d38bc37f7df134c0f674b08e71931e5229ff848de1281f96fca05d588ea700  /home/ubuntu/phoenix-canonical-db-deploy/deploy/tencent/.env.example
+85b2ebc343561dbd3cc72acf6c0c52359679e5f18e42b778d7795447de4b9e56  /home/ubuntu/phoenix-canonical-db-deploy/deploy/tencent/health.sh
+25461de53a7dd4b6809cc910774639e7e08602ccfbc8cd54309523a72fb3be7c  /home/ubuntu/phoenix-canonical-db-deploy/deploy/tencent/install.sh
+79db59ad07ee1a202835c129b89f455771e42362447a604a09a3b55e66b6e23b  /home/ubuntu/phoenix-canonical-db-deploy/deploy/tencent/README.md
+6d216c6096706cde1e426748d3fe1f4b392870332d04ab0254449d50003a4624  /home/ubuntu/phoenix-canonical-db-deploy/deploy/tencent/restore.sh
+eea8d1deece72afdc3832d075fcfb42b71b4c1fe4fdccc8900104a0e0ca78a2d  /home/ubuntu/phoenix-canonical-db-deploy/migrations/canonical/0001_foundation.sql
+bef7d9a902e8ad34491b7455987d7791667dcb8a5ab31945cf609a6aa97e4e7f  /home/ubuntu/phoenix-canonical-db-deploy/migrations/canonical/0002_education_identity_skeleton.sql
+7dc0c5060237fae9069915ba8a1ecc39323cf74ab8ea0d49dd832ef9d8330618  /home/ubuntu/phoenix-canonical-db-deploy/migrations/canonical/0003_core_consent_access.sql
+aec2be38c6ad363f5594d65016b8a2dfcb79fe76e77a225271379bb991a443e9  /home/ubuntu/phoenix-canonical-db-deploy/migrations/canonical/0004_casework_education_identity.sql
+7bd581d16bb8c21278bd5bc013496779fe08f509d84bf74b652e5ce3b21cdbec  /home/ubuntu/phoenix-canonical-db-deploy/migrations/canonical/0005_documents_submissions.sql
+2a3d6cd19febd62b7128c9ad4a2d7c94abdb9a4e11d499f36f4050eb2c2ed9d8  /home/ubuntu/phoenix-canonical-db-deploy/migrations/canonical/0006_access_decision_api.sql
+49ec737393a4a4bc5f1e287add369db4f04fbde1c021521e8b4cf781f966ff93  /home/ubuntu/phoenix-canonical-db-deploy/migrations/canonical/0007_security_boundary_fixes.sql
+51215c0b4d76e242c28197187bf1e017362700128ddd562e2da5d64980a8588d  /home/ubuntu/phoenix-canonical-db-deploy/migrations/canonical/0008_expiry_and_ephemeral_cleanup.sql
+37b5dbaa8439669f1a594059b04ec3dd28a01960af02ae8eb905eb6f7f5627aa  /home/ubuntu/phoenix-canonical-db-deploy/migrations/canonical/.gitattributes
+UPLOAD_PASS
+REMOTE_EXIT_CODE=0

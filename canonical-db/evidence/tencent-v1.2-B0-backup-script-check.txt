@@ -1,0 +1,3 @@
+COMMAND: ssh ubuntu@1.12.77.180 grep -nE <backup authentication patterns> deploy/tencent/backup.sh
+13:  pg_dump -U phoenix_canonical_backup_runtime -d "$PHOENIX_DB_NAME" -Fc > "$dump"
+EXIT_CODE=0

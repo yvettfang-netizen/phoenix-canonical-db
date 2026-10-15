@@ -1,0 +1,9 @@
+COMMAND: docker compose --profile compat exec -T -u postgres -e PGOPTIONS=<read-only> pg17 pg_dump -Fc -f /tmp/r6-v1.2-A1-pg17.dump
+COMMAND: docker cp phoenix-canonical-foundation-pg17-1:/tmp/r6-v1.2-A1-pg17.dump <ignored backups path>
+COMMAND: Get-FileHash -Algorithm SHA256 <ignored backup>
+BACKUP=canonical-db/backups/r6-v1.2-A1-pg17-20261015T044225Z-f799bd4ad84b49e68ddac8c4c7249573.dump
+BYTES=153571
+SHA256=28cf2b5e6bb73fa12c8258fe9dfdd9045a185ed28843577fc61549794f65852b
+COMMAND: pg_restore -l <container dump> | Measure-Object -Line
+RESTORE_LIST_LINES=324
+EXIT_CODE=0

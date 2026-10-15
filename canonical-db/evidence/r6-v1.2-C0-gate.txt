@@ -1,0 +1,8 @@
+COMMAND: Get-FileHash SHA256 on signed register, signed approval record, F10 design, business contract
+COMMAND: git diff -- migrations/canonical/0001..0008; git branch --show-current
+canonical-db/phase2-gate/PRODUCTION_DATABASE_FOUNDER_DECISION_REGISTER_V1.0.md|ed1d5838ef54e45c1b99f2f18c4bf75fa88ceb10b792d003a247d7097e53d3a0
+canonical-db/phase2-gate/evidence/approved/FOUNDER_DECISION_REGISTER_V1.0_APPROVAL.md|812b61668ef2801ca61e63ea75b694bd9ad418797e99239fdb390cac827758f9
+canonical-db/phase2-gate/F10_APPLICATION_WRITE_API_DESIGN_DRAFT.md|1eb356cb7547ca6ad095a9e7cb999dd74d3661f4c02a340e318114fde5d97d79
+canonical-db/phase2-gate/CANONICAL_BUSINESS_CONTRACT_V1.0_EFFECTIVE.md|f89a1bbe3cff78ed96e8e6620fce7d41837ae4d30de0b9fd91929f2f6bcf4c93
+BRANCH=codex/canonical-postgresql-phase1
+LEGACY_MIGRATION_DIFF_COUNT=0

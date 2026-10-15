@@ -1,0 +1,11 @@
+COMMAND: docker ps -a --filter name=phoenix-canonical-f10; docker volume ls --format names matching exact f10 prefix; Test-Path exact ignored synthetic env files
+COMMAND: Get-FileHash 0009 SHA256; git diff --name-only -- 0001..0008
+F10_CONTAINER_COUNT=0
+F10_VOLUME_COUNT=0
+f10-final-pg16.env|exists=False
+f10-restore-pg16.env|exists=False
+f10-final-pg17.env|exists=False
+f10-restore-pg17.env|exists=False
+f10-pg16-v12.env|exists=False
+0009_SHA256=2a48d016c0b2dd952d56a15853c8092895df057e6a0d69f5ab391803ca0747c2
+0001_TO_0008_DIFF_COUNT=0

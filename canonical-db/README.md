@@ -1,6 +1,6 @@
 # Phoenix Canonical PostgreSQL — greenfield Canonical database
 
-This directory contains the implemented greenfield Canonical database. It does not connect to legacy databases, Feishu, D1 or COS. All acceptance data is synthetic. Migrations `0003`–`0007` implement the new Canonical business baseline while legacy migration remains separately held. Migration `0007` contains the post-audit security boundary fixes; `0008` closes the local reaudit's expiry and cleanup findings. Migrations `0001`–`0007` are byte-preserved in this fix.
+This directory contains the implemented greenfield Canonical database. It does not connect to legacy databases, Feishu, D1 or COS. All acceptance data is synthetic. Migrations `0003`–`0007` implement the new Canonical business baseline while legacy migration remains separately held. Migration `0007` contains the post-audit security boundary fixes; `0008` closes the local reaudit's expiry and cleanup findings. Local-only `0009` adds the Founder-authorized application write API and R-7 guardian evidence protection. Migrations `0001`–`0008` are byte-preserved. `0009` must not be deployed to Tencent before Claude reaudit and Founder approval.
 
 ## Layout
 
@@ -15,6 +15,7 @@ This directory contains the implemented greenfield Canonical database. It does n
 | `migrations/canonical/0006_access_decision_api.sql` | Audited application authorization functions |
 | `migrations/canonical/0007_security_boundary_fixes.sql` | Session identity, context tickets, scoped RLS, regrant protection, target validation and guardian scope fixes |
 | `migrations/canonical/0008_expiry_and_ephemeral_cleanup.sql` | Natural-expiry normalization, terminal-history protection, function grants and ephemeral cleanup |
+| `migrations/canonical/0009_application_write_api.sql` | Local-only SECURITY DEFINER write API, audited decisions, guardian evidence immutability |
 | `scripts/db.ps1` | Initialization, migration, local login provisioning, exact-name test reset, health, backup and restore test |
 | `scripts/native-db.ps1` | Optional local fallback; PG17 was used for a supplemental check before Docker became available |
 | `scripts/mock-object-store.ps1` | Synthetic local object put/get, deduplication and backup/restore test |
@@ -27,6 +28,7 @@ This directory contains the implemented greenfield Canonical database. It does n
 | `tests/phase3_defect_regression.ps1` | Separate-login regression coverage for F-01/F-02/F-03/F-04/F-05/F-06/F-07/F-09, reaudit T6c–T6f and cleanup/ACL checks |
 | `tests/phase3_fresh_cluster_restore.ps1` | Backup-role export, fresh-cluster restore and post-restore acceptance on PG16/17 |
 | `tests/phase3_pg_hba_auth_regression.ps1` | Fresh-container proof that local and host authentication require SCRAM and protected pgpass |
+| `tests/f10_local_acceptance.ps1` | Independent PG16/17 network-isolated synthetic write API, role, drift, atomicity and fresh-cluster restore acceptance |
 | `tests/9000_atomicity_probe.sql` | Deliberately failing synthetic migration used only by the audit action; never part of the Canonical migration directory |
 | `PHASE1_REPORT.md` | Executed evidence and contract holds |
 | `PHASE2A_EXECUTION_REPORT.md` | Executed Phase 2A empty-schema and mock-store results |
@@ -66,7 +68,7 @@ pwsh -File ./scripts/mock-object-store.ps1 -Action test
 
 `probe` runs the foundation and synthetic checks against the existing development database without resetting it. Every acceptance probe rolls back and the script verifies that its disposable schema is gone. It does not run a migration.
 
-`backup` is read-only with respect to the database: it requires all eight local migrations to be registered with matching hashes and zero persistent domain rows. It writes a unique dump plus a synthetic-only SHA-256 manifest under ignored `backups/`; it never overwrites an existing dump. `restore-test` accepts only a matching, manifest-verified eight-migration dump from that directory, validates the archive before resetting an exact allowlisted restore-test database, and checks the current business schema. Earlier Phase 1/2 dumps remain historical snapshots and are deliberately rejected because they lack the current manifest. The manifest is an integrity check, not a signature; retention, encryption and remote-copy policy remain FD-7/HOLD.
+`backup` is read-only with respect to the database: it requires all current local migrations to be registered with matching hashes and zero persistent domain rows. It writes a unique dump plus a synthetic-only SHA-256 manifest under ignored `backups/`; it never overwrites an existing dump. `restore-test` accepts only a matching, manifest-verified current-migration dump from that directory, validates the archive before resetting an exact allowlisted restore-test database, and checks the current business schema. Earlier Phase 1/2 dumps remain historical snapshots and are deliberately rejected because they lack the current manifest. The manifest is an integrity check, not a signature. The signed Founder register supplies only empty-database backup values; the on-call owner and offsite destination remain unassigned.
 
 The containers expose PostgreSQL only within the Compose `internal` network; no host port is published. The scripts access PostgreSQL with `docker compose exec`. Do not publish these ports on a nonlocal interface.
 
@@ -77,7 +79,7 @@ The migrations create migrator, application, reader and trusted context-binder `
 | Role | Database/schema rights | Table rights |
 |---|---|---|
 | `phoenix_canonical_migrator` | Connect; schema DDL and migration ledger | Migration execution only |
-| `phoenix_canonical_app` | Connect and exact schema usage | RLS-filtered reads and audited authorization functions |
+| `phoenix_canonical_app` | Connect and exact schema usage | RLS-filtered reads and audited SECURITY DEFINER write functions; no direct table DML |
 | `phoenix_canonical_reader` | Connect and exact schema usage | RLS-filtered metadata reads |
 | `phoenix_canonical_context_binder` | Auth schema usage | Bind/clear trusted backend context only |
 | `phoenix_canonical_migrator_local` | Inherits only migrator capability | Ledger select/insert; domain schema create |
@@ -88,9 +90,9 @@ The migrations create migrator, application, reader and trusted context-binder `
 | `phoenix_canonical_backup_runtime` | Deployment-only backup role | `pg_read_all_data`, `BYPASSRLS`, `NOSUPERUSER` |
 | `phoenix_bootstrap` | Local container superuser for setup, migration and synthetic tests | All; never an application connection |
 
-The migration ledger is inaccessible to app and reader roles. Phase 3 RLS uses a private backend-bound context that the application role cannot forge. Family, advisor and partner access requires the applicable membership, assignment, subject grant, Consent and authority. Authorization functions append allow/deny reason codes to the audit table. All acceptance records roll back and leave the development database empty.
+The migration ledger is inaccessible to the app role. Phase 3 RLS uses a private backend-bound context that the application role cannot forge. Family, advisor and partner access requires the applicable membership, assignment, subject grant, Consent and authority. The 0009 write functions record allow/deny reason codes; Guardian evidence level cannot be edited in place. Acceptance data exists only inside removed disposable containers. FD-6 application authentication and real Web integration remain HOLD.
 
-The existing PG16/17 development databases contain an earlier 0007 checksum and old local authentication settings (reaudit R-6). They are not acceptance evidence. Do not run `init`, `migrate`, `provision-local-roles`, or `probe` against them until the Founder separately authorizes rebuilding those development data volumes. The synthetic `test` action resets only its exact-name test database and applies 0001–0008 afresh.
+The Founder authorized rebuilding the two local development volumes. That run stopped under the instruction's HOLD rule when bootstrap authentication failed on the newly created PG16 volume; PG17 remains stopped without its old volume. Neither development database is current acceptance evidence. The F-10 / 0009 checks instead ran in disposable `--network none` PG16 and PG17 clusters, which were removed after each run. See the separate V1.2 A and C execution reports.
 
 ## Contract holds
 

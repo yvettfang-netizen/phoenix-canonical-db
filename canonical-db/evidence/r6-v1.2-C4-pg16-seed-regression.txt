@@ -1,0 +1,17 @@
+COMMAND: docker exec exact ephemeral PG16 bash /opt/tests/f10_ephemeral_seed.sh
+COMMAND: docker exec exact ephemeral PG16 bash /opt/tests/f10_ephemeral_regression.sh
+CREDENTIALS: separate binder/app LOGIN passwords CSPRNG, stored only in container 0600 pgpass
+SEED synthetic actors=6 families=2 guardian_authorities=2 assignments=2
+SEED_EXIT_CODE=0
+TEST separate LOGIN accounts; no SET ROLE; one-use binder ticket exchanged on app connection
+psql:/opt/tests/f10_no_context_regression.sql:12: NOTICE:  PASS GUC forgery without trusted context denied
+SESSION SERVICE_A binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:33: ERROR:  invalid regular expression: invalid repetition count(s)
+CONTEXT:  PL/pgSQL function append_document_version(uuid,uuid,integer,character,text,bigint) line 5 at IF
+PL/pgSQL function inline_code_block line 12 at IF
+REGRESSION_EXIT_CODE=3

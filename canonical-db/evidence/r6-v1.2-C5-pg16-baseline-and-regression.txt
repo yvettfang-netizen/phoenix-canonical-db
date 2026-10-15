@@ -1,0 +1,189 @@
+COMMAND: docker exec ephemeral PG16 bootstrap psql -f existing six suites
+COMMAND: docker exec bash f10_ephemeral_seed.sh
+COMMAND: docker exec bash f10_ephemeral_regression.sh using separate LOGIN binder/app
+RUN=foundation.sql
+EXIT_CODE=0
+RUN=rls_probe.sql
+EXIT_CODE=0
+RUN=docs_probe.sql
+EXIT_CODE=0
+RUN=contract_neutral_probe.sql
+EXIT_CODE=0
+RUN=trusted_context_probe.sql
+EXIT_CODE=0
+RUN=phase3_acceptance.sql
+ bind_context 
+--------------
+ 
+(1 row)
+
+ clear_context 
+---------------
+ 
+(1 row)
+
+ bind_context 
+--------------
+ 
+(1 row)
+
+ clear_context 
+---------------
+ 
+(1 row)
+
+ bind_context 
+--------------
+ 
+(1 row)
+
+ clear_context 
+---------------
+ 
+(1 row)
+
+ bind_context 
+--------------
+ 
+(1 row)
+
+ clear_context 
+---------------
+ 
+(1 row)
+
+EXIT_CODE=0
+SEED synthetic actors=6 families=2 guardian_authorities=2 assignments=2
+SEED_EXIT_CODE=0
+TEST separate LOGIN accounts; no SET ROLE; one-use binder ticket exchanged on app connection
+psql:/opt/tests/f10_no_context_regression.sql:12: NOTICE:  PASS GUC forgery without trusted context denied
+SESSION SERVICE_A binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:33: NOTICE:  PASS service create family/person/member/student/document/version
+psql:<stdin>:33: NOTICE:  PASS service cross-family, duplicate and non-Mock denials
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION FAMILY_A_CREATE binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:34: NOTICE:  PASS family actor cannot use internal service APIs
+psql:<stdin>:34: NOTICE:  PASS family creates education and identity records
+psql:<stdin>:34: NOTICE:  PASS state skipping denied
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION ADVISOR_NO_CONSENT binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:13: NOTICE:  PASS advisor write denied without Consent and cannot grant itself
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION FAMILY_A_CONSENT binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:29: NOTICE:  PASS consent grant, duplicate denial, immediate withdrawal and regrant
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION ADVISOR_WITH_CONSENT binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:9: NOTICE:  PASS assigned advisor writes only with Consent
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION FAMILY_A_FINISH binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:27: NOTICE:  PASS education and identity legal state flow, no rollback or decided withdrawal
+psql:<stdin>:27: NOTICE:  PASS manifest prepare, pin, submit and immutable post-submit
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION PARTNER_DENIED binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:26: NOTICE:  PASS partner channel cannot use write APIs across entities
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION CROSS_FAMILY binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:22: NOTICE:  PASS cross-family writes denied
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION EXPIRED_CONTEXT binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+ pg_sleep 
+----------
+ 
+(1 row)
+
+psql:<stdin>:10: NOTICE:  PASS expired trusted context denied
+ clear_context 
+---------------
+ 
+(1 row)
+
+psql:<stdin>:17: NOTICE:  PASS clear_context removed binding
+ clear_context 
+---------------
+ 
+(1 row)
+
+psql:/opt/tests/f10_guardian_evidence_regression.sql:17: NOTICE:  PASS R-7 guardian evidence immutable, old row preserved
+psql:/opt/tests/f10_catalog_regression.sql:22: NOTICE:  PASS catalog app_write=0 public_execute=0 secdef_without_path=0
+audit_allow=25
+audit_deny=41
+ledger=9
+PASS F10 separated-login synthetic regression
+REGRESSION_EXIT_CODE=0

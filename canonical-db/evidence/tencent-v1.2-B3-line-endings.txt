@@ -1,0 +1,7 @@
+COMMAND: local git HEAD archive extracted install.sh first-line bytes and file hash
+COMMAND: remote read-only od first 24 bytes of exact deployed install.sh
+LOCAL_HEAD_FIRST_BYTES=23212f7573722f62696e2f656e7620626173680d0a736574
+LOCAL_HEAD_SHA=25461de53a7dd4b6809cc910774639e7e08602ccfbc8cd54309523a72fb3be7c
+REMOTE_FIRST_BYTES=23212f7573722f62696e2f656e7620626173680d0a736574
+25461de53a7dd4b6809cc910774639e7e08602ccfbc8cd54309523a72fb3be7c  install.sh
+EXIT_CODE=0

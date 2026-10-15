@@ -1,0 +1,36 @@
+COMMAND: docker ps -a --filter volume=phoenix-canonical-foundation_pg16_data --format {{.Names}}
+phoenix-canonical-foundation-pg16-1
+COMMAND: docker ps -a --filter volume=phoenix-canonical-foundation_pg17_data --format {{.Names}}
+phoenix-canonical-foundation-pg17-1
+COMMAND: docker volume inspect exact two names
+[
+    {
+        "CreatedAt": "2026-10-11T15:38:07Z",
+        "Driver": "local",
+        "Labels": {
+            "com.docker.compose.config-hash": "e75be55984aca5c5786662ddb78d5140db56b7d915be394cc596485efee03775",
+            "com.docker.compose.project": "phoenix-canonical-foundation",
+            "com.docker.compose.version": "5.5.1",
+            "com.docker.compose.volume": "pg16_data"
+        },
+        "Mountpoint": "/var/lib/docker/volumes/phoenix-canonical-foundation_pg16_data/_data",
+        "Name": "phoenix-canonical-foundation_pg16_data",
+        "Options": null,
+        "Scope": "local"
+    },
+    {
+        "CreatedAt": "2026-10-11T15:49:52Z",
+        "Driver": "local",
+        "Labels": {
+            "com.docker.compose.config-hash": "4f8b10bc5d2f7dfbdd2525f93255deeea2af53e6839b6ae6341e204a925f0809",
+            "com.docker.compose.project": "phoenix-canonical-foundation",
+            "com.docker.compose.version": "5.5.1",
+            "com.docker.compose.volume": "pg17_data"
+        },
+        "Mountpoint": "/var/lib/docker/volumes/phoenix-canonical-foundation_pg17_data/_data",
+        "Name": "phoenix-canonical-foundation_pg17_data",
+        "Options": null,
+        "Scope": "local"
+    }
+]
+EXIT_CODE=0
