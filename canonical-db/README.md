@@ -38,6 +38,7 @@ This directory contains the implemented greenfield Canonical database. It does n
 | `PHASE3_EXECUTION_REPORT.md` | Effective greenfield contract, applied business schema, RLS and PG16/17 formal acceptance |
 | `phase2-gate/` | Source evidence, the effective greenfield contract and approval register |
 | `deploy/tencent/` | No-public-port PostgreSQL 16 deployment, health and backup package |
+| `FIX_EXECUTION_REPORT_V1.2_A.md`, `_B.md`, `_C.md` | Separate local rebuild, Tencent isolated update and local 0009 execution results, with raw evidence paths |
 
 ## Run locally when Docker is available
 
