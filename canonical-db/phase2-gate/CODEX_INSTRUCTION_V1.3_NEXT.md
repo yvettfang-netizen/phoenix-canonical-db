@@ -66,15 +66,36 @@ C2、C3、C4、C5、C8 属于待决事项。在 Founder 决定之前**不要**�
 | R-10 | 引导与管理接口 | 覆盖：首个家庭、服务主体、顾问分配、监护授权（含证据审核）、渠道授权、登录主体的创建、吊销与审计；谁有权调用；如何避免超级用户日常操作 |
 | R-11 | 服务主体与自然人主数据 | 例如允许 `auth.principals.person_id` 对 SERVICE 为空，并加 CHECK 约束；列出需要修订的合同条款 |
 
+## D6 · 实现已批准的业务规则 D-12 / D-13 / D-14（Founder 2026-10-15 17:00 批准）
+
+依据 `phase2-gate/FOUNDER_DECISION_ADDENDUM_V1.1_R12_R13_R14.md`。批准版 SHA-256 为 `1b6a58f56e9d7132e67788d0028f308959a7bb3f57727626691bed85adb0bcfe`；开工前先核对该哈希，不一致就停止并报 HOLD。
+
+- **只新增 Migration：** 在 0010 之后新增 0011（如需要可再加 0012），不修改 0001–0010。所有新增写入函数都必须：`SECURITY DEFINER`、固定 `search_path`、撤销 PUBLIC 后只授予 app、默认拒绝、写审计。
+- **D-12 民事能力：**
+  - 新增民事能力属性（`ADULT_VERIFIED` / `MINOR_VERIFIED` / `UNVERIFIED`，默认 `UNVERIFIED`），保留历史、不可原地修改，只有 INTERNAL 渠道的 SERVICE 主体可以设定；
+  - `consent.create_grant`：本人只有在 `ADULT_VERIFIED` 时才能自行授予，否则只能由 VERIFIED 监护人代授；
+  - 撤回规则不变。
+- **D-13 外部官方事实：**
+  - 新增"记录外部官方事实"写入函数，只有顾问（有分配且有 Consent）或服务可以调用；
+  - `advance_application` 进入 DECIDED、`advance_case` 进入 RESOLVED，必须存在对应的 DECISION 事实，且只有顾问或服务可以推进；
+  - 观测时间晚于当前时间的事实一律拒绝。
+- **D-14 确认与提交分离：**
+  - 新增 `docs.confirm_manifest`，确认人只能是本人（`ADULT_VERIFIED`）或范围匹配的 VERIFIED 监护人；
+  - 确认后锁定条目；
+  - `submit_manifest` 要求清单已确认，提交人必须是顾问或服务，且不得与确认人为同一人。
+- **测试：**
+  - 指令补充文件"实施与验收要求"一节列出的全部正反例；
+  - 把 `tests/claude_f10_reaudit_probes.sh` 中 C4、C5、C8 的期望改为"拒绝"，纳入永久回归；
+  - 既有 F10 回归中依赖旧行为的用例（家庭自行推进到 DECIDED、家庭自行提交清单等）按新规则更新，并在报告中逐条列出改动；
+  - PG16 与 PG17 都做，用分离 LOGIN 加一次性票据，并做全新集群恢复。
+
 ## 待 Founder 决定（只列出，不替 Founder 决定）
 
 - R-9 审计持久化方案
-- R-10 引导与管理接口的范围和调用权限
+- R-10 引导与管理接口的范围和调用权限（含民事能力核验服务的接入方式）
 - R-11 合同修订：服务主体不进入自然人主数据
-- R-12 未成年人或学生能否自行授予 Consent（尤其是身份敏感数据），年龄与监护规则
-- R-13 DECIDED 是否只能依据外部官方事实，或只允许顾问或服务设置
-- R-14 是否要求确认人与提交人为两个不同的人
 - 既有 HOLD：FD-6 应用鉴权、F-08 清除、F-13 运维、F-16 凭据、EV-1 至 EV-8
+- ~~R-12 / R-13 / R-14~~：已于 2026-10-15 17:00 批准，见 D6
 
 ## 停止条件
 
@@ -88,8 +109,8 @@ C2、C3、C4、C5、C8 属于待决事项。在 Founder 决定之前**不要**�
 
 ## 交付
 
-- 新 Migration 0010 及其 SHA-256；
-- `FIX_EXECUTION_REPORT_V1.3.md`：按 D1–D5 逐项写明修改内容、原始输出路径、PASS / FAIL / HOLD；
+- 新 Migration 0010、0011（如有 0012 也一并列出）及其 SHA-256；
+- `FIX_EXECUTION_REPORT_V1.3.md`：按 D1–D6 逐项写明修改内容、原始输出路径、PASS / FAIL / HOLD；
 - 三份设计草案：R-9、R-10、R-11；
 - 本地提交哈希。
 
