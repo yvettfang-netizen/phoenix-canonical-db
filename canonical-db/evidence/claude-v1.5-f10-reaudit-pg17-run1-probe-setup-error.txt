@@ -1,0 +1,370 @@
+TASK=Claude-V1.4-reaudit VERSION=17 IMAGE=postgres:17@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3 HEAD=24fe28b 2026-10-16 15:48:38 +0800
+=== E1: 0001-0010 first (expected=10), then 0011, repeat, inventory guards
+COMMAND: init expected=10
+APPLIED 0001_foundation.sql eea8d1deece72afdc3832d075fcfb42b71b4c1fe4fdccc8900104a0e0ca78a2d
+APPLIED 0002_education_identity_skeleton.sql bef7d9a902e8ad34491b7455987d7791667dcb8a5ab31945cf609a6aa97e4e7f
+APPLIED 0003_core_consent_access.sql 7dc0c5060237fae9069915ba8a1ecc39323cf74ab8ea0d49dd832ef9d8330618
+APPLIED 0004_casework_education_identity.sql aec2be38c6ad363f5594d65016b8a2dfcb79fe76e77a225271379bb991a443e9
+APPLIED 0005_documents_submissions.sql 7bd581d16bb8c21278bd5bc013496779fe08f509d84bf74b652e5ce3b21cdbec
+APPLIED 0006_access_decision_api.sql 2a3d6cd19febd62b7128c9ad4a2d7c94abdb9a4e11d499f36f4050eb2c2ed9d8
+psql:/tmp/f10-atomic.sql:388: NOTICE:  trigger "protect_advisor_assignment" for relation "casework.advisor_assignments" does not exist, skipping
+psql:/tmp/f10-atomic.sql:407: NOTICE:  trigger "protect_guardian_authority" for relation "core.guardian_authorities" does not exist, skipping
+psql:/tmp/f10-atomic.sql:442: NOTICE:  trigger "validate_submission_target" for relation "docs.submission_manifests" does not exist, skipping
+APPLIED 0007_security_boundary_fixes.sql 49ec737393a4a4bc5f1e287add369db4f04fbde1c021521e8b4cf781f966ff93
+APPLIED 0008_expiry_and_ephemeral_cleanup.sql 51215c0b4d76e242c28197187bf1e017362700128ddd562e2da5d64980a8588d
+APPLIED 0009_application_write_api.sql 2a48d016c0b2dd952d56a15853c8092895df057e6a0d69f5ab391803ca0747c2
+APPLIED 0010_reader_ledger_usage.sql eb05a55b813695ef7c6252ffc00569a0d97920008773fc07b6d0f6109959825a
+PASS migration counts processed=10 directory=10 ledger=10 expected=10
+ledger=10
+tables=25
+policies=20
+COMMAND: init (0011)
+SKIP 0001_foundation.sql checksum verified
+SKIP 0002_education_identity_skeleton.sql checksum verified
+SKIP 0003_core_consent_access.sql checksum verified
+SKIP 0004_casework_education_identity.sql checksum verified
+SKIP 0005_documents_submissions.sql checksum verified
+SKIP 0006_access_decision_api.sql checksum verified
+SKIP 0007_security_boundary_fixes.sql checksum verified
+SKIP 0008_expiry_and_ephemeral_cleanup.sql checksum verified
+SKIP 0009_application_write_api.sql checksum verified
+SKIP 0010_reader_ledger_usage.sql checksum verified
+APPLIED 0011_verified_capacity_official_facts_manifest_confirmation.sql acc638a3d308b9a9c601238843b1f5dea75a4f376cfb4e77a48cd3afb8f1caa8
+PASS migration counts processed=11 directory=11 ledger=11 expected=11
+ledger=11
+tables=26
+policies=20
+COMMAND: init repeat
+SKIP 0001_foundation.sql checksum verified
+SKIP 0002_education_identity_skeleton.sql checksum verified
+SKIP 0003_core_consent_access.sql checksum verified
+SKIP 0004_casework_education_identity.sql checksum verified
+SKIP 0005_documents_submissions.sql checksum verified
+SKIP 0006_access_decision_api.sql checksum verified
+SKIP 0007_security_boundary_fixes.sql checksum verified
+SKIP 0008_expiry_and_ephemeral_cleanup.sql checksum verified
+SKIP 0009_application_write_api.sql checksum verified
+SKIP 0010_reader_ledger_usage.sql checksum verified
+SKIP 0011_verified_capacity_official_facts_manifest_confirmation.sql checksum verified
+PASS migration counts processed=11 directory=11 ledger=11 expected=11
+ledger=11
+tables=26
+policies=20
+COMMAND: extra empty 0012 file (expected refusal)
+FAIL migration inventory expected=11 directory=12 matching=12
+PASS refused rc=1
+COMMAND: 0011 hidden (expected refusal)
+FAIL migration inventory expected=11 directory=10 matching=10
+PASS refused rc=1
+COMMAND: unnumbered .sql file in migration dir (expected refusal)
+FAIL migration inventory expected=11 directory=12 matching=11
+PASS refused rc=1
+=== baseline suites
+PASS baseline foundation.sql
+PASS baseline rls_probe.sql
+PASS baseline docs_probe.sql
+PASS baseline contract_neutral_probe.sql
+PASS baseline trusted_context_probe.sql
+PASS baseline phase3_acceptance.sql
+COMMAND: seed
+SEED synthetic actors=6 families=2 guardian_authorities=2 assignments=4
+COMMAND: Codex F10 regression (D6 sessions included)
+TEST separate LOGIN accounts; no SET ROLE; one-use binder ticket exchanged on app connection
+psql:/opt/tests/f10_no_context_regression.sql:12: NOTICE:  PASS GUC forgery without trusted context denied
+PASS C1 app direct table write denied
+SESSION SERVICE_A binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:36: NOTICE:  PASS service create family/person/member/student/document/version
+psql:<stdin>:36: NOTICE:  PASS C6/C7 service cross-family, duplicate, skipped version and non-Mock denials
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION STUDENT_UNVERIFIED binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:13: NOTICE:  PASS D12 unverified/minor self grant and family verification denied
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION SERVICE_VERIFY_MINOR binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:9: NOTICE:  PASS D12 service minor verification
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION STUDENT_MINOR binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:13: NOTICE:  PASS D12 unverified/minor self grant and family verification denied
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION SERVICE_VERIFY_ADULT binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:9: NOTICE:  PASS D12 service adult verification
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION STUDENT_ADULT binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:10: NOTICE:  PASS D12 verified adult self consent
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION SERVICE_RESET_UNVERIFIED binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:9: NOTICE:  PASS D12 append-only later capacity status
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION STUDENT_WITHDRAW_UNVERIFIED binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:8: NOTICE:  PASS D12 unverified subject can withdraw earlier self consent
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION FAMILY_A_CREATE binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:41: NOTICE:  PASS family actor cannot use internal service APIs
+psql:<stdin>:41: NOTICE:  PASS family creates education and identity records
+psql:<stdin>:41: NOTICE:  PASS state skipping denied
+psql:<stdin>:41: NOTICE:  PASS manifest item denied before document Consent
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION ADVISOR_NO_CONSENT binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:13: NOTICE:  PASS advisor write denied without Consent and cannot grant itself
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION FAMILY_A_CONSENT binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:33: NOTICE:  PASS consent grant, duplicate denial, immediate withdrawal and regrant
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION ADVISOR_WITH_CONSENT binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:24: NOTICE:  PASS assigned advisor writes only with Consent
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION FAMILY_A_FINISH binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:25: NOTICE:  PASS C5 family cannot decide or resolve without official fact
+psql:<stdin>:25: NOTICE:  PASS C8 separate family confirmation, locked items and family submit denial
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION ADVISOR_OFFICIAL_FACT_AND_SUBMIT binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:26: NOTICE:  PASS D13/D14 official decision facts, advisor state changes and separate confirmation/submission
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION PARTNER_DENIED binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:26: NOTICE:  PASS partner channel cannot use write APIs across entities
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION CROSS_FAMILY binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:22: NOTICE:  PASS cross-family writes denied
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION EXPIRED_CONTEXT binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+ pg_sleep 
+----------
+ 
+(1 row)
+
+psql:<stdin>:10: NOTICE:  PASS expired trusted context denied within an open transaction
+psql:<stdin>:17: NOTICE:  PASS expired trusted context absent after transaction
+ clear_context 
+---------------
+ 
+(1 row)
+
+psql:<stdin>:24: NOTICE:  PASS clear_context removed binding
+ clear_context 
+---------------
+ 
+(1 row)
+
+psql:/opt/tests/f10_guardian_evidence_regression.sql:50: NOTICE:  PASS R-7 evidence immutable; old record revoked; new record and three audit events
+psql:/opt/tests/f10_catalog_regression.sql:22: NOTICE:  PASS catalog app_write=0 public_execute=0 secdef_without_path=0
+audit_allow=45
+audit_deny=52
+ledger=11
+PASS F10 separated-login synthetic regression
+COMMAND: C1-C10 probes (C4/C5/C8 now asserted)
+C1 app LOGIN direct INSERT into core.people: ERROR:  permission denied for table people
+C2 in-txn family-B create_application for family-A student returned=false
+C2 DENY audit rows for that attempt after client ROLLBACK: 0
+C2b same attempt committed (control): DENY rows=1
+C3 binder INTERNAL ticket for a family that does not exist yet: ERROR:  insert or update on table "context_exchange_tickets" violates foreign key constraint "context_exchange_tickets_family_id_fkey"
+C3b SERVICE principal is a row in core.people (natural-person master): SERVICE -> core.people display_name=Synthetic Service
+C4 student self-grants IDENTITY_SENSITIVE DOCUMENT_READ to partner returned=false
+C5 student creates own application=true
+C5 READY=true
+C5 SUBMITTED=true
+C5 DECIDED (no external decision fact)=false
+PASS C4/C5 unauthorized self grant and decision denied
+C5b external decision facts recorded for that application: 0
+C6 service bound to family A creates person in family B returned=false
+C7a service creates document=true
+C7b non-mock storage key cos://... returned=false
+C7c mock storage key returned=true
+C7d version 3 skipping 2 returned=false
+C8 submitted manifests where confirmed_by = submitted_by: 0 of 2
+PASS C8 submitter differs from confirmer
+C9 API coverage (functions app can execute that INSERT into casework/guardian/principal/channel tables): none
+C10 app executable write functions: 24
+END claude probes
+psql:/opt/tests/f10_d6_immutability_regression.sql:35: NOTICE:  PASS D12/D13/D14 append-only evidence, official fact and confirmed item locks
+immutability rc=0
+=== Claude V1.4 gap probes
+COMMAND: claude_v14_d6_probes.sh
+=== setup (guardian FAMILY): new manifest on application 4003, one pinned item; family tries to record an official fact
+S1=true
+S2=true
+G2=false
+S4=false
+S5=false
+PASS setup manifest created (true)
+PASS setup item pinned (true)
+PASS G2 family records official DECISION fact denied (false)
+PASS G2 audit reason (OFFICIAL_FACT_AUTHORITY_OR_INPUT_DENIED)
+FAIL setup application READY got=[false] expected=[true]
+FAIL setup application SUBMITTED got=[false] expected=[true]
+=== G5 advisor (non-family side) confirms manifest
+G5=false
+PASS G5 advisor confirmation denied (false)
+PASS G5 audit reason (FAMILY_AUTHORITY_OR_STATE_DENIED)
+=== guardian confirms, then G4 tries to add an item through the API
+S3=true
+G4=false
+PASS setup guardian confirmation (true)
+PASS G4 add item after confirmation denied (false)
+PASS G4 denied by confirmation lock (not duplicate check) (MANIFEST_OPERATOR_OR_STATE_DENIED)
+=== G1 service advances to DECIDED without a DECISION fact, then with one; service submits the confirmed manifest
+G1=false
+S6=true
+S7=false
+S8=true
+PASS G1 authorized actor without DECISION fact denied (false)
+PASS G1 first ADVANCE audit row in this session (DENY/STATE_OR_DECISION_FACT_DENIED)
+PASS S6 service records DECISION fact (true)
+FAIL S7 same transition allowed once the fact exists got=[false] expected=[true]
+PASS S8 service submits family-confirmed manifest (true)
+=== G3 confirmer and submitter are different people (person check + table constraint)
+PASS G3 manifest_distinct_actors constraint present (1)
+PASS G3 submitted manifest has confirmer <> submitter (t)
+PASS G3 no submitted manifest anywhere with confirmer = submitter (0)
+=== R-20 observation: channel is not bound to principal kind at ticket issue
+TICKET_ERROR ADVISOR ERROR:  CONTEXT_ADVISOR_ASSIGNMENT_INVALID
+FAIL Claude V1.4 D6 gap probes
+FAILED rc=1
+PG17 exit=1
