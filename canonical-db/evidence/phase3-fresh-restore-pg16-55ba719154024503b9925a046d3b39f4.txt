@@ -1,0 +1,63 @@
+**********************
+PowerShell transcript start
+Start time: 20261016101047
+Username: PHOENIX\phoen
+RunAs User: PHOENIX\phoen
+Configuration Name: 
+Machine: PHOENIX (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Users\phoen\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.dll -NoProfile -File canonical-db/tests/phase3_fresh_cluster_restore.ps1 -Version 16
+Process ID: 28652
+PSVersion: 7.6.5
+PSEdition: Core
+GitCommitId: 7.6.5
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.4
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+RESET phoenix_canonical_test_16
+APPLIED phoenix_canonical_test_16 0001_foundation.sql
+APPLIED phoenix_canonical_test_16 0002_education_identity_skeleton.sql
+APPLIED phoenix_canonical_test_16 0003_core_consent_access.sql
+APPLIED phoenix_canonical_test_16 0004_casework_education_identity.sql
+APPLIED phoenix_canonical_test_16 0005_documents_submissions.sql
+APPLIED phoenix_canonical_test_16 0006_access_decision_api.sql
+APPLIED phoenix_canonical_test_16 0007_security_boundary_fixes.sql
+APPLIED phoenix_canonical_test_16 0008_expiry_and_ephemeral_cleanup.sql
+APPLIED phoenix_canonical_test_16 0009_application_write_api.sql
+APPLIED phoenix_canonical_test_16 0010_reader_ledger_usage.sql
+APPLIED phoenix_canonical_test_16 0011_verified_capacity_official_facts_manifest_confirmation.sql
+SKIP phoenix_canonical_test_16 0001_foundation.sql checksum verified
+SKIP phoenix_canonical_test_16 0002_education_identity_skeleton.sql checksum verified
+SKIP phoenix_canonical_test_16 0003_core_consent_access.sql checksum verified
+SKIP phoenix_canonical_test_16 0004_casework_education_identity.sql checksum verified
+SKIP phoenix_canonical_test_16 0005_documents_submissions.sql checksum verified
+SKIP phoenix_canonical_test_16 0006_access_decision_api.sql checksum verified
+SKIP phoenix_canonical_test_16 0007_security_boundary_fixes.sql checksum verified
+SKIP phoenix_canonical_test_16 0008_expiry_and_ephemeral_cleanup.sql checksum verified
+SKIP phoenix_canonical_test_16 0009_application_write_api.sql checksum verified
+SKIP phoenix_canonical_test_16 0010_reader_ledger_usage.sql checksum verified
+SKIP phoenix_canonical_test_16 0011_verified_capacity_official_facts_manifest_confirmation.sql checksum verified
+PASS PostgreSQL 16 foundation, repeat migration, and all synthetic probes
+BACKUP_ROLE_EXPORT digest=6a674fc13eba7ae05b9293cfdbe15f059cce406c554bffbfe182bf218634a99f
+7bedd729f36aa87a7c8cfecb03bd992c0888663729a16dcae75db95dd1fa1bff
+FRESH_CONTAINER_NAME=phoenix-canonical-fresh-restore-16-082e4589
+PS>TerminatingError(): "fresh psql failed"
+ledger=11
+tables=26
+policies=20
+roles=10
+PASS fresh-cluster foundation.sql
+PASS fresh-cluster rls_probe.sql
+PASS fresh-cluster docs_probe.sql
+PASS fresh-cluster contract_neutral_probe.sql
+PASS fresh-cluster trusted_context_probe.sql
+PASS fresh-cluster phase3_acceptance.sql
+PASS PostgreSQL 16 fresh-cluster restore using backup role export
+phoenix-canonical-fresh-restore-16-082e4589
+**********************
+PowerShell transcript end
+End time: 20261016101124
+**********************

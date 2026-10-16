@@ -1,0 +1,4 @@
+ Container phoenix-canonical-foundation-pg16-1 Running 
+ Container phoenix-canonical-foundation-pg16-1 Waiting 
+ Container phoenix-canonical-foundation-pg16-1 Healthy 
+PASS PostgreSQL 16 nondestructive transactional synthetic probes

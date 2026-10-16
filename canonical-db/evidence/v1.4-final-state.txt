@@ -1,0 +1,24 @@
+COMMAND: git rev-parse HEAD
+COMMAND: git branch --show-current
+COMMAND: git diff --name-only f41a18397b9834d48f5ad38a26d997c1f3070d3f HEAD -- canonical-db/migrations/canonical
+COMMAND: Get-FileHash 0011 SHA256
+85df24f243e2ac2da6d0956136d10918f5a807e4
+codex/canonical-postgresql-phase1
+canonical-db/migrations/canonical/0011_verified_capacity_official_facts_manifest_confirmation.sql
+acc638a3d308b9a9c601238843b1f5dea75a4f376cfb4e77a48cd3afb8f1caa8
+COMMAND: docker compose ps pg16
+NAME                                  IMAGE                                                                                 COMMAND                  SERVICE   CREATED        STATUS                 PORTS
+phoenix-canonical-foundation-pg16-1   postgres:16@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d   "docker-entrypoint.s…"   pg16      26 hours ago   Up 5 hours (healthy)   5432/tcp
+COMMAND: reader LOGIN queries local PG16 ledger and business row counts
+ledger=11
+people=0
+families=0
+documents=0
+COMMAND: docker compose ps pg17
+NAME                                  IMAGE                                                                                 COMMAND                  SERVICE   CREATED        STATUS                 PORTS
+phoenix-canonical-foundation-pg17-1   postgres:17@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3   "docker-entrypoint.s…"   pg17      22 hours ago   Up 5 hours (healthy)   5432/tcp
+COMMAND: reader LOGIN queries local PG17 ledger and business row counts
+ledger=11
+people=0
+families=0
+documents=0
