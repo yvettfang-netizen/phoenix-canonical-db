@@ -1,0 +1,6 @@
+COMMAND: pwsh -NoProfile -File D:\CODEX\01_PHOENIX\01_NOVA\_worktrees\canonical-postgresql-phase1\canonical-db\scripts\db.ps1 -Action probe -Version 16
+ Container phoenix-canonical-foundation-pg16-1 Running 
+ Container phoenix-canonical-foundation-pg16-1 Waiting 
+ Container phoenix-canonical-foundation-pg16-1 Healthy 
+PASS PostgreSQL 16 nondestructive transactional synthetic probes
+EXIT_CODE=0

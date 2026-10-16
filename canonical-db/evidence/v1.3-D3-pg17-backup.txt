@@ -1,0 +1,6 @@
+COMMAND: pwsh -NoProfile -File D:\CODEX\01_PHOENIX\01_NOVA\_worktrees\canonical-postgresql-phase1\canonical-db\scripts\db.ps1 -Action backup -Version 17
+ Container phoenix-canonical-foundation-pg17-1 Running 
+ Container phoenix-canonical-foundation-pg17-1 Waiting 
+ Container phoenix-canonical-foundation-pg17-1 Healthy 
+BACKUP D:\CODEX\01_PHOENIX\01_NOVA\_worktrees\canonical-postgresql-phase1\canonical-db\backups\phoenix_canonical_dev_pg17_20261016-094739_7ef68afc3c1d494293c03ff3010f57b3.dump
+EXIT_CODE=0

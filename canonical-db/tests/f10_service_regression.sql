@@ -24,10 +24,13 @@ BEGIN
   IF docs.append_document_version('018f0000-0000-7000-8000-000000006102',
     '018f0000-0000-7000-8000-000000006001',1,repeat('b',64)::char(64),
     'mock/synthetic/version-two',42) IS NOT FALSE THEN RAISE EXCEPTION 'version duplicate number'; END IF;
+  IF docs.append_document_version('018f0000-0000-7000-8000-000000006105',
+    '018f0000-0000-7000-8000-000000006001',3,repeat('b',64)::char(64),
+    'mock/synthetic/version-three',42) IS NOT FALSE THEN RAISE EXCEPTION 'version sequence skipped'; END IF;
   IF docs.append_document_version('018f0000-0000-7000-8000-000000006103',
     '018f0000-0000-7000-8000-000000006001',2,repeat('b',64)::char(64),
     'https://example.invalid/not-mock',42) IS NOT FALSE THEN RAISE EXCEPTION 'version non-mock key'; END IF;
-  RAISE NOTICE 'PASS service cross-family, duplicate and non-Mock denials';
+  RAISE NOTICE 'PASS C6/C7 service cross-family, duplicate, skipped version and non-Mock denials';
 END
 $test$;
 

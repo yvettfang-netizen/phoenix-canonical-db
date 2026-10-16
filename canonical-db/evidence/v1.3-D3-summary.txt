@@ -1,0 +1,21 @@
+COMMAND: pwsh -NoProfile -File canonical-db/evidence/v1.3-D3-cross-acceptance.ps1
+pg16-test: EXIT_CODE=0
+pg16-probe: EXIT_CODE=0
+pg16-audit-migration: EXIT_CODE=0
+pg16-audit-backup: EXIT_CODE=1
+pg16-backup: EXIT_CODE=1
+pg16-restore-test: SKIP backup failed
+pg16-phase3_defect_regression: EXIT_CODE=0
+pg16-phase3_fresh_cluster_restore: EXIT_CODE=0
+pg16-f10_local_acceptance: EXIT_CODE=0
+pg16-phase3_pg_hba_auth_regression: EXIT_CODE=0
+pg17-test: EXIT_CODE=0
+pg17-probe: EXIT_CODE=0
+pg17-audit-migration: EXIT_CODE=0
+pg17-audit-backup: EXIT_CODE=0
+pg17-backup: EXIT_CODE=0
+pg17-restore-test: EXIT_CODE=0
+pg17-phase3_defect_regression: EXIT_CODE=0
+pg17-phase3_fresh_cluster_restore: EXIT_CODE=0
+pg17-f10_local_acceptance: EXIT_CODE=0
+pg17-phase3_pg_hba_auth_regression: EXIT_CODE=0

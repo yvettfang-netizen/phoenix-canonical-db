@@ -1,0 +1,21 @@
+COMMAND: pwsh -NoProfile -File canonical-db/evidence/v1.3-D2-archive-check.ps1
+New-Item: D:\CODEX\01_PHOENIX\01_NOVA\_worktrees\canonical-postgresql-phase1\canonical-db\evidence\v1.3-D2-archive-check.ps1:8
+Line |
+   8 |  New-Item -ItemType Directory -LiteralPath $tempDir | Out-Null
+     |                               ~~~~~~~~~~~~
+     | A parameter cannot be found that matches parameter name 'LiteralPath'.
+EXIT_CODE=1
+RETRY COMMAND: pwsh -NoProfile -File canonical-db/evidence/v1.3-D2-archive-check.ps1
+COMMAND: git archive --format=tar -o <temporary archive> HEAD canonical-db/deploy/tencent canonical-db/migrations/canonical canonical-db/tests
+COMMAND: tar -xf <temporary archive> -C <temporary extract>
+PASS LF canonical-db\deploy\tencent\backup.sh SHA256=71ad547c5b387745dd9791bc4b41fefe23aa09ef0fd6705c94591288b8a99a49
+PASS LF canonical-db\deploy\tencent\health.sh SHA256=44889aed8afce3faa345759e39d0c850e0a83e4ad67b6706aae1cae48ea05695
+PASS LF canonical-db\deploy\tencent\install.sh SHA256=ff1c97629812ac99ba892477c12e71888bdbde986ad47df5b7987762c01e6596
+PASS LF canonical-db\deploy\tencent\restore.sh SHA256=c406da6f63c379d59f1e93cfc21b81723205ca1106b61896f928305e59055aab
+PASS LF canonical-db\tests\claude_f10_reaudit_probes.sh SHA256=cb334af020ff926ed50d32e0eba58b97eacccbf2a4af49a8062a39010f2182f4
+PASS LF canonical-db\tests\f10_ephemeral_init.sh SHA256=8dfe92097b6482834ef66b410cc7354b5a75e5708763fb16c6674b023ca13952
+PASS LF canonical-db\tests\f10_ephemeral_regression.sh SHA256=612864b7eaad382d99d09779ba724e26828dab21dd78cc5035984313177ba59c
+PASS LF canonical-db\tests\f10_ephemeral_restore.sh SHA256=c013d63f0ab9ac332c8ba115088bb4d9ac22cdfbdf69cc054965cef484d40be5
+PASS LF canonical-db\tests\f10_ephemeral_seed.sh SHA256=9f8e86f1ff74e3b580b7084ae64cde4cc7496bd582af42037d6a4ca15ba01cb4
+PASS archive scripts=9
+RETRY_EXIT_CODE=0

@@ -1,0 +1,18 @@
+COMMAND: pwsh -NoProfile -File canonical-db/tests/bootstrap_secret_guard_regression.ps1
+COMMAND: pwsh -NoProfile -File <temporary db.ps1> -Action health (synthetic missing credential)
+Exception: C:\Users\phoen\AppData\Local\Temp\phoenix-guard-e2e2efcf76dc400f9a78124571f84981\scripts\db.ps1:35
+Line |
+  35 |  … -f]{64})$') { throw 'Local bootstrap secret is missing or invalid.' }
+     |                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | Local bootstrap secret is missing or invalid.
+EXIT_CODE=1
+PASS bootstrap guard missing
+COMMAND: pwsh -NoProfile -File <temporary db.ps1> -Action health (synthetic malformed credential)
+Exception: C:\Users\phoen\AppData\Local\Temp\phoenix-guard-e2e2efcf76dc400f9a78124571f84981\scripts\db.ps1:35
+Line |
+  35 |  … -f]{64})$') { throw 'Local bootstrap secret is missing or invalid.' }
+     |                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | Local bootstrap secret is missing or invalid.
+EXIT_CODE=1
+PASS bootstrap guard malformed
+EXIT_CODE=0

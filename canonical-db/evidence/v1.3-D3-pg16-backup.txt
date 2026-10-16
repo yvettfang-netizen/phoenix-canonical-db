@@ -1,0 +1,12 @@
+COMMAND: pwsh -NoProfile -File D:\CODEX\01_PHOENIX\01_NOVA\_worktrees\canonical-postgresql-phase1\canonical-db\scripts\db.ps1 -Action backup -Version 16
+ Container phoenix-canonical-foundation-pg16-1 Running 
+ Container phoenix-canonical-foundation-pg16-1 Waiting 
+ Container phoenix-canonical-foundation-pg16-1 Healthy 
+Password: 
+pg_dump: error: connection to server at "127.0.0.1", port 5432 failed: fe_sendauth: no password supplied
+Exception: D:\CODEX\01_PHOENIX\01_NOVA\_worktrees\canonical-postgresql-phase1\canonical-db\scripts\db.ps1:39
+Line |
+  39 |  … DE -ne 0) { throw "Docker command failed with exit code $LASTEXITCODE …
+     |                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | Docker command failed with exit code 1
+EXIT_CODE=1

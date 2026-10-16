@@ -1,0 +1,48 @@
+COMMAND: pwsh -NoProfile -File D:\CODEX\01_PHOENIX\01_NOVA\_worktrees\canonical-postgresql-phase1\canonical-db\tests\phase3_fresh_cluster_restore.ps1 -Version 17
+ Container phoenix-canonical-foundation-pg17-1 Running 
+ Container phoenix-canonical-foundation-pg17-1 Waiting 
+ Container phoenix-canonical-foundation-pg17-1 Healthy 
+RESET phoenix_canonical_test_17
+APPLIED phoenix_canonical_test_17 0001_foundation.sql
+APPLIED phoenix_canonical_test_17 0002_education_identity_skeleton.sql
+APPLIED phoenix_canonical_test_17 0003_core_consent_access.sql
+APPLIED phoenix_canonical_test_17 0004_casework_education_identity.sql
+APPLIED phoenix_canonical_test_17 0005_documents_submissions.sql
+APPLIED phoenix_canonical_test_17 0006_access_decision_api.sql
+psql:<stdin>:11: NOTICE:  role "phoenix_canonical_backup_runtime" has already been granted membership in role "pg_read_all_data" by role "phoenix_bootstrap"
+psql:<stdin>:388: NOTICE:  trigger "protect_advisor_assignment" for relation "casework.advisor_assignments" does not exist, skipping
+psql:<stdin>:407: NOTICE:  trigger "protect_guardian_authority" for relation "core.guardian_authorities" does not exist, skipping
+psql:<stdin>:442: NOTICE:  trigger "validate_submission_target" for relation "docs.submission_manifests" does not exist, skipping
+APPLIED phoenix_canonical_test_17 0007_security_boundary_fixes.sql
+APPLIED phoenix_canonical_test_17 0008_expiry_and_ephemeral_cleanup.sql
+APPLIED phoenix_canonical_test_17 0009_application_write_api.sql
+APPLIED phoenix_canonical_test_17 0010_reader_ledger_usage.sql
+SKIP phoenix_canonical_test_17 0001_foundation.sql checksum verified
+SKIP phoenix_canonical_test_17 0002_education_identity_skeleton.sql checksum verified
+SKIP phoenix_canonical_test_17 0003_core_consent_access.sql checksum verified
+SKIP phoenix_canonical_test_17 0004_casework_education_identity.sql checksum verified
+SKIP phoenix_canonical_test_17 0005_documents_submissions.sql checksum verified
+SKIP phoenix_canonical_test_17 0006_access_decision_api.sql checksum verified
+SKIP phoenix_canonical_test_17 0007_security_boundary_fixes.sql checksum verified
+SKIP phoenix_canonical_test_17 0008_expiry_and_ephemeral_cleanup.sql checksum verified
+SKIP phoenix_canonical_test_17 0009_application_write_api.sql checksum verified
+SKIP phoenix_canonical_test_17 0010_reader_ledger_usage.sql checksum verified
+PASS PostgreSQL 17 foundation, repeat migration, and all synthetic probes
+BACKUP_ROLE_EXPORT digest=e62bcd4bb84af5b633aaf5e10c20d1da8ea6bd34f03fcfbf51e33f5f99f3d76f
+eae82b2d751351b46df1f4c70a415bcae6aa67dff76a122b52e9c84f4ddf4a70
+FRESH_CONTAINER_NAME=phoenix-canonical-fresh-restore-17-07dff746
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: No such file or directory
+	Is the server running locally and accepting connections on that socket?
+ledger=10
+tables=25
+policies=20
+roles=10
+PASS fresh-cluster foundation.sql
+PASS fresh-cluster rls_probe.sql
+PASS fresh-cluster docs_probe.sql
+PASS fresh-cluster contract_neutral_probe.sql
+PASS fresh-cluster trusted_context_probe.sql
+PASS fresh-cluster phase3_acceptance.sql
+PASS PostgreSQL 17 fresh-cluster restore using backup role export
+phoenix-canonical-fresh-restore-17-07dff746
+EXIT_CODE=0

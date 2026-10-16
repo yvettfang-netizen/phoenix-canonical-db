@@ -1,0 +1,29 @@
+COMMAND: pwsh -NoProfile -File canonical-db/tests/reader_ledger_regression.ps1 -Version 17
+COMMAND: docker compose exec -T -e PGPASSFILE=/tmp/phoenix-canonical-db.pgpass pg17 psql -X -h 127.0.0.1 -U phoenix_canonical_reader_local -d phoenix_canonical_dev -v ON_ERROR_STOP=1 -Atqc <SQL>
+SQL: SELECT count(*) FROM canonical_migrations.applied
+10
+EXIT_CODE=0
+COMMAND: docker compose exec -T -e PGPASSFILE=/tmp/phoenix-canonical-db.pgpass pg17 psql -X -h 127.0.0.1 -U phoenix_canonical_reader_local -d phoenix_canonical_dev -v ON_ERROR_STOP=1 -Atqc <SQL>
+SQL: INSERT INTO canonical_migrations.applied(migration_name,sha256) VALUES ('__unauthorized_probe__',repeat('0',64))
+ERROR:  permission denied for table applied
+EXIT_CODE=1
+COMMAND: docker compose exec -T -e PGPASSFILE=/tmp/phoenix-canonical-db.pgpass pg17 psql -X -h 127.0.0.1 -U phoenix_canonical_reader_local -d phoenix_canonical_dev -v ON_ERROR_STOP=1 -Atqc <SQL>
+SQL: CREATE TABLE canonical_migrations.unauthorized_probe(id int)
+ERROR:  permission denied for schema canonical_migrations
+LINE 1: CREATE TABLE canonical_migrations.unauthorized_probe(id int)
+                     ^
+EXIT_CODE=1
+COMMAND: docker compose exec -T -e PGPASSFILE=/tmp/phoenix-canonical-db.pgpass pg17 psql -X -h 127.0.0.1 -U phoenix_canonical_app_local -d phoenix_canonical_dev -v ON_ERROR_STOP=1 -Atqc <SQL>
+SQL: SELECT count(*) FROM canonical_migrations.applied
+ERROR:  permission denied for schema canonical_migrations
+LINE 1: SELECT count(*) FROM canonical_migrations.applied
+                             ^
+EXIT_CODE=1
+COMMAND: docker compose exec -T -e PGPASSFILE=/tmp/phoenix-canonical-db.pgpass pg17 psql -X -h 127.0.0.1 -U phoenix_canonical_context_binder_local -d phoenix_canonical_dev -v ON_ERROR_STOP=1 -Atqc <SQL>
+SQL: SELECT count(*) FROM canonical_migrations.applied
+ERROR:  permission denied for schema canonical_migrations
+LINE 1: SELECT count(*) FROM canonical_migrations.applied
+                             ^
+EXIT_CODE=1
+PASS R-8 separate LOGIN PostgreSQL 17
+EXIT_CODE=0

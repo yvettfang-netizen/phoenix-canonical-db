@@ -1,0 +1,7 @@
+COMMAND: pwsh -NoProfile -File canonical-db/scripts/db.ps1 -Action restore-test -Version 16 -BackupPath D:\CODEX\01_PHOENIX\01_NOVA\_worktrees\canonical-postgresql-phase1\canonical-db\backups\phoenix_canonical_dev_pg16_20261016-095026_b94495fc3208491fb683cdd5a53ec836.dump
+ Container phoenix-canonical-foundation-pg16-1 Running 
+ Container phoenix-canonical-foundation-pg16-1 Waiting 
+ Container phoenix-canonical-foundation-pg16-1 Healthy 
+RESET phoenix_canonical_restore_test_16
+PASS restore into phoenix_canonical_restore_test_16
+EXIT_CODE=0

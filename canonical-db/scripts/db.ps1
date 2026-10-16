@@ -47,7 +47,14 @@ function Invoke-Psql([string]$database, [string]$sql) {
 
 function Start-Database {
     Invoke-Docker ($compose + @('up', '-d', '--wait', $service))
-    Set-ContainerPgpass @{ phoenix_bootstrap = $bootstrapPassword }
+    $pgpassEntries = @{ phoenix_bootstrap = $bootstrapPassword }
+    if (Test-Path -LiteralPath $localRolesFile) {
+        $backupLine = [string](Get-Content -LiteralPath $localRolesFile | Where-Object { $_ -match '^PHOENIX_LOCAL_BACKUP_PASSWORD=[0-9a-f]{64}$' } | Select-Object -First 1)
+        if ($backupLine) {
+            $pgpassEntries['phoenix_canonical_backup_local'] = $backupLine.Substring('PHOENIX_LOCAL_BACKUP_PASSWORD='.Length)
+        }
+    }
+    Set-ContainerPgpass $pgpassEntries
 }
 
 function Set-ContainerPgpass([hashtable]$entries) {
@@ -131,7 +138,7 @@ GRANT phoenix_canonical_backup_runtime TO phoenix_canonical_backup_local WITH IN
     $checks = @(
         @{ Name = 'phoenix_canonical_migrator_local'; Password = $secrets['PHOENIX_LOCAL_MIGRATOR_PASSWORD']; Sql = "SELECT has_schema_privilege(current_user,'core','CREATE') AND has_schema_privilege(current_user,'education','CREATE') AND has_schema_privilege(current_user,'identity','CREATE') AND has_table_privilege(current_user,'canonical_migrations.applied','INSERT') AND NOT (SELECT rolsuper FROM pg_roles WHERE rolname = current_user);" }
         @{ Name = 'phoenix_canonical_app_local'; Password = $secrets['PHOENIX_LOCAL_APP_PASSWORD']; Sql = "SELECT has_schema_privilege(current_user,'education','USAGE') AND has_schema_privilege(current_user,'identity','USAGE') AND NOT has_schema_privilege(current_user,'education','CREATE') AND NOT has_schema_privilege(current_user,'canonical_migrations','USAGE') AND NOT (SELECT rolsuper FROM pg_roles WHERE rolname = current_user);" }
-        @{ Name = 'phoenix_canonical_reader_local'; Password = $secrets['PHOENIX_LOCAL_READER_PASSWORD']; Sql = "SELECT has_schema_privilege(current_user,'education','USAGE') AND has_schema_privilege(current_user,'identity','USAGE') AND NOT has_schema_privilege(current_user,'identity','CREATE') AND NOT has_schema_privilege(current_user,'canonical_migrations','USAGE') AND NOT (SELECT rolsuper FROM pg_roles WHERE rolname = current_user);" }
+        @{ Name = 'phoenix_canonical_reader_local'; Password = $secrets['PHOENIX_LOCAL_READER_PASSWORD']; Sql = "SELECT has_schema_privilege(current_user,'education','USAGE') AND has_schema_privilege(current_user,'identity','USAGE') AND NOT has_schema_privilege(current_user,'identity','CREATE') AND has_schema_privilege(current_user,'canonical_migrations','USAGE') AND has_table_privilege(current_user,'canonical_migrations.applied','SELECT') AND NOT has_schema_privilege(current_user,'canonical_migrations','CREATE') AND NOT (SELECT rolsuper FROM pg_roles WHERE rolname = current_user);" }
         @{ Name = 'phoenix_canonical_context_binder_local'; Password = $secrets['PHOENIX_LOCAL_BINDER_PASSWORD']; Sql = "SELECT has_function_privilege(current_user,'auth.bind_context(uuid,uuid,uuid,text,timestamptz,uuid)','EXECUTE') AND NOT has_table_privilege(current_user,'auth.session_contexts','SELECT') AND NOT has_schema_privilege(current_user,'core','USAGE') AND NOT (SELECT rolsuper FROM pg_roles WHERE rolname = current_user);" }
     )
     foreach ($check in $checks) {

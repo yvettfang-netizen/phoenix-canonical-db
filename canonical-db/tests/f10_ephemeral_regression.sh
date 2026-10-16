@@ -32,6 +32,16 @@ run_session() {
 echo 'TEST separate LOGIN accounts; no SET ROLE; one-use binder ticket exchanged on app connection'
 app_psql -f /opt/tests/f10_no_context_regression.sql
 
+# C1: exercise the actual app LOGIN, not only catalog privilege metadata.
+if direct_write_output="$(app_psql -Atqc "INSERT INTO core.people(person_id,display_name) VALUES ('018f0000-0000-7000-8000-000000009901','Synthetic Direct Write')" 2>&1)"; then
+  echo 'FAIL C1 app direct table write succeeded' >&2
+  exit 1
+fi
+case "$direct_write_output" in
+  *'permission denied'*) echo 'PASS C1 app direct table write denied' ;;
+  *) printf '%s\n' "$direct_write_output" >&2; exit 1 ;;
+esac
+
 run_session SERVICE_A '018f0000-0000-7000-8000-000000002001' \
   '018f0000-0000-7000-8000-000000001001' '018f0000-0000-7000-8000-000000000001' INTERNAL \
   /opt/tests/f10_service_regression.sql

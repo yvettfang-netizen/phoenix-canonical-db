@@ -1,0 +1,13 @@
+COMMAND: pwsh -NoProfile -File D:\CODEX\01_PHOENIX\01_NOVA\_worktrees\canonical-postgresql-phase1\canonical-db\tests\phase3_pg_hba_auth_regression.ps1 -Version 16
+8dace99fc536f09ddaf1de5bc0c3707a834d57e57943c9a08683b2803a5c206d
+PASS local socket without pgpass rejected
+local|scram-sha-256
+host|scram-sha-256
+host|scram-sha-256
+local|scram-sha-256
+host|scram-sha-256
+host|scram-sha-256
+host|scram-sha-256
+PASS PostgreSQL 16 local socket and host authentication require SCRAM/pgpass
+phoenix-canonical-hba-16-fba306f2
+EXIT_CODE=0

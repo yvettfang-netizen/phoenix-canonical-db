@@ -1,0 +1,318 @@
+**********************
+PowerShell transcript start
+Start time: 20261016094900
+Username: PHOENIX\phoen
+RunAs User: PHOENIX\phoen
+Configuration Name: 
+Machine: PHOENIX (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Users\phoen\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell\pwsh.dll -NoProfile -File D:\CODEX\01_PHOENIX\01_NOVA\_worktrees\canonical-postgresql-phase1\canonical-db\tests\f10_local_acceptance.ps1 -Version 17
+Process ID: 28276
+PSVersion: 7.6.5
+PSEdition: Core
+GitCommitId: 7.6.5
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.4
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+TASK=C VERSION=17 IMAGE=postgres:17@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3
+BOUNDARY: exact one-off containers, network none, no host ports, no existing Compose volumes
+COMMAND: docker volume create phoenix_canonical_f10_backup_pg17_v12
+phoenix_canonical_f10_backup_pg17_v12
+COMMAND: docker run phoenix-canonical-f10-final-pg17-v12 --network none --env-file <ignored synthetic file> --mount exact backup volume
+ac4fc95552a32e4546278aed7d1157184a178972747d9d7923b00e9ae730c7ad
+COMMAND: docker exec phoenix-canonical-f10-final-pg17-v12 mkdir /opt/migrations /opt/tests
+COMMAND: docker cp current 0001-0009 into phoenix-canonical-f10-final-pg17-v12
+COMMAND: docker cp test files into phoenix-canonical-f10-final-pg17-v12
+COMMAND: docker exec phoenix-canonical-f10-final-pg17-v12 bash f10_ephemeral_init.sh
+APPLIED 0001_foundation.sql eea8d1deece72afdc3832d075fcfb42b71b4c1fe4fdccc8900104a0e0ca78a2d
+APPLIED 0002_education_identity_skeleton.sql bef7d9a902e8ad34491b7455987d7791667dcb8a5ab31945cf609a6aa97e4e7f
+APPLIED 0003_core_consent_access.sql 7dc0c5060237fae9069915ba8a1ecc39323cf74ab8ea0d49dd832ef9d8330618
+APPLIED 0004_casework_education_identity.sql aec2be38c6ad363f5594d65016b8a2dfcb79fe76e77a225271379bb991a443e9
+APPLIED 0005_documents_submissions.sql 7bd581d16bb8c21278bd5bc013496779fe08f509d84bf74b652e5ce3b21cdbec
+APPLIED 0006_access_decision_api.sql 2a3d6cd19febd62b7128c9ad4a2d7c94abdb9a4e11d499f36f4050eb2c2ed9d8
+psql:/tmp/f10-atomic.sql:388: NOTICE:  trigger "protect_advisor_assignment" for relation "casework.advisor_assignments" does not exist, skipping
+psql:/tmp/f10-atomic.sql:407: NOTICE:  trigger "protect_guardian_authority" for relation "core.guardian_authorities" does not exist, skipping
+psql:/tmp/f10-atomic.sql:442: NOTICE:  trigger "validate_submission_target" for relation "docs.submission_manifests" does not exist, skipping
+APPLIED 0007_security_boundary_fixes.sql 49ec737393a4a4bc5f1e287add369db4f04fbde1c021521e8b4cf781f966ff93
+APPLIED 0008_expiry_and_ephemeral_cleanup.sql 51215c0b4d76e242c28197187bf1e017362700128ddd562e2da5d64980a8588d
+APPLIED 0009_application_write_api.sql 2a48d016c0b2dd952d56a15853c8092895df057e6a0d69f5ab391803ca0747c2
+ledger=9
+tables=25
+policies=20
+COMMAND: docker exec phoenix-canonical-f10-final-pg17-v12 bash f10_ephemeral_init.sh repeat
+SKIP 0001_foundation.sql checksum verified
+SKIP 0002_education_identity_skeleton.sql checksum verified
+SKIP 0003_core_consent_access.sql checksum verified
+SKIP 0004_casework_education_identity.sql checksum verified
+SKIP 0005_documents_submissions.sql checksum verified
+SKIP 0006_access_decision_api.sql checksum verified
+SKIP 0007_security_boundary_fixes.sql checksum verified
+SKIP 0008_expiry_and_ephemeral_cleanup.sql checksum verified
+SKIP 0009_application_write_api.sql checksum verified
+ledger=9
+tables=25
+policies=20
+COMMAND: docker exec phoenix-canonical-f10-final-pg17-v12 bootstrap psql -f /opt/tests/foundation.sql
+PASS baseline foundation.sql
+COMMAND: docker exec phoenix-canonical-f10-final-pg17-v12 bootstrap psql -f /opt/tests/rls_probe.sql
+PASS baseline rls_probe.sql
+COMMAND: docker exec phoenix-canonical-f10-final-pg17-v12 bootstrap psql -f /opt/tests/docs_probe.sql
+PASS baseline docs_probe.sql
+COMMAND: docker exec phoenix-canonical-f10-final-pg17-v12 bootstrap psql -f /opt/tests/contract_neutral_probe.sql
+PASS baseline contract_neutral_probe.sql
+COMMAND: docker exec phoenix-canonical-f10-final-pg17-v12 bootstrap psql -f /opt/tests/trusted_context_probe.sql
+PASS baseline trusted_context_probe.sql
+COMMAND: docker exec phoenix-canonical-f10-final-pg17-v12 bootstrap psql -f /opt/tests/phase3_acceptance.sql
+ bind_context
+--------------
+
+(1 row)
+
+ clear_context
+---------------
+
+(1 row)
+
+ bind_context
+--------------
+
+(1 row)
+
+ clear_context
+---------------
+
+(1 row)
+
+ bind_context
+--------------
+
+(1 row)
+
+ clear_context
+---------------
+
+(1 row)
+
+ bind_context
+--------------
+
+(1 row)
+
+ clear_context
+---------------
+
+(1 row)
+
+PASS baseline phase3_acceptance.sql
+COMMAND: docker exec phoenix-canonical-f10-final-pg17-v12 bash f10_ephemeral_seed.sh
+SEED synthetic actors=6 families=2 guardian_authorities=2 assignments=4
+COMMAND: docker exec phoenix-canonical-f10-final-pg17-v12 bash f10_ephemeral_regression.sh
+TEST separate LOGIN accounts; no SET ROLE; one-use binder ticket exchanged on app connection
+psql:/opt/tests/f10_no_context_regression.sql:12: NOTICE:  PASS GUC forgery without trusted context denied
+SESSION SERVICE_A binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket
+-----------------------
+
+(1 row)
+
+psql:<stdin>:33: NOTICE:  PASS service create family/person/member/student/document/version
+psql:<stdin>:33: NOTICE:  PASS service cross-family, duplicate and non-Mock denials
+ clear_context
+---------------
+
+(1 row)
+
+SESSION FAMILY_A_CREATE binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket
+-----------------------
+
+(1 row)
+
+psql:<stdin>:41: NOTICE:  PASS family actor cannot use internal service APIs
+psql:<stdin>:41: NOTICE:  PASS family creates education and identity records
+psql:<stdin>:41: NOTICE:  PASS state skipping denied
+psql:<stdin>:41: NOTICE:  PASS manifest item denied before document Consent
+ clear_context
+---------------
+
+(1 row)
+
+SESSION ADVISOR_NO_CONSENT binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket
+-----------------------
+
+(1 row)
+
+psql:<stdin>:13: NOTICE:  PASS advisor write denied without Consent and cannot grant itself
+ clear_context
+---------------
+
+(1 row)
+
+SESSION FAMILY_A_CONSENT binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket
+-----------------------
+
+(1 row)
+
+psql:<stdin>:33: NOTICE:  PASS consent grant, duplicate denial, immediate withdrawal and regrant
+ clear_context
+---------------
+
+(1 row)
+
+SESSION ADVISOR_WITH_CONSENT binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket
+-----------------------
+
+(1 row)
+
+psql:<stdin>:24: NOTICE:  PASS assigned advisor writes only with Consent
+ clear_context
+---------------
+
+(1 row)
+
+SESSION FAMILY_A_FINISH binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket
+-----------------------
+
+(1 row)
+
+psql:<stdin>:24: NOTICE:  PASS education and identity legal state flow, no rollback or decided withdrawal
+psql:<stdin>:24: NOTICE:  PASS manifest prepare, pin, submit and immutable post-submit
+ clear_context
+---------------
+
+(1 row)
+
+SESSION PARTNER_DENIED binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket
+-----------------------
+
+(1 row)
+
+psql:<stdin>:26: NOTICE:  PASS partner channel cannot use write APIs across entities
+ clear_context
+---------------
+
+(1 row)
+
+SESSION CROSS_FAMILY binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket
+-----------------------
+
+(1 row)
+
+psql:<stdin>:22: NOTICE:  PASS cross-family writes denied
+ clear_context
+---------------
+
+(1 row)
+
+SESSION EXPIRED_CONTEXT binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket
+-----------------------
+
+(1 row)
+
+ pg_sleep
+----------
+
+(1 row)
+
+psql:<stdin>:10: NOTICE:  PASS expired trusted context denied within an open transaction
+psql:<stdin>:17: NOTICE:  PASS expired trusted context absent after transaction
+ clear_context
+---------------
+
+(1 row)
+
+psql:<stdin>:24: NOTICE:  PASS clear_context removed binding
+ clear_context
+---------------
+
+(1 row)
+
+psql:/opt/tests/f10_guardian_evidence_regression.sql:50: NOTICE:  PASS R-7 evidence immutable; old record revoked; new record and three audit events
+psql:/opt/tests/f10_catalog_regression.sql:22: NOTICE:  PASS catalog app_write=0 public_execute=0 secdef_without_path=0
+audit_allow=36
+audit_deny=43
+ledger=9
+PASS F10 separated-login synthetic regression
+COMMAND: docker exec psql local socket without pgpass; expected rejection
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: fe_sendauth: no password supplied
+PASS socket password required, exit=2
+COMMAND: docker exec phoenix-canonical-f10-final-pg17-v12 inspect pg_hba_file_rules
+local|scram-sha-256
+host|scram-sha-256
+host|scram-sha-256
+local|scram-sha-256
+host|scram-sha-256
+host|scram-sha-256
+host|scram-sha-256
+COMMAND: alter only the disposable container copy of 0009; repeat init expects checksum refusal
+SKIP 0001_foundation.sql checksum verified
+SKIP 0002_education_identity_skeleton.sql checksum verified
+SKIP 0003_core_consent_access.sql checksum verified
+SKIP 0004_casework_education_identity.sql checksum verified
+SKIP 0005_documents_submissions.sql checksum verified
+SKIP 0006_access_decision_api.sql checksum verified
+SKIP 0007_security_boundary_fixes.sql checksum verified
+SKIP 0008_expiry_and_ephemeral_cleanup.sql checksum verified
+DRIFT_REFUSED 0009_application_write_api.sql
+PASS drift rejected, exit=1
+COMMAND: docker cp pristine 0009 back into phoenix-canonical-f10-final-pg17-v12
+COMMAND: psql -f /opt/tests/9000_atomicity_probe.sql; expected synthetic failure
+psql:/opt/tests/9000_atomicity_probe.sql:9: ERROR:  SYNTHETIC FORCED MIGRATION FAILURE
+CONTEXT:  PL/pgSQL function inline_code_block line 3 at RAISE
+PASS forced failure rejected, exit=3
+COMMAND: docker exec phoenix-canonical-f10-final-pg17-v12 verify atomic rollback
+atomic_schema_exists=false
+ledger=9
+COMMAND: docker exec phoenix-canonical-f10-final-pg17-v12 pg_dump with dedicated backup LOGIN and 0600 pgpass into exact synthetic backup volume
+DUMP_MODE=600 DUMP_SIZE=420561
+DUMP_SHA=0e8380779eaac1b1df3bccc8c00cda325cfcc33614757e3e481e2806ecb31c28
+PG_RESTORE_ENTRIES=372
+COMMAND: docker run phoenix-canonical-f10-restore-pg17-v12 --network none --env-file <ignored synthetic file> --mount read-only backup volume
+3498423673a221a90a34aa60c387b16bfa6e98914d1187fbe75576ecd345f495
+COMMAND: docker exec phoenix-canonical-f10-restore-pg17-v12 mkdir /opt/tests
+COMMAND: docker cp test files into phoenix-canonical-f10-restore-pg17-v12
+COMMAND: docker exec phoenix-canonical-f10-restore-pg17-v12 bash f10_ephemeral_restore.sh
+ledger=9
+tables=25
+policies=20
+people=7
+PASS restored foundation.sql
+PASS restored rls_probe.sql
+PASS restored docs_probe.sql
+PASS restored contract_neutral_probe.sql
+PASS restored trusted_context_probe.sql
+PASS restored phase3_acceptance.sql
+psql:/opt/tests/f10_catalog_regression.sql:22: NOTICE:  PASS catalog app_write=0 public_execute=0 secdef_without_path=0
+PASS restored f10_catalog_regression.sql
+PASS fresh-cluster manifest-verified restore with synthetic rows and 0009
+COMMAND: docker inspect exact source network/port
+NETWORK=none PORTS={}
+COMMAND: docker inspect exact restore network/port
+NETWORK=none PORTS={}
+PASS PostgreSQL 17 F10 full synthetic acceptance
+CLEANUP: docker stop phoenix-canonical-f10-restore-pg17-v12
+phoenix-canonical-f10-restore-pg17-v12
+CLEANUP: docker rm phoenix-canonical-f10-restore-pg17-v12
+phoenix-canonical-f10-restore-pg17-v12
+CLEANUP: docker stop phoenix-canonical-f10-final-pg17-v12
+phoenix-canonical-f10-final-pg17-v12
+CLEANUP: docker rm phoenix-canonical-f10-final-pg17-v12
+phoenix-canonical-f10-final-pg17-v12
+CLEANUP: docker volume rm phoenix_canonical_f10_backup_pg17_v12
+phoenix_canonical_f10_backup_pg17_v12
+CLEANUP: Remove-Item exact ignored synthetic env file f10-final-pg17.env
+CLEANUP: Remove-Item exact ignored synthetic env file f10-restore-pg17.env
+**********************
+PowerShell transcript end
+End time: 20261016094916
+**********************
