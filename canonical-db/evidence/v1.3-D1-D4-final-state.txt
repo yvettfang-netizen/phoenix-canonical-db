@@ -1,0 +1,7 @@
+COMMANDS: Get-FileHash 0010; docker ps --filter canonical project; git status --short; git log -2
+0010_SHA256=eb05a55b813695ef7c6252ffc00569a0d97920008773fc07b6d0f6109959825a
+phoenix-canonical-foundation-pg17-1|Up 11 minutes (healthy)|5432/tcp
+phoenix-canonical-foundation-pg16-1|Up 12 minutes (healthy)|5432/tcp
+?? canonical-db/evidence/v1.3-D1-D4-final-state.txt
+a93ce1aa413d8f3e36ef7abe09b07491024ae7b4 test(canonical-db): cross-verify PG16 and PG17 reader and F10 boundaries
+8ecc77c57413bcbee1614946b22e3b7ac3760525 fix(canonical-db): record task B pause and add local R-8 fixes
