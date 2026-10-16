@@ -17,6 +17,7 @@ This directory contains the implemented greenfield Canonical database. It does n
 | `migrations/canonical/0008_expiry_and_ephemeral_cleanup.sql` | Natural-expiry normalization, terminal-history protection, function grants and ephemeral cleanup |
 | `migrations/canonical/0009_application_write_api.sql` | Local-only SECURITY DEFINER write API, audited decisions, guardian evidence immutability |
 | `migrations/canonical/0010_reader_ledger_usage.sql` | Local-only reader schema usage for health ledger query; no DDL grant |
+| `migrations/canonical/0011_verified_capacity_official_facts_manifest_confirmation.sql` | Founder-approved capacity evidence, official facts, and distinct confirmation/submission roles; local only pending reaudit |
 | `scripts/db.ps1` | Initialization, migration, local login provisioning, exact-name test reset, health, backup and restore test |
 | `scripts/native-db.ps1` | Optional local fallback; PG17 was used for a supplemental check before Docker became available |
 | `scripts/mock-object-store.ps1` | Synthetic local object put/get, deduplication and backup/restore test |
@@ -41,6 +42,7 @@ This directory contains the implemented greenfield Canonical database. It does n
 | `deploy/tencent/` | No-public-port PostgreSQL 16 deployment, health and backup package |
 | `FIX_EXECUTION_REPORT_V1.2_A.md`, `_B.md`, `_C.md` | Separate local rebuild, Tencent isolated update and local 0009 execution results, with raw evidence paths |
 | `FIX_EXECUTION_REPORT_V1.3.md` | First local V1.3 batch: reader ledger fix, LF archive policy, PG16/17 cross acceptance and remaining work |
+| `FIX_EXECUTION_REPORT_V1.4.md` | Local E1–E3 and D6 execution with PG16/17 raw evidence; pending Claude review |
 
 ## Run locally when Docker is available
 

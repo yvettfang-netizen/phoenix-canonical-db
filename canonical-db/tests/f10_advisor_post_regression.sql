@@ -17,7 +17,7 @@ BEGIN
     'EDUCATION_APPLICATION','018f0000-0000-7000-8000-000000004005') IS NOT TRUE THEN RAISE EXCEPTION 'advisor manifest prepare'; END IF;
   IF docs.add_submission_item('018f0000-0000-7000-8000-000000007005',1,
     '018f0000-0000-7000-8000-000000006101') IS NOT TRUE THEN RAISE EXCEPTION 'advisor manifest item with document consent'; END IF;
-  IF docs.submit_manifest('018f0000-0000-7000-8000-000000007005') IS NOT TRUE THEN RAISE EXCEPTION 'advisor manifest submit'; END IF;
+  IF docs.submit_manifest('018f0000-0000-7000-8000-000000007005') IS NOT FALSE THEN RAISE EXCEPTION 'advisor unconfirmed manifest submit'; END IF;
   RAISE NOTICE 'PASS assigned advisor writes only with Consent';
 END
 $test$;

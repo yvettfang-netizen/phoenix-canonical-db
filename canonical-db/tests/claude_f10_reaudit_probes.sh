@@ -27,13 +27,17 @@ echo "C3 binder INTERNAL ticket for a family that does not exist yet: $(binder_p
 echo "C3b SERVICE principal is a row in core.people (natural-person master): $(bootstrap_psql -Atqc "SELECT p.principal_kind||' -> core.people display_name='||pe.display_name FROM auth.principals p JOIN core.people pe ON pe.person_id=p.person_id WHERE p.principal_kind='SERVICE'")"
 
 T="$(ticket $STU_P $STU $FA FAMILY)"
-{ redeem "$T" "$STU_P"
+student_probe="$({ redeem "$T" "$STU_P"
   echo "SELECT 'C4 student self-grants IDENTITY_SENSITIVE DOCUMENT_READ to partner returned='||consent.create_grant('018f0000-0000-7000-8000-000000009904','$FA','$PARTNER','$STU','DOCUMENT_READ','IDENTITY_SENSITIVE',clock_timestamp()+interval '30 days');"
   echo "SELECT 'C5 student creates own application='||education.create_application('018f0000-0000-7000-8000-000000009905','$FA','$STU','SYN U2','SYN P2','2027');"
   echo "SELECT 'C5 READY='||education.advance_application('018f0000-0000-7000-8000-000000009905','READY');"
   echo "SELECT 'C5 SUBMITTED='||education.advance_application('018f0000-0000-7000-8000-000000009905','SUBMITTED');"
   echo "SELECT 'C5 DECIDED (no external decision fact)='||education.advance_application('018f0000-0000-7000-8000-000000009905','DECIDED');"
-  echo "SELECT auth.clear_context();"; } | app_psql -At -f - 2>&1 | grep -v -E '^$'
+  echo "SELECT auth.clear_context();"; } | app_psql -At -f - 2>&1 | grep -v -E '^$')"
+printf '%s\n' "$student_probe"
+grep -q 'C4 student self-grants IDENTITY_SENSITIVE DOCUMENT_READ to partner returned=false' <<<"$student_probe" || exit 1
+grep -q 'C5 DECIDED (no external decision fact)=false' <<<"$student_probe" || exit 1
+echo 'PASS C4/C5 unauthorized self grant and decision denied'
 echo "C5b external decision facts recorded for that application: $(bootstrap_psql -Atqc "SELECT count(*) FROM education.external_facts WHERE application_id='018f0000-0000-7000-8000-000000009905'")"
 
 T="$(ticket $SVC_P $SVC $FA INTERNAL)"
@@ -45,7 +49,10 @@ T="$(ticket $SVC_P $SVC $FA INTERNAL)"
   echo "SELECT 'C7d version 3 skipping 2 returned='||docs.append_document_version('018f0000-0000-7000-8000-000000009911','018f0000-0000-7000-8000-000000009908',3,repeat('c',64),'mock/syn/obj-0003','10');"
   echo "SELECT auth.clear_context();"; } | app_psql -At -f - 2>&1 | grep -v -E '^$'
 
-echo "C8 submitted manifests where confirmed_by = submitted_by: $(bootstrap_psql -Atqc "SELECT count(*) FILTER (WHERE confirmed_by=submitted_by)||' of '||count(*) FROM docs.submission_manifests WHERE status='SUBMITTED'")"
+c8="$(bootstrap_psql -Atqc "SELECT count(*) FILTER (WHERE confirmed_by=submitted_by)||' of '||count(*) FROM docs.submission_manifests WHERE status='SUBMITTED'")"
+echo "C8 submitted manifests where confirmed_by = submitted_by: $c8"
+test "${c8%% of *}" = 0 || exit 1
+echo 'PASS C8 submitter differs from confirmer'
 echo "C9 API coverage (functions app can execute that INSERT into casework/guardian/principal/channel tables): $(bootstrap_psql -Atqc "SELECT coalesce(string_agg(n.nspname||'.'||p.proname,','),'none') FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE has_function_privilege('phoenix_canonical_app',p.oid,'EXECUTE') AND (p.prosrc ~* 'INSERT INTO (casework\.|core\.guardian_authorities|auth\.principals|integration\.channel_grants)')")"
 echo "C10 app executable write functions: $(bootstrap_psql -Atqc "SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname IN ('auth','core','consent','audit','integration','docs','casework','education','identity') AND p.provolatile='v' AND has_function_privilege('phoenix_canonical_app',p.oid,'EXECUTE')")"
 echo "END claude probes"

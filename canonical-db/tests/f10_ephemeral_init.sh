@@ -10,7 +10,20 @@ psql_bootstrap() {
   psql -X -h 127.0.0.1 -U phoenix_bootstrap -d phoenix_canonical_dev -v ON_ERROR_STOP=1 "$@"
 }
 
-for migration in /opt/migrations/000*.sql; do
+expected_count="${F10_EXPECTED_MIGRATION_COUNT:-11}"
+[[ "$expected_count" =~ ^[1-9][0-9]*$ ]] || { echo 'FAIL invalid expected migration count'; exit 1; }
+shopt -s nullglob
+all_files=(/opt/migrations/*.sql)
+migrations=(/opt/migrations/[0-9][0-9][0-9][0-9]_*.sql)
+directory_count=${#all_files[@]}
+if [ "$directory_count" -ne "$expected_count" ] || [ "${#migrations[@]}" -ne "$directory_count" ]; then
+  echo "FAIL migration inventory expected=$expected_count directory=$directory_count matching=${#migrations[@]}"
+  exit 1
+fi
+
+processed_count=0
+for migration in "${migrations[@]}"; do
+  processed_count=$((processed_count + 1))
   name="$(basename "$migration")"
   digest="$(sha256sum "$migration" | cut -d' ' -f1)"
   ledger_exists="$(psql_bootstrap -Atqc "SELECT to_regclass('canonical_migrations.applied') IS NOT NULL")"
@@ -37,4 +50,10 @@ for migration in /opt/migrations/000*.sql; do
   echo "APPLIED $name $digest"
 done
 
+ledger_count="$(psql_bootstrap -Atqc 'SELECT count(*) FROM canonical_migrations.applied')"
+if [ "$processed_count" -ne "$directory_count" ] || [ "$ledger_count" -ne "$directory_count" ]; then
+  echo "FAIL migration counts processed=$processed_count directory=$directory_count ledger=$ledger_count expected=$expected_count"
+  exit 1
+fi
+echo "PASS migration counts processed=$processed_count directory=$directory_count ledger=$ledger_count expected=$expected_count"
 psql_bootstrap -Atqc "SELECT 'ledger='||count(*) FROM canonical_migrations.applied; SELECT 'tables='||count(*) FROM pg_tables WHERE schemaname IN ('auth','core','consent','audit','integration','docs','casework','education','identity'); SELECT 'policies='||count(*) FROM pg_policies WHERE schemaname IN ('core','consent','audit','integration','docs','casework','education','identity');"

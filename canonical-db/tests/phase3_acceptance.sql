@@ -65,8 +65,11 @@ INSERT INTO docs.submission_manifests(submission_id,family_id,subject_person_id,
 INSERT INTO docs.submission_items VALUES
  ('01940000-0000-7000-8000-000000000b03',1,'01940000-0000-7000-8000-000000000b02',repeat('a',64));
 UPDATE docs.submission_manifests
- SET status='SUBMITTED',confirmed_by='01940000-0000-7000-8000-000000000101',
-     submitted_by='01940000-0000-7000-8000-000000000101',submitted_at=clock_timestamp()
+ SET confirmed_by='01940000-0000-7000-8000-000000000101',confirmed_at=clock_timestamp()
+ WHERE submission_id='01940000-0000-7000-8000-000000000b03';
+UPDATE docs.submission_manifests
+ SET status='SUBMITTED',
+     submitted_by='01940000-0000-7000-8000-000000000106',submitted_at=clock_timestamp()
  WHERE submission_id='01940000-0000-7000-8000-000000000b03';
 
 DO $test$

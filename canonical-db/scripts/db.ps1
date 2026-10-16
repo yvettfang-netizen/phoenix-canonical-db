@@ -49,9 +49,20 @@ function Start-Database {
     Invoke-Docker ($compose + @('up', '-d', '--wait', $service))
     $pgpassEntries = @{ phoenix_bootstrap = $bootstrapPassword }
     if (Test-Path -LiteralPath $localRolesFile) {
-        $backupLine = [string](Get-Content -LiteralPath $localRolesFile | Where-Object { $_ -match '^PHOENIX_LOCAL_BACKUP_PASSWORD=[0-9a-f]{64}$' } | Select-Object -First 1)
-        if ($backupLine) {
-            $pgpassEntries['phoenix_canonical_backup_local'] = $backupLine.Substring('PHOENIX_LOCAL_BACKUP_PASSWORD='.Length)
+        $roleNames = @{
+            PHOENIX_LOCAL_MIGRATOR_PASSWORD = 'phoenix_canonical_migrator_local'
+            PHOENIX_LOCAL_APP_PASSWORD = 'phoenix_canonical_app_local'
+            PHOENIX_LOCAL_READER_PASSWORD = 'phoenix_canonical_reader_local'
+            PHOENIX_LOCAL_BINDER_PASSWORD = 'phoenix_canonical_context_binder_local'
+            PHOENIX_LOCAL_BACKUP_PASSWORD = 'phoenix_canonical_backup_local'
+        }
+        foreach ($line in [IO.File]::ReadAllLines($localRolesFile)) {
+            if ($line -match '^(PHOENIX_LOCAL_(?:MIGRATOR|APP|READER|BINDER|BACKUP)_PASSWORD)=(.*)$') {
+                $key = $Matches[1]
+                $secret = $Matches[2]
+                if ($secret -notmatch '^[0-9a-f]{64}$') { throw "Invalid local-only secret: $key" }
+                $pgpassEntries[$roleNames[$key]] = $secret
+            }
         }
     }
     Set-ContainerPgpass $pgpassEntries
@@ -356,6 +367,7 @@ switch ($Action) {
         Migrate $devDb
     }
     'health' {
+        Start-Database
         Invoke-Docker ($compose + @('exec', '-T', $service, 'pg_isready', '-U', 'phoenix_bootstrap', '-d', $devDb))
     }
     'migrate' { Migrate $devDb }

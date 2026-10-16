@@ -66,10 +66,34 @@ try {
     )
     Wait-Database $source
     Run-Checked "docker exec $source mkdir /opt/migrations /opt/tests" @('exec',$source,'mkdir','-p','/opt/migrations','/opt/tests')
-    Run-Checked "docker cp current 0001-0009 into $source" @('cp','migrations/canonical/.',"${source}:/opt/migrations")
+    Run-Checked "docker cp current Canonical migrations into $source" @('cp','migrations/canonical/.',"${source}:/opt/migrations")
     Run-Checked "docker cp test files into $source" @('cp','tests/.',"${source}:/opt/tests")
+    Run-Checked "docker exec $source stage 0011 outside migration directory for E1 ledger=10 check" @(
+        'exec',$source,'mv','/opt/migrations/0011_verified_capacity_official_facts_manifest_confirmation.sql',
+        '/tmp/0011_verified_capacity_official_facts_manifest_confirmation.sql')
+    Run-Checked "docker exec $source bash f10_ephemeral_init.sh expected=10" @(
+        'exec','-e','F10_EXPECTED_MIGRATION_COUNT=10',$source,'bash','/opt/tests/f10_ephemeral_init.sh')
+    Run-Checked "docker exec $source restore staged 0011" @(
+        'exec',$source,'mv','/tmp/0011_verified_capacity_official_facts_manifest_confirmation.sql',
+        '/opt/migrations/0011_verified_capacity_official_facts_manifest_confirmation.sql')
     Run-Checked "docker exec $source bash f10_ephemeral_init.sh" @('exec',$source,'bash','/opt/tests/f10_ephemeral_init.sh')
     Run-Checked "docker exec $source bash f10_ephemeral_init.sh repeat" @('exec',$source,'bash','/opt/tests/f10_ephemeral_init.sh')
+    Write-Output 'COMMAND: disposable container extra empty 0012 file; migration inventory must refuse'
+    $extra = & docker exec $source bash -c 'touch /opt/migrations/0012_extra_probe.sql; bash /opt/tests/f10_ephemeral_init.sh' 2>&1
+    $extraCode = $LASTEXITCODE
+    $extra | Out-Host
+    if ($extraCode -eq 0 -or (($extra -join ' ') -notmatch 'FAIL migration inventory')) { throw 'Extra migration file was not refused' }
+    Write-Output "PASS extra migration refused, exit=$extraCode"
+    Run-Checked "docker exec $source remove exact disposable extra file" @('exec',$source,'rm','/opt/migrations/0012_extra_probe.sql')
+    Write-Output 'COMMAND: disposable container temporarily hides 0011; migration inventory must refuse'
+    $missing = & docker exec $source bash -c 'mv /opt/migrations/0011_verified_capacity_official_facts_manifest_confirmation.sql /tmp/0011_verified_capacity_official_facts_manifest_confirmation.sql; bash /opt/tests/f10_ephemeral_init.sh' 2>&1
+    $missingCode = $LASTEXITCODE
+    $missing | Out-Host
+    if ($missingCode -eq 0 -or (($missing -join ' ') -notmatch 'FAIL migration inventory')) { throw 'Missing migration file was not refused' }
+    Write-Output "PASS missing migration refused, exit=$missingCode"
+    Run-Checked "docker exec $source restore exact staged 0011" @(
+        'exec',$source,'mv','/tmp/0011_verified_capacity_official_facts_manifest_confirmation.sql',
+        '/opt/migrations/0011_verified_capacity_official_facts_manifest_confirmation.sql')
 
     foreach ($suite in @('foundation.sql','rls_probe.sql','docs_probe.sql',
         'contract_neutral_probe.sql','trusted_context_probe.sql','phase3_acceptance.sql')) {
@@ -77,6 +101,8 @@ try {
     }
     Run-Checked "docker exec $source bash f10_ephemeral_seed.sh" @('exec',$source,'bash','/opt/tests/f10_ephemeral_seed.sh')
     Run-Checked "docker exec $source bash f10_ephemeral_regression.sh" @('exec',$source,'bash','/opt/tests/f10_ephemeral_regression.sh')
+    Run-Checked "docker exec $source bash claude_f10_reaudit_probes.sh" @('exec',$source,'bash','/opt/tests/claude_f10_reaudit_probes.sh')
+    Run-PsqlFile $source 'f10_d6_immutability_regression.sql'
 
     Write-Output 'COMMAND: docker exec psql local socket without pgpass; expected rejection'
     $unauth = & docker exec $source psql -X -w -U phoenix_bootstrap -d phoenix_canonical_dev -Atc 'SELECT 1' 2>&1
