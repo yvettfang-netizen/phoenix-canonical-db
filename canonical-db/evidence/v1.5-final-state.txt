@@ -1,0 +1,35 @@
+COMMAND: Get-FileHash -Algorithm SHA256 canonical-db/phase2-gate/FOUNDER_DECISION_ADDENDUM_V1.2_R9_R10_R11.md
+OUTPUT: 925c83f4d079ec6a1fd9d211786a961d988eaf0d0f033547f1e5ba485552616e
+
+COMMAND: Get-FileHash -Algorithm SHA256 canonical-db/migrations/canonical/0012_service_principal_and_context.sql,canonical-db/migrations/canonical/0013_management_write_api.sql,canonical-db/migrations/canonical/0014_rollback_resistant_write_audit.sql
+OUTPUT:
+0012_service_principal_and_context.sql 385206d698db33cd6a26b7ea48ab5362f2fa2e4256ec96740c336429ad54afa8
+0013_management_write_api.sql fcbeeea5b8fc35c0993b7b7b9dbe956fd0c6edc4a6142e49cb329fad41a320cb
+0014_rollback_resistant_write_audit.sql 92328ac4bf51b54980da63e96681220437ac20e4557fc008ab51431793ba4209
+
+COMMAND: git branch --show-current
+OUTPUT: codex/canonical-postgresql-phase1
+
+COMMAND: git diff --name-only -- canonical-db/migrations/canonical/0001* ... canonical-db/migrations/canonical/0011*
+OUTPUT: <empty; migrations 0001-0011 byte-preserved>
+
+COMMAND: pwsh -NoProfile -File canonical-db/tests/f10_local_acceptance.ps1 -Version 16
+OUTPUT SUMMARY (full raw output: v1.5-f10-pg16.txt and v1.5-f10-invocation-pg16.txt):
+PASS C2/C3 rollback-resistant log handoff and unbound personless SERVICE expectations
+PASS R20 all twelve mismatched principal/channel combinations
+PASS permanent G1-G5 with split LOGIN and one-use tickets
+PASS D9 log/database read-only reconciliation identified client rollback
+PASS PostgreSQL 16 F10 full synthetic acceptance
+
+COMMAND: pwsh -NoProfile -File canonical-db/tests/f10_local_acceptance.ps1 -Version 17
+OUTPUT SUMMARY (full raw output: v1.5-f10-pg17.txt and v1.5-f10-invocation-pg17.txt):
+PASS C2/C3 rollback-resistant log handoff and unbound personless SERVICE expectations
+PASS R20 all twelve mismatched principal/channel combinations
+PASS permanent G1-G5 with split LOGIN and one-use tickets
+PASS D9 log/database read-only reconciliation identified client rollback
+PASS PostgreSQL 17 F10 full synthetic acceptance
+
+COMMAND: rg -n -g 'v1.5-*' "POSTGRES_PASSWORD=|PASSWORD '[^']+'|PGPASSWORD=" canonical-db/evidence
+OUTPUT: NO_SECRET_ASSIGNMENTS_FOUND
+
+BOUNDARY: no Tencent connection, no deployment, no push, no merge, no PR, no real data.

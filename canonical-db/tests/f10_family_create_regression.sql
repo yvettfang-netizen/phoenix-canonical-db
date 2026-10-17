@@ -2,6 +2,26 @@
 DO $test$
 BEGIN
   IF core.create_family('018f0000-0000-7000-8000-000000000004','Forbidden Family') IS NOT FALSE THEN RAISE EXCEPTION 'family principal created family'; END IF;
+  IF casework.create_case('018f0000-0000-7000-8000-000000009940',
+    '018f0000-0000-7000-8000-000000000001','018f0000-0000-7000-8000-000000001003',
+    'Family denied',NULL,NULL) IS NOT FALSE THEN RAISE EXCEPTION 'family principal created case'; END IF;
+  IF casework.close_case('018f0000-0000-7000-8000-000000004011') IS NOT FALSE THEN RAISE EXCEPTION 'family principal closed case'; END IF;
+  IF casework.create_advisor_assignment('018f0000-0000-7000-8000-000000009941',
+    '018f0000-0000-7000-8000-000000004011','018f0000-0000-7000-8000-000000001004',
+    clock_timestamp()+interval '1 day') IS NOT FALSE THEN RAISE EXCEPTION 'family principal assigned advisor'; END IF;
+  IF casework.revoke_advisor_assignment('018f0000-0000-7000-8000-000000004021') IS NOT FALSE THEN RAISE EXCEPTION 'family principal revoked advisor'; END IF;
+  IF core.create_guardian_authority('018f0000-0000-7000-8000-000000009942',
+    '018f0000-0000-7000-8000-000000000001','018f0000-0000-7000-8000-000000001002',
+    '018f0000-0000-7000-8000-000000001003','VERIFIED','GENERAL',
+    clock_timestamp()+interval '1 day','synthetic/unauthorized') IS NOT FALSE THEN RAISE EXCEPTION 'family principal verified guardian'; END IF;
+  IF core.revoke_guardian_authority('018f0000-0000-7000-8000-000000003011') IS NOT FALSE THEN RAISE EXCEPTION 'family principal revoked guardian'; END IF;
+  IF integration.create_channel_grant('018f0000-0000-7000-8000-000000009943',
+    '018f0000-0000-7000-8000-000000002005','018f0000-0000-7000-8000-000000000001',
+    '018f0000-0000-7000-8000-000000001002',clock_timestamp()+interval '1 day') IS NOT FALSE THEN RAISE EXCEPTION 'family principal granted channel'; END IF;
+  IF integration.revoke_channel_grant('018f0000-0000-7000-8000-000000004031') IS NOT FALSE THEN RAISE EXCEPTION 'family principal revoked channel'; END IF;
+  IF auth.create_login_principal('018f0000-0000-7000-8000-000000009944',
+    '018f0000-0000-7000-8000-000000001011','FAMILY') IS NOT FALSE THEN RAISE EXCEPTION 'family principal created login'; END IF;
+  IF auth.disable_login_principal('018f0000-0000-7000-8000-000000002003') IS NOT FALSE THEN RAISE EXCEPTION 'family principal disabled login'; END IF;
   IF core.add_family_member('018f0000-0000-7000-8000-000000003034',
     '018f0000-0000-7000-8000-000000000001','018f0000-0000-7000-8000-000000001004','MEMBER') IS NOT FALSE THEN RAISE EXCEPTION 'family principal added member'; END IF;
   IF docs.create_document('018f0000-0000-7000-8000-000000006004',

@@ -1,0 +1,5 @@
+LOG_ATTEMPTS=170
+PERSISTED_MATCHES=169
+LOG_ONLY_ATTEMPTS=1
+ROLLED_BACK_ATTEMPT attempt_id=2be11afa-d127-41eb-8999-e87dda2da09c action=CREATE resource_id=018f0000-0000-7000-8000-000000009902 decision=DENY reason=FAMILY_ADVISOR_CONSENT_OR_INPUT_DENIED
+PASS D9 log/database read-only reconciliation identified client rollback

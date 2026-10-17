@@ -5,11 +5,11 @@ app_psql()       { PGPASSFILE=/tmp/f10-app.pgpass       psql -X -q -h 127.0.0.1 
 binder_psql()    { PGPASSFILE=/tmp/f10-binder.pgpass    psql -X -q -h 127.0.0.1 -U phoenix_canonical_binder_f10 -d phoenix_canonical_dev -v ON_ERROR_STOP=1 "$@"; }
 bootstrap_psql() { PGPASSFILE=/tmp/f10-bootstrap.pgpass psql -X -q -h 127.0.0.1 -U phoenix_bootstrap           -d phoenix_canonical_dev -v ON_ERROR_STOP=1 "$@"; }
 FA=018f0000-0000-7000-8000-000000000001; FB=018f0000-0000-7000-8000-000000000002
-SVC_P=018f0000-0000-7000-8000-000000002001; SVC=018f0000-0000-7000-8000-000000001001
+SVC_P=018f0000-0000-7000-8000-000000002001; SVC=NULL
 STU_P=018f0000-0000-7000-8000-000000002003; STU=018f0000-0000-7000-8000-000000001003
 B_P=018f0000-0000-7000-8000-000000002006;   B=018f0000-0000-7000-8000-000000001006
 PARTNER=018f0000-0000-7000-8000-000000001005
-ticket() { binder_psql -Atqc "SELECT auth.issue_context_ticket('$1','$2','$3','$4',clock_timestamp()+interval '45 seconds',gen_random_uuid(),'$1')"; }
+ticket() { local actor="'$2'::uuid"; [ "$2" = NULL ] && actor=NULL; binder_psql -Atqc "SELECT auth.issue_context_ticket('$1',$actor,'$3','$4',clock_timestamp()+interval '45 seconds',gen_random_uuid(),'$1')"; }
 redeem() { printf "SELECT auth.redeem_context_ticket('%s'::uuid,'%s'::uuid);\n" "$1" "$2"; }
 
 echo "C1 app LOGIN direct INSERT into core.people: $(app_psql -Atqc "INSERT INTO core.people(person_id,display_name) VALUES ('018f0000-0000-7000-8000-000000009901','X')" 2>&1 | grep -o 'ERROR:.*' | head -1)"
@@ -18,13 +18,21 @@ T="$(ticket $B_P $B $FB FAMILY)"
 { echo "BEGIN;"; redeem "$T" "$B_P"
   echo "SELECT 'C2 in-txn family-B create_application for family-A student returned='||education.create_application('018f0000-0000-7000-8000-000000009902','$FA','$STU','SYN U','SYN P','2027');"
   echo "ROLLBACK;"; } | app_psql -At -f - 2>&1 | grep -v '^$'
-echo "C2 DENY audit rows for that attempt after client ROLLBACK: $(bootstrap_psql -Atqc "SELECT count(*) FROM audit.access_events WHERE resource_id='018f0000-0000-7000-8000-000000009902'")"
+c2_rows="$(bootstrap_psql -Atqc "SELECT count(*) FROM audit.access_events WHERE resource_id='018f0000-0000-7000-8000-000000009902'")"
+echo "C2 database rows after client ROLLBACK: $c2_rows; server LOG is asserted by f10_audit_reconcile.ps1"
+test "$c2_rows" = 0 || exit 1
 T="$(ticket $B_P $B $FB FAMILY)"
 { redeem "$T" "$B_P"; echo "SELECT education.create_application('018f0000-0000-7000-8000-000000009903','$FA','$STU','SYN U','SYN P','2027');"; } | app_psql -At -f - >/dev/null 2>&1
-echo "C2b same attempt committed (control): DENY rows=$(bootstrap_psql -Atqc "SELECT count(*) FROM audit.access_events WHERE resource_id='018f0000-0000-7000-8000-000000009903' AND decision='DENY'")"
+c2_control="$(bootstrap_psql -Atqc "SELECT count(*) FROM audit.access_events WHERE resource_id='018f0000-0000-7000-8000-000000009903' AND decision='DENY'")"
+echo "C2b same attempt committed (control): DENY rows=$c2_control"
+test "$c2_control" = 1 || exit 1
 
-echo "C3 binder INTERNAL ticket for a family that does not exist yet: $(binder_psql -Atqc "SELECT auth.issue_context_ticket('$SVC_P','$SVC','018f0000-0000-7000-8000-00000000ffff','INTERNAL',clock_timestamp()+interval '30 seconds',gen_random_uuid(),'$SVC_P')" 2>&1 | grep -o 'ERROR:.*' | head -1)"
-echo "C3b SERVICE principal is a row in core.people (natural-person master): $(bootstrap_psql -Atqc "SELECT p.principal_kind||' -> core.people display_name='||pe.display_name FROM auth.principals p JOIN core.people pe ON pe.person_id=p.person_id WHERE p.principal_kind='SERVICE'")"
+c3_family="$(bootstrap_psql -Atqc "SELECT count(*) FROM core.families WHERE family_id='018f0000-0000-7000-8000-000000000001'")"
+c3_service="$(bootstrap_psql -Atqc "SELECT count(*) FROM auth.principals WHERE principal_kind='SERVICE' AND person_id IS NULL")"
+echo "C3 unbound SERVICE family bootstrap exists: $c3_family"
+echo "C3b SERVICE principal has no person: $c3_service"
+test "$c3_family" = 1 && test "$c3_service" = 1 || exit 1
+echo 'PASS C2/C3 rollback-resistant log handoff and unbound personless SERVICE expectations'
 
 T="$(ticket $STU_P $STU $FA FAMILY)"
 student_probe="$({ redeem "$T" "$STU_P"
