@@ -53,3 +53,10 @@
 - 产品设计来源在本审查范围内**不存在**，因此在提供来源前，启明堂的 Migration 设计**不得开始**（BLOCKED）。
 - 现有 Canonical 可以提供的基础：学生档案、家庭、监护与 Consent、顾问分配、权益引用的模式（将来）。这些是复用点，而不是已实现的学习能力。
 - 建议的开发顺序见 `CANONICAL_MIGRATION_NEXT_PHASE_PLAN_V1.0`：来源到位后，先做 Course / Enrollment / Teacher Assignment，再做作业与反馈，最后做进度报告。
+
+## R1 更正（2026-10-17）
+
+- 原文"启明堂产品设计未找到"（来源缺失）**已更正**：Notion 中存在启明堂 Founder Decision Freeze 页面（`3d8c31ee15bb81808f88c8340de41b09`），上一会话已读取。
+- 本轮该页 **ACCESS BLOCKED**（连接器 404，浏览器空白）。因此学习域的任何规则都不能标记为 VERIFIED。
+- 所有依赖该页的学习规则，现在标记为 PROPOSED。见 `NOTION_SOURCE_VERIFICATION_R1.md` 与 `../learning-v2.0/`。
+- 上文"未找到"的判断来自主仓库检索，它不代表 Notion 中不存在。

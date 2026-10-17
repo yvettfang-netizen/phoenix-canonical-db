@@ -83,3 +83,10 @@
 | ASKWISE 的 10 项业务对象在 Canonical 中全部 MISSING | 第 2 节 |
 | 来源不完整 | ASKWISE Data Architecture V1.0 与 Student Model V1.0 未找到；L0–L5、P5 未核实 |
 | 设计可以先行，实现必须等 Founder 决定 | D-3、D-6，见 `FOUNDER_DECISION_REQUIRED_V1.9` |
+
+## R1 更正（2026-10-17）
+
+- 原文"ASKWISE Data Architecture V1.0 未找到"与"ASKWISE Student Model V1.0 未找到"**已更正**：两页在 Notion 中存在（`3c0c31ee15bb81f8ba4aecbadf61c210`、`3c0c31ee15bb81fdba4aecbadf61c210`），上一会话已读取。
+- 本轮两页均 **ACCESS BLOCKED**（连接器 404；浏览器未能在本轮打开）。
+- 本文件中依赖这两页的字段级映射，标记为 PROPOSED，待恢复访问后重新核对。
+- 映射契约中的学生 ID 规则见 `../v1.9/STUDENT_ID_MAPPING_CONTRACT_R1.md`。

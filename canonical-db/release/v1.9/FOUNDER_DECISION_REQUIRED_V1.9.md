@@ -130,3 +130,18 @@
 4. D-3、D-6、D-7 → 0022、0023
 5. D-9（九灵兽）在来源到位前不排期
 6. D-10、D-11 随时可以决定，与开发无依赖
+
+## R1 更正（2026-10-17）
+
+**D-3 更新：** 原表格判为"未找到"的来源，现在的情况是：
+
+| 文件 | 原状态 | R1 状态 |
+|---|---|---|
+| 启明堂产品设计（Freeze 页）| 未找到 | **存在，ACCESS BLOCKED**（本轮）|
+| ASKWISE Data Architecture V1.0 | 未找到 | **存在，ACCESS BLOCKED**（本轮）|
+| ASKWISE Student Model V1.0 | 未找到 | **存在，ACCESS BLOCKED**（本轮）|
+| 九灵兽 Runtime 设计（基线页）| 未找到 | **存在，ACCESS BLOCKED**（本轮）；仍为 BLOCKED |
+
+**需要你做的事情已经改变**：不再是"提供正式文本"，而是**恢复对这些页面的访问**（见 `NOTION_SOURCE_VERIFICATION_R1.md` 第 5 节）。
+
+**D-9 补充：** 主仓库检索无九灵的设计与代码；Notion 中存在九灵基线页，但本轮无法读取。两者不矛盾。在访问恢复之前，D-9 维持 BLOCKED。

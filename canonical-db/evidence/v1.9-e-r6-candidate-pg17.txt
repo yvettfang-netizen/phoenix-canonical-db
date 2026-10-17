@@ -1,0 +1,48 @@
+TASK=V1.9-R1 P1 E-R6 reproduction VERSION=17 IMAGE=postgres:17@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3 MIGRATIONS=17 HEAD=3545376cba4d3de5136e596e0dc1f28bd566f346 2026-10-17 16:03:20 +0800
+BOUNDARY: one disposable container, network none, no host ports, synthetic data only
+psql:/tmp/f10-atomic.sql:388: NOTICE:  trigger "protect_advisor_assignment" for relation "casework.advisor_assignments" does not exist, skipping
+psql:/tmp/f10-atomic.sql:407: NOTICE:  trigger "protect_guardian_authority" for relation "core.guardian_authorities" does not exist, skipping
+psql:/tmp/f10-atomic.sql:442: NOTICE:  trigger "validate_submission_target" for relation "docs.submission_manifests" does not exist, skipping
+PASS migrations installed: 17
+CANDIDATE APPLIED (not a migration; disposable container only): tests/candidates/e_r6_0018_candidate.sql
+== setup: two families, two students, two guardians, one advisor, one case per family
+PASS setup has no ERROR lines got=[0]
+== T-A baseline: case open, assignment active, consent active
+PASS T-A advisor reads S1 basics (case open) got=[1]
+PASS T-A advisor reads APP1 (consent active) got=[1]
+PASS T-A positive: advisor reads C1 case row while open got=[1]
+PASS T-A positive: advisor reads AS1 assignment row while active got=[1]
+PASS T-A positive: advisor reads S1 student profile got=[1]
+PASS T-A positive: advisor reads S1 membership row got=[1]
+== T-B cross-family isolation
+PASS T-B advisor bound F1 reads S2 (F2) basics got=[0]
+PASS T-B advisor bound F2 reads S1 (F1) basics got=[0]
+PASS T-B advisor bound F2 reads APP1 (F1) got=[0]
+PASS T-B advisor bound F2 reads its own S2 basics (control) got=[1]
+== T-C consent withdrawal (guardian G1 withdraws EDUCATION_CASE consent)
+PASS T-C withdraw_grant returns true got=[true]
+PASS T-C advisor reads APP1 after consent withdrawn got=[0]
+OBSERVE T-C advisor reads S1 basics after consent withdrawn (basics are not consent-gated in can_read_subject_basics) got=[1]
+PASS T-C consent re-granted for the closure test got=[true]
+== T-E assignment revoked while the advisor session is bound (F2)
+PASS T-E revoke_advisor_assignment returns true got=[true]
+PASS T-E bound session reads S2 basics after assignment revoked got=[0]
+== T-F assignment expires while the advisor session is bound (F2, only AS3 active)
+PASS T-F short assignment created got=[true]
+PASS T-F bound session reads S2 basics before valid_until got=[1]
+PASS T-F bound session reads S2 basics after valid_until got=[0]
+== T-D E-R6: case closed while the advisor session is bound (F1)
+PASS T-D close_case returns true got=[true]
+PASS T-D bound session reads APP1 after case closed (0016 protects applications) got=[0]
+PASS T-D bound session reads the C1 case row after closure (cases_read) got=[0]
+PASS T-D bound session reads the AS1 assignment row after closure (assignments_read) got=[0]
+PASS T-D bound session reads S1 student profile after closure got=[0]
+PASS T-D bound session reads S1 membership row after closure got=[0]
+PASS T-D bound session reads S1 basics after case closed (E-R6) got=[0]
+PASS T-D bound session reads S1 basics after the context TTL (expired context) got=[0]
+PASS T-D a new binding after closure is refused got=[BIND_REFUSED CONTEXT_ADVISOR_ASSIGNMENT_INVALID]
+OBSERVE T-D assignment row after case closure (close_case does not end assignments) got=[ACTIVE|revoked=false|valid_now=true]
+OBSERVE T-D case row after closure got=[CLOSED]
+OBSERVE auth.session_contexts columns (expires_at is copied from the ticket, at most 60 s, and enforced by the current_* helpers) got=[backend_pid,principal_id,actor_person_id,family_id,channel,request_nonce,expires_at,bound_at,backend_start]
+SUMMARY findings=0
+RESULT no E-R6 finding

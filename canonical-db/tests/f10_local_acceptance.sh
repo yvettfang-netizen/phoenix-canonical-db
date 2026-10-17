@@ -53,6 +53,12 @@ docker exec "$SRC" mv "/tmp/$last_name" /opt/migrations/
 refuse "unnumbered .sql file" exec "$SRC" bash -c 'touch /opt/migrations/zz_unnumbered.sql; bash /opt/tests/f10_ephemeral_init.sh'
 docker exec "$SRC" rm /opt/migrations/zz_unnumbered.sql
 
+# V1.9-R1 E-R6: optional candidate fix applied after migrations and before the suites (default off, not a migration).
+if [ -n "${F10_CANDIDATE_SQL:-}" ]; then
+  docker cp "$ROOT/$F10_CANDIDATE_SQL" "$SRC:/tmp/f10_candidate.sql" || { echo "FAIL copy candidate"; exit 1; }
+  docker exec "$SRC" bash -c 'PGPASSFILE=/tmp/f10-bootstrap.pgpass psql -X -q -h 127.0.0.1 -U phoenix_bootstrap -d phoenix_canonical_dev -v ON_ERROR_STOP=1 -f /tmp/f10_candidate.sql' >/dev/null || { echo "FAIL candidate apply"; exit 1; }
+  echo "CANDIDATE APPLIED (not a migration): $F10_CANDIDATE_SQL"
+fi
 echo "=== suites"
 for s in foundation.sql rls_probe.sql docs_probe.sql contract_neutral_probe.sql trusted_context_probe.sql phase3_acceptance.sql; do psqlf "$SRC" "$s"; done
 # V1.9 P5 PoC: optional move of table/function ownership to a NOLOGIN owner role (default off).
