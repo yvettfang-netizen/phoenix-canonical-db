@@ -1,0 +1,114 @@
+## FUNCTIONS by schema: total | secdef | owner
+audit | 2 | secdef=2 | owner=phoenix_bootstrap
+auth | 23 | secdef=23 | owner=phoenix_bootstrap
+casework | 8 | secdef=8 | owner=phoenix_bootstrap
+consent | 6 | secdef=5 | owner=phoenix_bootstrap
+core | 23 | secdef=22 | owner=phoenix_bootstrap
+docs | 17 | secdef=15 | owner=phoenix_bootstrap
+education | 9 | secdef=8 | owner=phoenix_bootstrap
+identity | 9 | secdef=8 | owner=phoenix_bootstrap
+integration | 3 | secdef=3 | owner=phoenix_bootstrap
+## APP-EXECUTABLE (role=phoenix_canonical_app)
+auth.clear_context()
+auth.create_login_principal(p_id uuid, p_person_id uuid, p_kind text)
+auth.current_actor_person_id()
+auth.current_backend_start()
+auth.current_channel()
+auth.current_family_id()
+auth.current_principal_id()
+auth.disable_external_identity(p_id uuid)
+auth.disable_login_principal(p_id uuid)
+auth.redeem_context_ticket(p_ticket_id uuid, p_expected_principal_id uuid)
+auth.register_external_identity(p_id uuid, p_issuer text, p_subject text, p_principal_id uuid)
+casework.close_case(p_id uuid)
+casework.create_advisor_assignment(p_id uuid, p_case_id uuid, p_advisor_id uuid, p_valid_until timestamp with time zone)
+casework.create_case(p_id uuid, p_family_id uuid, p_subject_id uuid, p_title text, p_resource_kind text, p_resource_id uuid)
+casework.has_active_advisor_assignment(p_resource_kind text, p_resource_id uuid)
+casework.is_current_advisor_for_case(p_case_id uuid)
+casework.revoke_advisor_assignment(p_id uuid)
+consent.create_grant(p_consent_id uuid, p_family_id uuid, p_grantee_person_id uuid, p_subject_person_id uuid, p_purpose text, p_data_class text, p_expires_at timestamp with time zone)
+consent.has_active_consent(p_subject_person_id uuid, p_purpose text, p_data_class text)
+consent.withdraw_grant(p_consent_id uuid)
+core.add_family_member(p_membership_id uuid, p_family_id uuid, p_person_id uuid, p_membership_role text)
+core.can_read_subject_basics(p_person_id uuid)
+core.create_family(p_family_id uuid, p_display_name text)
+core.create_guardian_authority(p_id uuid, p_family_id uuid, p_guardian_id uuid, p_subject_id uuid, p_level text, p_scope text, p_until timestamp with time zone, p_evidence_ref text)
+core.create_person(p_person_id uuid, p_display_name text, p_family_id uuid, p_membership_id uuid, p_membership_role text)
+core.create_student_profile(p_person_id uuid)
+core.current_actor_is_family_member()
+core.end_family_membership(p_membership_id uuid, p_valid_until timestamp with time zone)
+core.has_verified_guardian_authority(p_subject_person_id uuid, p_scope text)
+core.person_in_current_family(p_person_id uuid)
+core.register_external_person(p_id uuid, p_name text)
+core.rename_family(p_family_id uuid, p_display_name text)
+core.rename_person(p_person_id uuid, p_display_name text)
+core.revoke_guardian_authority(p_id uuid)
+core.set_civil_capacity(p_record_id uuid, p_person_id uuid, p_capacity_status text, p_evidence_ref text)
+docs.add_submission_item(p_submission_id uuid, p_item_no integer, p_version_id uuid)
+docs.append_document_version(p_version_id uuid, p_document_id uuid, p_version_no integer, p_content_sha256 character, p_storage_key text, p_size_bytes bigint)
+docs.authorize_document_read(p_document_id uuid)
+docs.can_read_document(p_subject_person_id uuid, p_data_class text)
+docs.confirm_manifest(p_submission_id uuid)
+docs.create_document(p_document_id uuid, p_family_id uuid, p_subject_person_id uuid, p_data_class text, p_document_kind text, p_retention_until timestamp with time zone)
+docs.create_submission_manifest(p_submission_id uuid, p_family_id uuid, p_subject_person_id uuid, p_target_kind text, p_target_id uuid)
+docs.submit_manifest(p_submission_id uuid)
+docs.withdraw_document(p_document_id uuid)
+education.advance_application(p_application_id uuid, p_next_status text)
+education.authorize_application_read(p_application_id uuid)
+education.create_application(p_application_id uuid, p_family_id uuid, p_student_person_id uuid, p_institution_label text, p_program_label text, p_cycle_label text)
+education.record_external_fact(p_fact_id uuid, p_application_id uuid, p_fact_kind text, p_source_name text, p_external_reference text, p_observed_at timestamp with time zone)
+identity.advance_case(p_identity_case_id uuid, p_next_status text)
+identity.authorize_case_read(p_identity_case_id uuid)
+identity.create_case(p_identity_case_id uuid, p_family_id uuid, p_subject_person_id uuid, p_case_kind text)
+identity.record_external_fact(p_fact_id uuid, p_identity_case_id uuid, p_fact_kind text, p_source_name text, p_external_reference text, p_observed_at timestamp with time zone)
+integration.create_channel_grant(p_id uuid, p_principal_id uuid, p_family_id uuid, p_subject_id uuid, p_until timestamp with time zone)
+integration.has_active_channel_grant(p_subject_person_id uuid)
+integration.revoke_channel_grant(p_id uuid)
+## BINDER-EXECUTABLE
+auth.bind_context
+auth.cleanup_ephemeral_state
+auth.cleanup_stale_contexts
+auth.clear_context
+auth.issue_context_ticket
+auth.resolve_external_identity
+## READER-EXECUTABLE
+auth.clear_context
+auth.current_actor_person_id
+auth.current_backend_start
+auth.current_channel
+auth.current_family_id
+auth.current_principal_id
+casework.has_active_advisor_assignment
+casework.is_current_advisor_for_case
+consent.has_active_consent
+core.can_read_subject_basics
+core.current_actor_is_family_member
+core.has_verified_guardian_authority
+core.person_in_current_family
+docs.can_read_document
+integration.has_active_channel_grant
+## MIGRATOR-EXECUTABLE
+auth.disable_service_principal
+auth.install_service_principal
+auth.sweep_expired_authorizations
+## POLICIES
+audit.access_events | audit_read | SELECT
+casework.advisor_assignments | assignments_read | SELECT
+casework.cases | cases_read | SELECT
+consent.grants | consent_read | SELECT
+core.families | families_read | SELECT
+core.family_memberships | memberships_read | SELECT
+core.guardian_authorities | guardian_authorities_read | SELECT
+core.people | people_read | SELECT
+core.student_profiles | student_profiles_read | SELECT
+docs.document_versions | document_versions_read | SELECT
+docs.documents | documents_read | SELECT
+docs.submission_items | manifest_items_read | SELECT
+docs.submission_manifests | manifests_read | SELECT
+education.application_status_events | application_events_read | SELECT
+education.applications | applications_read | SELECT
+education.external_facts | education_facts_read | SELECT
+identity.case_status_events | identity_events_read | SELECT
+identity.cases | identity_cases_read | SELECT
+identity.external_facts | identity_facts_read | SELECT
+integration.channel_grants | channel_grants_read | SELECT

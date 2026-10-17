@@ -25,7 +25,7 @@
 | 0014 | `0014_rollback_resistant_write_audit.sql` | `92328ac4bf51b54980da63e96681220437ac20e4557fc008ab51431793ba4209` | `4a9a29e` | D-9 审计双写（`PHOENIX_AUDIT` + attempt_id） |
 | 0015 | `0015_contract_gap_controls.sql` | `a639f9f10c5130c780f008832bcf9e4852badd00fcec618379e94d4e7c82d683` | `a1ec169`（10-17） | EV 合同缺口 T1–T4 |
 | 0016 | `0016_assignment_scope_integrity.sql` | `7b10af1992e548e065c68d947b47bb073cdc88c52e4312b9aa9ccbe1bfa962e4` | `12e7a63`（10-17） | V16-F1 / F2 / F3 缺陷修复 |
-| 0017 | `0017_external_identity_request_trace.sql` | `c701f74897ca13d503c8c165fd2182d77a06583afa832760dc80f8dd9524aab6` | V1.8 提交（见 `04` / `10`） | FD-6：外部身份映射、请求编号进入审计 |
+| 0017 | `0017_external_identity_request_trace.sql` | `c701f74897ca13d503c8c165fd2182d77a06583afa832760dc80f8dd9524aab6` | `c5e81e6`（V1.8） | FD-6：外部身份映射、请求编号进入审计 |
 
 ## 核验结果
 

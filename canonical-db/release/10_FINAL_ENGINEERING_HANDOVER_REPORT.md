@@ -34,6 +34,8 @@
 | `a1ec169` | V1.6 收尾：0015（Codex 实现）、Claude 独立复跑、V1.6 报告 |
 | `12e7a63` | V1.7：0016 缺陷修复、bash F10、升级路径验收、预检、`install.sh` 服务主体步骤、`restore.sh` 去掉 python 依赖、部署包演练 |
 | `c5e81e6` | V1.8：0017（FD-6）、FD-7 运维脚本、口令日志加固、安全目录审计、`release/02`、`release/04` |
+| `58096af` | 测试脚本删除容器时一并删除匿名数据卷（`docker rm -f -v`）|
+| `32f6b1b` | 部署演练证据按最终代码刷新 |
 | 本文件所在提交 | `release/00`、`01`、`03`、`05`–`10` |
 
 **未推送：** 私有仓库 `yvettfang-netizen/phoenix-canonical-db` 仍停在 `d3caaac`，本地领先若干提交；公开仓库 `origin` 中没有这个分支。

@@ -55,6 +55,11 @@ docker exec "$SRC" rm /opt/migrations/zz_unnumbered.sql
 
 echo "=== suites"
 for s in foundation.sql rls_probe.sql docs_probe.sql contract_neutral_probe.sql trusted_context_probe.sql phase3_acceptance.sql; do psqlf "$SRC" "$s"; done
+# V1.9 P5 PoC: optional move of table/function ownership to a NOLOGIN owner role (default off).
+if [ "${F10_OWNER_TRANSFER:-0}" = 1 ]; then
+  psqlf "$SRC" owner_transfer.sql
+  psqlf "$SRC" owner_transfer_check.sql
+fi
 run "API seed" exec "$SRC" bash /opt/tests/f10_ephemeral_seed.sh
 run "F10 regression" exec "$SRC" bash /opt/tests/f10_ephemeral_regression.sh
 run "C1-C10 probes" exec "$SRC" bash /opt/tests/claude_f10_reaudit_probes.sh
@@ -97,7 +102,7 @@ run "docker run restore --network none" run -d --name "$RST" --network none --en
 wait_db "$RST"; sleep 3
 docker exec "$RST" mkdir -p /opt/tests
 run "copy tests to restore" cp "$ROOT/tests/." "$RST:/opt/tests"
-run "fresh-cluster restore" exec "$RST" bash /opt/tests/f10_ephemeral_restore.sh
+run "fresh-cluster restore" exec -e F10_OWNER_TRANSFER="${F10_OWNER_TRANSFER:-0}" "$RST" bash /opt/tests/f10_ephemeral_restore.sh
 docker inspect "$SRC" --format 'SRC NETWORK={{.HostConfig.NetworkMode}} PORTS={{json .HostConfig.PortBindings}}'
 docker inspect "$RST" --format 'RST NETWORK={{.HostConfig.NetworkMode}} PORTS={{json .HostConfig.PortBindings}}'
 echo "PASS PostgreSQL $V F10 full synthetic acceptance (bash)"

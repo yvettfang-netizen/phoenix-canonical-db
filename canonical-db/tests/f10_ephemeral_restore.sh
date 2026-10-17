@@ -26,9 +26,22 @@ CREATE ROLE phoenix_canonical_app_f10 NOLOGIN;
 CREATE ROLE phoenix_canonical_binder_f10 NOLOGIN;
 CREATE ROLE phoenix_canonical_backup_f10 NOLOGIN;
 SQL
+if [ "${F10_OWNER_TRANSFER:-0}" = 1 ]; then
+  psql_restore <<'SQL'
+CREATE ROLE phoenix_canonical_schema_owner NOLOGIN NOINHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS;
+SQL
+fi
 
 pg_restore -h 127.0.0.1 -U phoenix_bootstrap -d phoenix_canonical_dev \
   --no-owner --exit-on-error /f10backup/source.dump
+
+# V1.9 owner PoC only: --no-owner restores every object under the bootstrap role. The owner model is
+# therefore re-applied after restore; the production restore path must decide between this and dropping
+# --no-owner (see DATABASE_OWNER_SECURITY_DECISION_V1.0.md).
+if [ "${F10_OWNER_TRANSFER:-0}" = 1 ]; then
+  psql_restore -f /opt/tests/owner_transfer.sql
+  psql_restore -f /opt/tests/owner_transfer_check.sql
+fi
 
 catalog="$(psql_restore -Atqc "SELECT 'ledger='||count(*) FROM canonical_migrations.applied; SELECT 'tables='||count(*) FROM pg_tables WHERE schemaname IN ('auth','core','consent','audit','integration','docs','casework','education','identity'); SELECT 'policies='||count(*) FROM pg_policies WHERE schemaname IN ('core','consent','audit','integration','docs','casework','education','identity'); SELECT 'people='||count(*) FROM core.people;")"
 printf '%s\n' "$catalog"
