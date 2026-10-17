@@ -32,13 +32,13 @@ pg_restore -h 127.0.0.1 -U phoenix_bootstrap -d phoenix_canonical_dev \
 
 catalog="$(psql_restore -Atqc "SELECT 'ledger='||count(*) FROM canonical_migrations.applied; SELECT 'tables='||count(*) FROM pg_tables WHERE schemaname IN ('auth','core','consent','audit','integration','docs','casework','education','identity'); SELECT 'policies='||count(*) FROM pg_policies WHERE schemaname IN ('core','consent','audit','integration','docs','casework','education','identity'); SELECT 'people='||count(*) FROM core.people;")"
 printf '%s\n' "$catalog"
-grep -qx 'ledger=14' <<<"$catalog"
+grep -qx 'ledger=15' <<<"$catalog"
 grep -qx 'tables=26' <<<"$catalog"
 grep -qx 'policies=20' <<<"$catalog"
 grep -q '^people=[1-9]' <<<"$catalog"
 
-for suite in foundation.sql rls_probe.sql docs_probe.sql contract_neutral_probe.sql trusted_context_probe.sql phase3_acceptance.sql f10_catalog_regression.sql f10_d6_immutability_regression.sql; do
+for suite in foundation.sql rls_probe.sql docs_probe.sql contract_neutral_probe.sql trusted_context_probe.sql phase3_acceptance.sql f10_catalog_regression.sql f10_d6_immutability_regression.sql f10_v16_document_trigger.sql; do
   psql_restore -f "/opt/tests/$suite" >/tmp/f10-restore-suite.log
   echo "PASS restored $suite"
 done
-echo 'PASS fresh-cluster manifest-verified restore with synthetic rows and 0014'
+echo 'PASS fresh-cluster manifest-verified restore with synthetic rows and 0015'

@@ -47,8 +47,8 @@ BEGIN
   RAISE NOTICE 'PASS family creates education and identity records';
 
   IF education.advance_application('018f0000-0000-7000-8000-000000004003','SUBMITTED') IS NOT FALSE THEN RAISE EXCEPTION 'education skipped status'; END IF;
-  IF identity.advance_case('018f0000-0000-7000-8000-000000004004','CLOSED') IS NOT FALSE THEN RAISE EXCEPTION 'identity skipped status'; END IF;
-  RAISE NOTICE 'PASS state skipping denied';
+  IF identity.advance_case('018f0000-0000-7000-8000-000000004004','CLOSED') IS NOT TRUE THEN RAISE EXCEPTION 'identity draft close'; END IF;
+  RAISE NOTICE 'PASS education state skipping denied and identity DRAFT close allowed';
 
   IF docs.create_submission_manifest('018f0000-0000-7000-8000-000000007001',
     '018f0000-0000-7000-8000-000000000001','018f0000-0000-7000-8000-000000001003',
