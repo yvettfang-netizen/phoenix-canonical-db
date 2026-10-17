@@ -1,0 +1,156 @@
+## TABLES (schema.table | columns | pk | fk | unique | check | triggers | rls | policies)
+audit.access_events | 13 | 1 | 0 | 1 | 1 | 0 | t | 1
+auth.context_exchange_tickets | 9 | 1 | 4 | 0 | 4 | 0 | f | 0
+auth.external_identities | 9 | 1 | 3 | 1 | 5 | 0 | t | 0
+auth.principals | 8 | 1 | 3 | 1 | 5 | 0 | f | 0
+auth.session_contexts | 9 | 1 | 3 | 0 | 3 | 0 | f | 0
+canonical_migrations.applied | 3 | 1 | 0 | 0 | 0 | 0 | f | 0
+casework.advisor_assignments | 9 | 1 | 4 | 1 | 3 | 1 | t | 1
+casework.cases | 11 | 1 | 4 | 0 | 6 | 0 | t | 1
+consent.grants | 11 | 1 | 4 | 1 | 6 | 2 | t | 1
+core.civil_capacity_history | 6 | 1 | 2 | 0 | 3 | 1 | t | 0
+core.families | 3 | 1 | 0 | 0 | 2 | 0 | t | 1
+core.family_memberships | 6 | 1 | 2 | 1 | 3 | 0 | t | 1
+core.guardian_authorities | 13 | 1 | 5 | 1 | 6 | 3 | t | 1
+core.people | 3 | 1 | 0 | 0 | 2 | 0 | t | 1
+core.student_profiles | 2 | 1 | 1 | 0 | 0 | 0 | t | 1
+docs.document_versions | 7 | 1 | 1 | 2 | 5 | 1 | t | 1
+docs.documents | 9 | 1 | 2 | 0 | 3 | 1 | t | 1
+docs.submission_items | 4 | 1 | 2 | 1 | 2 | 2 | t | 1
+docs.submission_manifests | 13 | 1 | 6 | 0 | 7 | 2 | t | 1
+education.application_status_events | 7 | 1 | 3 | 0 | 0 | 0 | t | 1
+education.applications | 9 | 1 | 2 | 0 | 5 | 3 | t | 1
+education.external_facts | 6 | 1 | 1 | 1 | 2 | 1 | t | 1
+identity.case_status_events | 7 | 1 | 3 | 0 | 0 | 0 | t | 1
+identity.cases | 7 | 1 | 2 | 0 | 3 | 3 | t | 1
+identity.external_facts | 6 | 1 | 1 | 1 | 2 | 1 | t | 1
+integration.channel_grants | 10 | 1 | 5 | 1 | 2 | 0 | t | 1
+integration.legacy_id_mappings | 9 | 1 | 1 | 1 | 7 | 0 | f | 0
+integration.public_ids | 4 | 1 | 0 | 1 | 3 | 0 | f | 0
+## STATUS / ENUM CHECKS (table | constraint)
+audit.access_events | CHECK ((decision = ANY (ARRAY['ALLOW'::text, 'DENY'::text])))
+auth.context_exchange_tickets | CHECK ((channel = ANY (ARRAY['FAMILY'::text, 'ADVISOR'::text, 'PARTNER'::text, 'INTERNAL'::text])))
+auth.external_identities | CHECK ((status = ANY (ARRAY['ACTIVE'::text, 'DISABLED'::text])))
+auth.principals | CHECK ((principal_kind = ANY (ARRAY['FAMILY'::text, 'ADVISOR'::text, 'CHANNEL'::text, 'SERVICE'::text])))
+auth.principals | CHECK ((status = ANY (ARRAY['ACTIVE'::text, 'DISABLED'::text])))
+auth.session_contexts | CHECK ((channel = ANY (ARRAY['FAMILY'::text, 'ADVISOR'::text, 'PARTNER'::text, 'INTERNAL'::text])))
+casework.advisor_assignments | CHECK ((lifecycle_status = ANY (ARRAY['ACTIVE'::text, 'REVOKED'::text, 'EXPIRED'::text])))
+casework.cases | CHECK ((resource_kind = ANY (ARRAY['EDUCATION_APPLICATION'::text, 'IDENTITY_CASE'::text])))
+casework.cases | CHECK ((status = ANY (ARRAY['OPEN'::text, 'PAUSED'::text, 'CLOSED'::text])))
+consent.grants | CHECK ((data_class = ANY (ARRAY['GENERAL'::text, 'EDUCATION'::text, 'IDENTITY_SENSITIVE'::text])))
+consent.grants | CHECK ((purpose = ANY (ARRAY['DOCUMENT_READ'::text, 'EDUCATION_CASE'::text, 'IDENTITY_CASE'::text])))
+consent.grants | CHECK ((status = ANY (ARRAY['ACTIVE'::text, 'WITHDRAWN'::text, 'EXPIRED'::text])))
+core.civil_capacity_history | CHECK ((capacity_status = ANY (ARRAY['ADULT_VERIFIED'::text, 'MINOR_VERIFIED'::text, 'UNVERIFIED'::text])))
+core.family_memberships | CHECK ((membership_role = ANY (ARRAY['PRIMARY'::text, 'MEMBER'::text])))
+core.guardian_authorities | CHECK ((evidence_level = ANY (ARRAY['VERIFIED'::text, 'SELF_DECLARED_LEGACY'::text])))
+core.guardian_authorities | CHECK ((lifecycle_status = ANY (ARRAY['ACTIVE'::text, 'REVOKED'::text, 'EXPIRED'::text])))
+core.guardian_authorities | CHECK ((scope = ANY (ARRAY['GENERAL'::text, 'EDUCATION'::text, 'IDENTITY'::text])))
+docs.documents | CHECK ((data_class = ANY (ARRAY['GENERAL'::text, 'EDUCATION'::text, 'IDENTITY_SENSITIVE'::text])))
+docs.submission_manifests | CHECK ((status = ANY (ARRAY['PREPARING'::text, 'SUBMITTED'::text])))
+docs.submission_manifests | CHECK ((target_kind = ANY (ARRAY['EDUCATION_APPLICATION'::text, 'IDENTITY_CASE'::text])))
+education.applications | CHECK ((status = ANY (ARRAY['DRAFT'::text, 'READY'::text, 'SUBMITTED'::text, 'DECIDED'::text, 'WITHDRAWN'::text])))
+education.external_facts | CHECK ((fact_kind = ANY (ARRAY['OFFICIAL_RECEIPT'::text, 'DECISION'::text])))
+identity.cases | CHECK ((status = ANY (ARRAY['DRAFT'::text, 'EVIDENCE_PENDING'::text, 'UNDER_REVIEW'::text, 'RESOLVED'::text, 'CLOSED'::text])))
+identity.external_facts | CHECK ((fact_kind = ANY (ARRAY['OFFICIAL_RECEIPT'::text, 'DECISION'::text])))
+integration.legacy_id_mappings | CHECK ((entity_kind = ANY (ARRAY['PERSON'::text, 'FAMILY'::text, 'STUDENT_PROFILE'::text, 'GUARDIAN_AUTHORITY'::text])))
+integration.legacy_id_mappings | CHECK ((mapping_status = ANY (ARRAY['PENDING'::text, 'VERIFIED'::text, 'REVOKED'::text, 'SUPERSEDED'::text])))
+integration.public_ids | CHECK ((entity_kind = ANY (ARRAY['PERSON'::text, 'FAMILY'::text, 'STUDENT_PROFILE'::text, 'GUARDIAN_AUTHORITY'::text])))
+## TRIGGERS (table | trigger | function)
+casework.advisor_assignments | protect_advisor_assignment | protect_advisor_assignment
+consent.grants | normalize_grant_insert | normalize_grant_insert
+consent.grants | protect_consent_grant | protect_grant
+core.civil_capacity_history | civil_capacity_immutable | reject_civil_capacity_mutation
+core.guardian_authorities | audit_guardian_authority_history | audit_guardian_authority_history
+core.guardian_authorities | protect_guardian_authority | protect_guardian_authority
+core.guardian_authorities | reject_guardian_evidence_change | reject_guardian_evidence_change
+docs.document_versions | immutable_document_version | protect_document_version
+docs.documents | protect_document_withdrawal | protect_document_withdrawal
+docs.submission_items | confirmed_manifest_items_immutable | reject_confirmed_item_change
+docs.submission_items | validate_submission_item | validate_submission_item
+docs.submission_manifests | protect_submission_manifest | protect_submission_manifest
+docs.submission_manifests | validate_submission_target | validate_submission_target
+education.applications | audit_application_status | audit_application_status
+education.applications | education_application_case_match | reject_resource_case_mismatch
+education.applications | touch_application | touch_application
+education.external_facts | education_fact_immutable | reject_external_fact_mutation
+identity.cases | audit_identity_status | audit_case_status
+identity.cases | identity_case_case_match | reject_resource_case_mismatch
+identity.cases | touch_identity_case | touch_case
+identity.external_facts | identity_fact_immutable | reject_external_fact_mutation
+## POLICIES (table | policy | cmd | roles)
+audit.access_events | audit_read | SELECT | phoenix_canonical_reader
+casework.advisor_assignments | assignments_read | SELECT | phoenix_canonical_app,phoenix_canonical_reader
+casework.cases | cases_read | SELECT | phoenix_canonical_app,phoenix_canonical_reader
+consent.grants | consent_read | SELECT | phoenix_canonical_app,phoenix_canonical_reader
+core.families | families_read | SELECT | phoenix_canonical_app,phoenix_canonical_reader
+core.family_memberships | memberships_read | SELECT | phoenix_canonical_app,phoenix_canonical_reader
+core.guardian_authorities | guardian_authorities_read | SELECT | phoenix_canonical_app,phoenix_canonical_reader
+core.people | people_read | SELECT | phoenix_canonical_app,phoenix_canonical_reader
+core.student_profiles | student_profiles_read | SELECT | phoenix_canonical_app,phoenix_canonical_reader
+docs.document_versions | document_versions_read | SELECT | phoenix_canonical_app,phoenix_canonical_reader
+docs.documents | documents_read | SELECT | phoenix_canonical_app,phoenix_canonical_reader
+docs.submission_items | manifest_items_read | SELECT | phoenix_canonical_app,phoenix_canonical_reader
+docs.submission_manifests | manifests_read | SELECT | phoenix_canonical_app,phoenix_canonical_reader
+education.application_status_events | application_events_read | SELECT | phoenix_canonical_app,phoenix_canonical_reader
+education.applications | applications_read | SELECT | phoenix_canonical_app,phoenix_canonical_reader
+education.external_facts | education_facts_read | SELECT | phoenix_canonical_app,phoenix_canonical_reader
+identity.case_status_events | identity_events_read | SELECT | phoenix_canonical_app,phoenix_canonical_reader
+identity.cases | identity_cases_read | SELECT | phoenix_canonical_app,phoenix_canonical_reader
+identity.external_facts | identity_facts_read | SELECT | phoenix_canonical_app,phoenix_canonical_reader
+integration.channel_grants | channel_grants_read | SELECT | phoenix_canonical_app,phoenix_canonical_reader
+## APP-EXECUTABLE FUNCTIONS (function | volatility | secdef)
+auth.clear_context() | v | t
+auth.create_login_principal(p_id uuid, p_person_id uuid, p_kind text) | v | t
+auth.current_actor_person_id() | s | t
+auth.current_backend_start() | s | t
+auth.current_channel() | s | t
+auth.current_family_id() | s | t
+auth.current_principal_id() | s | t
+auth.disable_external_identity(p_id uuid) | v | t
+auth.disable_login_principal(p_id uuid) | v | t
+auth.redeem_context_ticket(p_ticket_id uuid, p_expected_principal_id uuid) | v | t
+auth.register_external_identity(p_id uuid, p_issuer text, p_subject text, p_principal_id uuid) | v | t
+casework.close_case(p_id uuid) | v | t
+casework.create_advisor_assignment(p_id uuid, p_case_id uuid, p_advisor_id uuid, p_valid_until timestamp with time zone) | v | t
+casework.create_case(p_id uuid, p_family_id uuid, p_subject_id uuid, p_title text, p_resource_kind text, p_resource_id uuid) | v | t
+casework.has_active_advisor_assignment(p_resource_kind text, p_resource_id uuid) | s | t
+casework.is_current_advisor_for_case(p_case_id uuid) | s | t
+casework.revoke_advisor_assignment(p_id uuid) | v | t
+consent.create_grant(p_consent_id uuid, p_family_id uuid, p_grantee_person_id uuid, p_subject_person_id uuid, p_purpose text, p_data_class text, p_expires_at timestamp with time zone) | v | t
+consent.has_active_consent(p_subject_person_id uuid, p_purpose text, p_data_class text) | s | t
+consent.withdraw_grant(p_consent_id uuid) | v | t
+core.add_family_member(p_membership_id uuid, p_family_id uuid, p_person_id uuid, p_membership_role text) | v | t
+core.can_read_subject_basics(p_person_id uuid) | s | t
+core.create_family(p_family_id uuid, p_display_name text) | v | t
+core.create_guardian_authority(p_id uuid, p_family_id uuid, p_guardian_id uuid, p_subject_id uuid, p_level text, p_scope text, p_until timestamp with time zone, p_evidence_ref text) | v | t
+core.create_person(p_person_id uuid, p_display_name text, p_family_id uuid, p_membership_id uuid, p_membership_role text) | v | t
+core.create_student_profile(p_person_id uuid) | v | t
+core.current_actor_is_family_member() | s | t
+core.end_family_membership(p_membership_id uuid, p_valid_until timestamp with time zone) | v | t
+core.has_verified_guardian_authority(p_subject_person_id uuid, p_scope text) | s | t
+core.person_in_current_family(p_person_id uuid) | s | t
+core.register_external_person(p_id uuid, p_name text) | v | t
+core.rename_family(p_family_id uuid, p_display_name text) | v | t
+core.rename_person(p_person_id uuid, p_display_name text) | v | t
+core.revoke_guardian_authority(p_id uuid) | v | t
+core.set_civil_capacity(p_record_id uuid, p_person_id uuid, p_capacity_status text, p_evidence_ref text) | v | t
+docs.add_submission_item(p_submission_id uuid, p_item_no integer, p_version_id uuid) | v | t
+docs.append_document_version(p_version_id uuid, p_document_id uuid, p_version_no integer, p_content_sha256 character, p_storage_key text, p_size_bytes bigint) | v | t
+docs.authorize_document_read(p_document_id uuid) | v | t
+docs.can_read_document(p_subject_person_id uuid, p_data_class text) | v | t
+docs.confirm_manifest(p_submission_id uuid) | v | t
+docs.create_document(p_document_id uuid, p_family_id uuid, p_subject_person_id uuid, p_data_class text, p_document_kind text, p_retention_until timestamp with time zone) | v | t
+docs.create_submission_manifest(p_submission_id uuid, p_family_id uuid, p_subject_person_id uuid, p_target_kind text, p_target_id uuid) | v | t
+docs.submit_manifest(p_submission_id uuid) | v | t
+docs.withdraw_document(p_document_id uuid) | v | t
+education.advance_application(p_application_id uuid, p_next_status text) | v | t
+education.authorize_application_read(p_application_id uuid) | v | t
+education.create_application(p_application_id uuid, p_family_id uuid, p_student_person_id uuid, p_institution_label text, p_program_label text, p_cycle_label text) | v | t
+education.record_external_fact(p_fact_id uuid, p_application_id uuid, p_fact_kind text, p_source_name text, p_external_reference text, p_observed_at timestamp with time zone) | v | t
+identity.advance_case(p_identity_case_id uuid, p_next_status text) | v | t
+identity.authorize_case_read(p_identity_case_id uuid) | v | t
+identity.create_case(p_identity_case_id uuid, p_family_id uuid, p_subject_person_id uuid, p_case_kind text) | v | t
+identity.record_external_fact(p_fact_id uuid, p_identity_case_id uuid, p_fact_kind text, p_source_name text, p_external_reference text, p_observed_at timestamp with time zone) | v | t
+integration.create_channel_grant(p_id uuid, p_principal_id uuid, p_family_id uuid, p_subject_id uuid, p_until timestamp with time zone) | v | t
+integration.has_active_channel_grant(p_subject_person_id uuid) | s | t
+integration.revoke_channel_grant(p_id uuid) | v | t
