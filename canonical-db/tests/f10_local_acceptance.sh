@@ -18,7 +18,7 @@ mkdir -p "$ROOT/runtime"; chmod 700 "$ROOT/runtime" 2>/dev/null || true
 SENV="$ROOT/runtime/f10sh-src-pg$V-$SUFFIX.env"; RENV="$ROOT/runtime/f10sh-rst-pg$V-$SUFFIX.env"
 AUDLOG="$ROOT/runtime/f10sh-audit-log-pg$V-$SUFFIX.txt"; AUDIDS="$ROOT/runtime/f10sh-audit-ids-pg$V-$SUFFIX.txt"
 winpath() { command -v cygpath >/dev/null 2>&1 && cygpath -w "$1" || printf '%s' "$1"; }
-cleanup() { docker rm -f "$SRC" "$RST" >/dev/null 2>&1; docker volume rm "$VOL" >/dev/null 2>&1; rm -f "$SENV" "$RENV" "$AUDLOG" "$AUDIDS" "$AUDLOG.ids"; }
+cleanup() { docker rm -f -v "$SRC" "$RST" >/dev/null 2>&1; docker volume rm "$VOL" >/dev/null 2>&1; rm -f "$SENV" "$RENV" "$AUDLOG" "$AUDIDS" "$AUDLOG.ids"; }
 trap cleanup EXIT
 mkenv() { umask 077; printf 'POSTGRES_DB=phoenix_canonical_dev\nPOSTGRES_USER=phoenix_bootstrap\nPOSTGRES_PASSWORD=%s\nPOSTGRES_INITDB_ARGS=--encoding=UTF8 --locale=C.UTF-8 --auth-local=scram-sha-256 --auth-host=scram-sha-256\n' "$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')" > "$1"; }
 wait_db() { for _ in $(seq 1 60); do docker exec "$1" pg_isready -U phoenix_bootstrap -d phoenix_canonical_dev >/dev/null 2>&1 && return 0; sleep 1; done; echo "FAIL database not ready: $1"; exit 1; }

@@ -15,7 +15,7 @@ ROOT="$(cd "$(dirname "$0")/.." && (pwd -W 2>/dev/null || pwd))"
 SUFFIX="$(date +%s)$RANDOM"; SRC="phoenix-canonical-upgrade-pg$V-$SUFFIX"
 mkdir -p "$ROOT/runtime"; SENV="$ROOT/runtime/upgrade-pg$V-$SUFFIX.env"
 winpath() { command -v cygpath >/dev/null 2>&1 && cygpath -w "$1" || printf '%s' "$1"; }
-cleanup() { docker rm -f "$SRC" >/dev/null 2>&1; rm -f "$SENV"; }
+cleanup() { docker rm -f -v "$SRC" >/dev/null 2>&1; rm -f "$SENV"; }
 trap cleanup EXIT
 fail() { echo "FAIL $*"; exit 1; }
 q() { docker exec -e PGPASSFILE=/tmp/f10-bootstrap.pgpass "$SRC" psql -X -q -At -h 127.0.0.1 -U phoenix_bootstrap -d phoenix_canonical_dev -v ON_ERROR_STOP=1 "$@"; }

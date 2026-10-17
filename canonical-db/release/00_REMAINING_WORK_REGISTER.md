@@ -32,7 +32,8 @@
 | W-13 | P1 | R-L1：建角色出错时口令进入服务器日志 | 已加固，并对照验证 | `c5e81e6`；演练第 14 步 |
 | W-14 | P1 | 本地开发库停在 0011 | 已升级到 0017（每次先跑预检） | `v1.7` / `v1.8-dev-db-upgrade.txt` |
 | W-15 | P1 | 安全与隔离目录审计 | 完成，见 `04` | `c5e81e6` |
-| W-16 | P1 | 生产候选文档（10 份） | 完成，见 `release/` | 本次文档提交 |
+| W-16 | P1 | 生产候选文档（10 份） | 完成，见 `release/` | `74533a3` |
+| W-17 | P2 | 测试与演练脚本删除容器时未删除镜像自带的匿名数据卷 | `f10_local_acceptance.sh`、`upgrade_path_acceptance.sh`、`restore_drill.sh` 改为 `docker rm -f -v`；复测 F10 与升级路径各一次，悬空卷数前后均为 125，没有新增 | 本条所在提交 |
 
 ## 2. 仍未关闭
 
@@ -44,6 +45,7 @@
 | W-23 | P2 | 架构文档 V1.1 中 `legacy_id_mappings` 字段名（`source_entity_id` / `canonical_entity_id` / `classification` / `review_status`）与实现（`legacy_id` / `canonical_id` / `mapping_status` / `evidence_ref`）不同 | 语义等价；旧数据导入为 HOLD | 导入立项时统一文档 |
 | W-24 | P2 | E3-3 提交类型、E4-4 身份案件类型受控词表 | 须由领域负责人（Founder）定义 | **Founder / 领域负责人** |
 | W-25 | P2 | 性能与并发基线 | 不在已批准的需求内；空库阶段没有基线 | 真实数据前评估 |
+| W-26 | P2 | 本机有 125 个悬空匿名卷，是历次一次性测试容器（Claude 与 Codex 的脚本）留下的，只含合成数据 | 无法逐一区分来源，未擅自删除；`f10_local_acceptance.ps1` 等 pwsh 脚本仍用 `docker rm` 不带 `-v` | 由你决定是否执行 `docker volume prune`（只删除悬空卷，不影响开发库的命名卷）；pwsh 脚本在 W-22 时一并修正 |
 
 ## 3. HOLD（超出授权或依赖生产权限）
 

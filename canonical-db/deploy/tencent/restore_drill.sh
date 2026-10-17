@@ -19,7 +19,7 @@ manifest_line="$(cat "$backup.manifest.json" 2>/dev/null)"
 image="$(awk '/^[[:space:]]*image:/ {print $2; exit}' compose.yaml)"
 [[ "$image" == *@sha256:* ]] || fail "compose image is not pinned by digest"
 name="phoenix-restore-drill-$stamp-$RANDOM"
-envfile="$(mktemp)"; trap 'docker rm -f "$name" >/dev/null 2>&1; rm -f "$envfile"' EXIT
+envfile="$(mktemp)"; trap 'docker rm -f -v "$name" >/dev/null 2>&1; rm -f "$envfile"' EXIT
 printf 'POSTGRES_DB=phoenix_canonical_dev\nPOSTGRES_USER=phoenix_bootstrap\nPOSTGRES_PASSWORD=%s\nPOSTGRES_INITDB_ARGS=--encoding=UTF8 --locale=C.UTF-8 --auth-local=scram-sha-256 --auth-host=scram-sha-256\n' \
   "$(head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')" > "$envfile"
 echo "DRILL $stamp backup=$backup image=$image"
