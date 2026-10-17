@@ -14,6 +14,8 @@
 | SECURITY DEFINER 函数 | 94 | `phoenix_bootstrap` | 固定 `search_path`；无动态 SQL；PUBLIC 无执行权 |
 | RLS 强制（`FORCE`） | 0 张 | — | 属主绕过 RLS |
 
+**逐函数清单：** `evidence/v1.9-secdef-functions-pg16.txt`，共 94 行，每行给出函数签名、属主、属主是否超级用户、`search_path`，以及 app / reader / binder / migrator / PUBLIC 各自是否有 EXECUTE 权限。核实结果：PUBLIC 可执行为 0，全部 94 个都有固定 `search_path`。
+
 **实际风险：** 94 个 SECURITY DEFINER 函数以超级用户身份执行。目前没有已知的利用路径（函数体固定，参数经过类型与格式校验，没有动态 SQL），但一旦有任何一个函数存在注入、校验遗漏或逻辑缺陷，后果等同于超级用户权限。
 
 ## 2. 方案
