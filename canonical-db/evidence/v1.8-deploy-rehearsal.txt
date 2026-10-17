@@ -1,4 +1,4 @@
-TASK=deploy package rehearsal HEAD=12e7a63 IMAGE=postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d 2026-10-17 14:23:54 +0800
+TASK=deploy package rehearsal HEAD=58096af IMAGE=postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d 2026-10-17 14:33:00 +0800
 PACKAGE_DIFF (copy vs repository compose.yaml):
   3c3
   <     image: mirror.ccs.tencentyun.com/library/postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d
@@ -7,38 +7,38 @@ PACKAGE_DIFF (copy vs repository compose.yaml):
   34c34
   <       - phoenix_canonical_pg16_data:/var/lib/postgresql/data
   ---
-  >       - phoenix_rehearsal_src_179221823322828:/var/lib/postgresql/data
+  >       - phoenix_rehearsal_src_179221877913071:/var/lib/postgresql/data
   38c38
   <       - phoenix_canonical_private
   ---
-  >       - phoenix_rehearsal_net_src_179221823322828
+  >       - phoenix_rehearsal_net_src_179221877913071
   50,51c50,51
   <   phoenix_canonical_pg16_data:
   <     name: phoenix_canonical_pg16_data
   ---
-  >   phoenix_rehearsal_src_179221823322828:
-  >     name: phoenix_rehearsal_src_179221823322828
+  >   phoenix_rehearsal_src_179221877913071:
+  >     name: phoenix_rehearsal_src_179221877913071
   54,55c54,55
   <   phoenix_canonical_private:
   <     name: phoenix_canonical_private
   ---
-  >   phoenix_rehearsal_net_src_179221823322828:
-  >     name: phoenix_rehearsal_net_src_179221823322828
+  >   phoenix_rehearsal_net_src_179221877913071:
+  >     name: phoenix_rehearsal_net_src_179221877913071
 === 1. install
- Network phoenix_rehearsal_net_src_179221823322828 Creating 
- Network phoenix_rehearsal_net_src_179221823322828 Creating 
- Volume phoenix_rehearsal_src_179221823322828 Creating 
- Volume phoenix_rehearsal_src_179221823322828 Creating 
- Volume phoenix_rehearsal_src_179221823322828 Created 
- Volume phoenix_rehearsal_src_179221823322828 Created 
- Network phoenix_rehearsal_net_src_179221823322828 Created 
- Network phoenix_rehearsal_net_src_179221823322828 Created 
- Container rehearsal_src_179221823322828-postgres-1 Creating 
- Container rehearsal_src_179221823322828-postgres-1 Created 
- Container rehearsal_src_179221823322828-postgres-1 Starting 
- Container rehearsal_src_179221823322828-postgres-1 Started 
- Container rehearsal_src_179221823322828-postgres-1 Waiting 
- Container rehearsal_src_179221823322828-postgres-1 Healthy 
+ Volume phoenix_rehearsal_src_179221877913071 Creating 
+ Volume phoenix_rehearsal_src_179221877913071 Creating 
+ Network phoenix_rehearsal_net_src_179221877913071 Creating 
+ Network phoenix_rehearsal_net_src_179221877913071 Creating 
+ Volume phoenix_rehearsal_src_179221877913071 Created 
+ Volume phoenix_rehearsal_src_179221877913071 Created 
+ Network phoenix_rehearsal_net_src_179221877913071 Created 
+ Network phoenix_rehearsal_net_src_179221877913071 Created 
+ Container rehearsal_src_179221877913071-postgres-1 Creating 
+ Container rehearsal_src_179221877913071-postgres-1 Created 
+ Container rehearsal_src_179221877913071-postgres-1 Starting 
+ Container rehearsal_src_179221877913071-postgres-1 Started 
+ Container rehearsal_src_179221877913071-postgres-1 Waiting 
+ Container rehearsal_src_179221877913071-postgres-1 Healthy 
 BEGIN
  pg_advisory_xact_lock 
 -----------------------
@@ -287,12 +287,12 @@ REVOKE
 DO
 CREATE INDEX
 CREATE FUNCTION
-DROP TRIGGER
 psql:<stdin>:389: NOTICE:  trigger "protect_advisor_assignment" for relation "casework.advisor_assignments" does not exist, skipping
+DROP TRIGGER
 CREATE TRIGGER
 CREATE FUNCTION
-DROP TRIGGER
 psql:<stdin>:408: NOTICE:  trigger "protect_guardian_authority" for relation "core.guardian_authorities" does not exist, skipping
+DROP TRIGGER
 CREATE TRIGGER
 CREATE FUNCTION
 CREATE FUNCTION
@@ -572,8 +572,8 @@ GRANT ROLE
 GRANT ROLE
 GRANT ROLE
 GRANT ROLE
-psql:<stdin>:37: NOTICE:  role "phoenix_canonical_backup_runtime" has already been granted membership in role "pg_read_all_data" by role "phoenix_bootstrap"
 GRANT ROLE
+psql:<stdin>:37: NOTICE:  role "phoenix_canonical_backup_runtime" has already been granted membership in role "pg_read_all_data" by role "phoenix_bootstrap"
 GRANT
 INSTALLED service principal 018f0000-0000-7000-8000-0000000f0001
 phoenix_canonical_dev
@@ -595,25 +595,25 @@ policies=20
 CREATE_FAMILY=true
 PASS app runtime direct table write denied
 === 5. backup
-BACKUP backups/phoenix_canonical_20261017T062500Z.dump
-VERIFIED backups/phoenix_canonical_20261017T062500Z.dump entries=493
-{"database":"phoenix_canonical_dev","created_utc":"20261017T062500Z","sha256":"47323dc236fc11df7d3c644a495ee0000163fe4fe53da6045e328caf83ae9385","format":"pg_custom"}
+BACKUP backups/phoenix_canonical_20261017T063403Z.dump
+VERIFIED backups/phoenix_canonical_20261017T063403Z.dump entries=493
+{"database":"phoenix_canonical_dev","created_utc":"20261017T063403Z","sha256":"818d7189752c99e2ec542b8b60d7520fe967cf605127d8cb48c34a33e35142e2","format":"pg_custom"}
 
 === 6. restore into a fresh volume (separate compose project)
- Network phoenix_rehearsal_net_rst_179221823322828 Creating 
- Network phoenix_rehearsal_net_rst_179221823322828 Creating 
- Volume phoenix_rehearsal_rst_179221823322828 Creating 
- Volume phoenix_rehearsal_rst_179221823322828 Creating 
- Volume phoenix_rehearsal_rst_179221823322828 Created 
- Volume phoenix_rehearsal_rst_179221823322828 Created 
- Network phoenix_rehearsal_net_rst_179221823322828 Created 
- Network phoenix_rehearsal_net_rst_179221823322828 Created 
- Container rehearsal_rst_179221823322828-postgres-1 Creating 
- Container rehearsal_rst_179221823322828-postgres-1 Created 
- Container rehearsal_rst_179221823322828-postgres-1 Starting 
- Container rehearsal_rst_179221823322828-postgres-1 Started 
- Container rehearsal_rst_179221823322828-postgres-1 Waiting 
- Container rehearsal_rst_179221823322828-postgres-1 Healthy 
+ Network phoenix_rehearsal_net_rst_179221877913071 Creating 
+ Volume phoenix_rehearsal_rst_179221877913071 Creating 
+ Network phoenix_rehearsal_net_rst_179221877913071 Creating 
+ Volume phoenix_rehearsal_rst_179221877913071 Creating 
+ Volume phoenix_rehearsal_rst_179221877913071 Created 
+ Volume phoenix_rehearsal_rst_179221877913071 Created 
+ Network phoenix_rehearsal_net_rst_179221877913071 Created 
+ Network phoenix_rehearsal_net_rst_179221877913071 Created 
+ Container rehearsal_rst_179221877913071-postgres-1 Creating 
+ Container rehearsal_rst_179221877913071-postgres-1 Created 
+ Container rehearsal_rst_179221877913071-postgres-1 Starting 
+ Container rehearsal_rst_179221877913071-postgres-1 Started 
+ Container rehearsal_rst_179221877913071-postgres-1 Waiting 
+ Container rehearsal_rst_179221877913071-postgres-1 Healthy 
 SET
 SET
 DO
@@ -623,8 +623,8 @@ GRANT ROLE
 GRANT ROLE
 GRANT ROLE
 GRANT
- rehearsal_rst_179221823322828-postgres-1 Copying backups/phoenix_canonical_20261017T062500Z.dump to rehearsal_rst_179221823322828-postgres-1:/tmp/phoenix-restore.dump
- rehearsal_rst_179221823322828-postgres-1 Copied backups/phoenix_canonical_20261017T062500Z.dump to rehearsal_rst_179221823322828-postgres-1:/tmp/phoenix-restore.dump
+ rehearsal_rst_179221877913071-postgres-1 Copying backups/phoenix_canonical_20261017T063403Z.dump to rehearsal_rst_179221877913071-postgres-1:/tmp/phoenix-restore.dump
+ rehearsal_rst_179221877913071-postgres-1 Copied backups/phoenix_canonical_20261017T063403Z.dump to rehearsal_rst_179221877913071-postgres-1:/tmp/phoenix-restore.dump
 ledger=17
 tables=27
 policies=20
@@ -642,29 +642,29 @@ policies=20
 families=1
 service_principals=1
 audit_rows=2
-CONTAINER_PORTS rehearsal_src_179221823322828-postgres-1 5432/tcp
-CONTAINER_PORTS rehearsal_rst_179221823322828-postgres-1 5432/tcp
+CONTAINER_PORTS rehearsal_src_179221877913071-postgres-1 5432/tcp
+CONTAINER_PORTS rehearsal_rst_179221877913071-postgres-1 5432/tcp
 PASS deploy package rehearsal: install, idempotent re-install, health, runtime API write, backup, verified restore, health
 === 8. FD-7 ops: second verified backup
-BACKUP backups/phoenix_canonical_20261017T062517Z.dump
-VERIFIED backups/phoenix_canonical_20261017T062517Z.dump entries=493
+BACKUP backups/phoenix_canonical_20261017T063420Z.dump
+VERIFIED backups/phoenix_canonical_20261017T063420Z.dump entries=493
 === 9. retention: 4 synthetic old backups, dry-run then apply (keep newest 3 verified)
-PRUNE mode=dry-run days=14 keep_newest_verified=3 cutoff_utc=20261003T062520Z total=6 verified=5
+PRUNE mode=dry-run days=14 keep_newest_verified=3 cutoff_utc=20261003T063423Z total=6 verified=5
 WOULD_REMOVE backups/phoenix_canonical_20260801T000000Z.dump
 WOULD_REMOVE backups/phoenix_canonical_20260802T000000Z.dump
 WOULD_REMOVE backups/phoenix_canonical_20260803T000000Z.dump
 KEEP backups/phoenix_canonical_20260804T000000Z.dump (newest verified)
-KEEP backups/phoenix_canonical_20261017T062500Z.dump (newest verified)
-KEEP backups/phoenix_canonical_20261017T062517Z.dump (newest verified)
+KEEP backups/phoenix_canonical_20261017T063403Z.dump (newest verified)
+KEEP backups/phoenix_canonical_20261017T063420Z.dump (newest verified)
 PRUNE done candidates=3
-PRUNE mode=apply days=14 keep_newest_verified=3 cutoff_utc=20261003T062520Z total=6 verified=5
+PRUNE mode=apply days=14 keep_newest_verified=3 cutoff_utc=20261003T063423Z total=6 verified=5
 REMOVED backups/phoenix_canonical_20260801T000000Z.dump
 REMOVED backups/phoenix_canonical_20260802T000000Z.dump
 REMOVED backups/phoenix_canonical_20260803T000000Z.dump
 PRUNE done candidates=3
 PASS retention: dry-run changed nothing; apply removed exactly the 3 old unprotected backups
 === 10. restore drill (disposable container)
-DRILL 20261017T062521Z backup=backups/phoenix_canonical_20261017T062517Z.dump image=postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d
+DRILL 20261017T063424Z backup=backups/phoenix_canonical_20261017T063420Z.dump image=postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d
 LEDGER_MATCHES_MIGRATION_FILES count=17
 tables=27
 policies=20
@@ -672,20 +672,20 @@ families=1
 audit_rows=2
 NETWORK=none PORTS={}
 RESULT=PASS
-ELAPSED_SECONDS=8
+ELAPSED_SECONDS=9
 === 11. audit extraction and hash chain
-EXTRACTED 2026-10-17 lines=2 sha256=120362515ceb5210dda7740de8fb973fcfc8246e7a2f78fa9539adcf2b7dfb2f
+EXTRACTED 2026-10-17 lines=2 sha256=cf147d8e37c40871789c0d1d5c80520ccbc2f154869994b0582d6e98131ef441
 PASS audit extract: IDs and codes only, append-only, chain verified
 === 12. alert check (local file only)
-2026-10-17T06:25:30Z ALERT_CHECK done alerts=0
+2026-10-17T06:34:35Z ALERT_CHECK done alerts=0
 PASS alert check raised no alert other than host disk usage
 === 13. tamper detection
 CHAIN_BROKEN 2026-10-17 file hash mismatch
 CHAIN_FAILED
 PASS tampered audit file detected by chain verify (exit 1)
-2026-10-17T06:25:38Z ALERT AUDIT_CHAIN_BROKEN audit_extract.sh --verify failed
-2026-10-17T06:25:38Z ALERT RECONCILE_LOG_ONLY 2026-10-17: 1 decision(s) only in the server log (rolled back); review
-2026-10-17T06:25:38Z ALERT_CHECK done alerts=2
+2026-10-17T06:34:42Z ALERT AUDIT_CHAIN_BROKEN audit_extract.sh --verify failed
+2026-10-17T06:34:42Z ALERT RECONCILE_LOG_ONLY 2026-10-17: 1 decision(s) only in the server log (rolled back); review
+2026-10-17T06:34:42Z ALERT_CHECK done alerts=2
 PASS alert raised for broken chain (exit 1)
 === 14. password literals stay out of the server log on failed role statements
 LOG_HITS hardened=0 control=2

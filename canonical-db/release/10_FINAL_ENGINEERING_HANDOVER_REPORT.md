@@ -66,7 +66,7 @@
 |---|---|---|---|
 | F10 完整回归（0001–0017） | PASS | PASS | `evidence/v1.8-f10-sh-pg16.txt` / `-pg17.txt` |
 | 安全（目录审计 + 行为测试） | PASS | PASS | `evidence/v1.8-security-catalog-pg16.txt` / `-pg17.txt` |
-| 恢复（全新集群、部署包恢复、篡改拒绝、恢复演练 8 秒） | PASS | PASS（全新集群） | `05` |
+| 恢复（全新集群、部署包恢复、篡改拒绝、恢复演练 8–9 秒） | PASS | PASS（全新集群） | `05` |
 | 兼容（0006→0017 升级、失败回滚与恢复） | PASS | PASS | `evidence/v1.8-upgrade-path-*.txt` |
 | 部署包加运维演练 | PASS | 不适用 | `evidence/v1.8-deploy-rehearsal.txt` |
 | pwsh 版脚本对 0016 / 0017 | NOT RUN | NOT RUN | 本机没有 pwsh（`00` W-22） |

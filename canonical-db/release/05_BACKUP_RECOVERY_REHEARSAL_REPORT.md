@@ -18,7 +18,7 @@
 | R3 | 篡改备份 | 修改清单中的摘要后执行 `restore.sh` | 被拒（`backup manifest digest mismatch`），在接触数据库之前就退出 | 同上，第 6 步 |
 | R4 | 备份可读性校验 | `backup.sh` 用 `pg_restore --list` 读取目录：493 个条目，写入 `.verified` 标记 | PASS | 同上，第 5、8 步 |
 | R5 | 保留期清理 | 构造 4 个过期备份（其中 1 个未校验）：预演 → 执行 | 预演不改动文件；执行后正好删除 3 个，保留最新 3 份已校验备份 | 同上，第 9 步 |
-| R6 | 恢复演练脚本 | `restore_drill.sh`：一次性容器、`--network none`；账本与 Migration 文件逐条核对 | `RESULT=PASS`，`LEDGER_MATCHES_MIGRATION_FILES count=17`，**耗时 8 秒**（空库阶段的 RTO 实测，远低于 8 小时目标） | 同上，第 10 步；报告写入 `drills/` |
+| R6 | 恢复演练脚本 | `restore_drill.sh`：一次性容器、`--network none`；账本与 Migration 文件逐条核对 | `RESULT=PASS`，`LEDGER_MATCHES_MIGRATION_FILES count=17`，**耗时 8–9 秒**（两次运行；空库阶段的 RTO 实测，远低于 8 小时目标） | 同上，第 10 步；报告写入 `drills/` |
 | R7 | 升级失败后的恢复 | 0006 库带合成数据加阻断行 → 升级在 0012 整体回滚 → 数据不变 → 移除阻断 → 升级到 0017 | PASS（PG16 / PG17） | `evidence/v1.8-upgrade-path-pg16.txt` / `-pg17.txt` |
 | R8 | 审计链 | 当天提取 → 链校验 → 篡改 → `CHAIN_BROKEN` 并触发告警 | PASS | `evidence/v1.8-deploy-rehearsal.txt` 第 11–13 步 |
 
@@ -36,7 +36,7 @@ R2 中，恢复后的库还验证了 reader 运行账号的健康检查，以及
 | 目标 | 状态 |
 |---|---|
 | RPO 24 小时（每天一次备份） | **脚本就绪**；定时任务尚未安装到服务器（HOLD：G-8 / 任务 B） |
-| RTO 8 小时 | 实测恢复演练 8 秒（空库加合成数据），**本地达标**；生产数据量下需要重测 |
+| RTO 8 小时 | 实测恢复演练 8–9 秒（空库加合成数据），**本地达标**；生产数据量下需要重测 |
 | 本地保留 14 天、至少 3 份 | `prune_backups.sh` 已验证 |
 | 每月一次、每次发布前一次恢复演练 | `restore_drill.sh` 已验证；排期写入 `07` |
 | 审计日志保留不少于 180 天 | `audit_extract.sh` 只追加、从不删除；异地副本 HOLD（G-4） |
