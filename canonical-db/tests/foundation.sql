@@ -28,7 +28,7 @@ BEGIN
   IF (SELECT count(*) FROM canonical_migrations.applied) < 8 THEN
     RAISE EXCEPTION 'migration ledger is not repeat safe';
   END IF;
-  IF (SELECT count(*) FROM pg_tables WHERE schemaname IN ('auth','core','consent','audit','integration','docs','casework','education','identity')) <> 26 THEN
+  IF (SELECT count(*) FROM pg_tables WHERE schemaname IN ('auth','core','consent','audit','integration','docs','casework','education','identity')) <> 27 THEN
     RAISE EXCEPTION 'unexpected Canonical business table count';
   END IF;
   IF (SELECT count(*) FROM pg_policies WHERE schemaname IN ('core','consent','audit','integration','docs','casework','education','identity')) <> 20 THEN

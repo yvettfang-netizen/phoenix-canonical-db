@@ -1,0 +1,113 @@
+COMMAND: psql -f tests/security_catalog_audit.sql (bootstrap, dev DB pg16) 2026-10-17 14:22:19 +0800
+== version: 16.15 (Debian 16.15-1.pgdg13+2)  ledger=17  last=0017_external_identity_request_trace.sql
+== roles (name super login bypassrls createrole createdb inherit)
+phoenix_bootstrap super=true login=true bypassrls=true createrole=true createdb=true inherit=true
+phoenix_canonical_app super=false login=false bypassrls=false createrole=false createdb=false inherit=false
+phoenix_canonical_app_local super=false login=true bypassrls=false createrole=false createdb=false inherit=true
+phoenix_canonical_backup_local super=false login=true bypassrls=true createrole=false createdb=false inherit=true
+phoenix_canonical_backup_runtime super=false login=false bypassrls=true createrole=false createdb=false inherit=true
+phoenix_canonical_context_binder super=false login=false bypassrls=false createrole=false createdb=false inherit=false
+phoenix_canonical_context_binder_local super=false login=true bypassrls=false createrole=false createdb=false inherit=true
+phoenix_canonical_migrator super=false login=false bypassrls=false createrole=false createdb=false inherit=false
+phoenix_canonical_migrator_local super=false login=true bypassrls=false createrole=false createdb=false inherit=true
+phoenix_canonical_reader super=false login=false bypassrls=false createrole=false createdb=false inherit=false
+phoenix_canonical_reader_local super=false login=true bypassrls=false createrole=false createdb=false inherit=true
+== memberships (member <- role : inherit set admin)
+phoenix_canonical_app_local <- phoenix_canonical_app : inherit=true set=false admin=false
+phoenix_canonical_backup_local <- phoenix_canonical_backup_runtime : inherit=true set=false admin=false
+phoenix_canonical_backup_runtime <- pg_read_all_data : inherit=true set=false admin=false
+phoenix_canonical_context_binder_local <- phoenix_canonical_context_binder : inherit=true set=false admin=false
+phoenix_canonical_migrator_local <- phoenix_canonical_migrator : inherit=true set=false admin=false
+phoenix_canonical_reader_local <- phoenix_canonical_reader : inherit=true set=false admin=false
+== schema privileges (role schema: usage create)
+phoenix_canonical_app audit: usage=true create=false
+phoenix_canonical_app auth: usage=true create=false
+phoenix_canonical_app casework: usage=true create=false
+phoenix_canonical_app consent: usage=true create=false
+phoenix_canonical_app core: usage=true create=false
+phoenix_canonical_app docs: usage=true create=false
+phoenix_canonical_app education: usage=true create=false
+phoenix_canonical_app identity: usage=true create=false
+phoenix_canonical_app integration: usage=true create=false
+phoenix_canonical_context_binder auth: usage=true create=false
+phoenix_canonical_reader audit: usage=true create=false
+phoenix_canonical_reader auth: usage=true create=false
+phoenix_canonical_reader canonical_migrations: usage=true create=false
+phoenix_canonical_reader casework: usage=true create=false
+phoenix_canonical_reader consent: usage=true create=false
+phoenix_canonical_reader core: usage=true create=false
+phoenix_canonical_reader docs: usage=true create=false
+phoenix_canonical_reader education: usage=true create=false
+phoenix_canonical_reader identity: usage=true create=false
+phoenix_canonical_reader integration: usage=true create=false
+== table privileges by role (counts over business tables)
+phoenix_canonical_app DELETE=0
+phoenix_canonical_app INSERT=0
+phoenix_canonical_app REFERENCES=0
+phoenix_canonical_app SELECT=19
+phoenix_canonical_app TRIGGER=0
+phoenix_canonical_app TRUNCATE=0
+phoenix_canonical_app UPDATE=0
+phoenix_canonical_context_binder DELETE=0
+phoenix_canonical_context_binder INSERT=0
+phoenix_canonical_context_binder REFERENCES=0
+phoenix_canonical_context_binder SELECT=0
+phoenix_canonical_context_binder TRIGGER=0
+phoenix_canonical_context_binder TRUNCATE=0
+phoenix_canonical_context_binder UPDATE=0
+phoenix_canonical_migrator DELETE=0
+phoenix_canonical_migrator INSERT=0
+phoenix_canonical_migrator REFERENCES=0
+phoenix_canonical_migrator SELECT=0
+phoenix_canonical_migrator TRIGGER=0
+phoenix_canonical_migrator TRUNCATE=0
+phoenix_canonical_migrator UPDATE=0
+phoenix_canonical_reader DELETE=0
+phoenix_canonical_reader INSERT=0
+phoenix_canonical_reader REFERENCES=0
+phoenix_canonical_reader SELECT=20
+phoenix_canonical_reader TRIGGER=0
+phoenix_canonical_reader TRUNCATE=0
+phoenix_canonical_reader UPDATE=0
+== reader readable tables
+audit.access_events rls=true
+canonical_migrations.applied rls=false
+casework.advisor_assignments rls=true
+casework.cases rls=true
+consent.grants rls=true
+core.families rls=true
+core.family_memberships rls=true
+core.guardian_authorities rls=true
+core.people rls=true
+core.student_profiles rls=true
+docs.document_versions rls=true
+docs.documents rls=true
+docs.submission_items rls=true
+docs.submission_manifests rls=true
+education.application_status_events rls=true
+education.applications rls=true
+education.external_facts rls=true
+identity.case_status_events rls=true
+identity.cases rls=true
+identity.external_facts rls=true
+integration.channel_grants rls=true
+== tables without RLS and any role privilege on them
+auth.context_exchange_tickets privileged_roles=none
+auth.principals privileged_roles=none
+auth.session_contexts privileged_roles=none
+integration.legacy_id_mappings privileged_roles=none
+integration.public_ids privileged_roles=none
+== RLS: tables enabled=22 forced=0 total=27  policies=20
+== functions: secdef=94 secdef_without_search_path=0 secdef_dynamic_sql=0 public_execute=0
+== function owners: phoenix_bootstrap(super=true) n=100
+== table owners: phoenix_bootstrap
+== executable functions per role
+phoenix_canonical_app 55
+phoenix_canonical_context_binder 6
+phoenix_canonical_migrator 3
+phoenix_canonical_reader 15
+== binder executable: auth.cleanup_ephemeral_state, auth.clear_context, auth.cleanup_stale_contexts, auth.issue_context_ticket, auth.bind_context, auth.resolve_external_identity
+== reader executable: auth.clear_context, core.current_actor_is_family_member, core.person_in_current_family, consent.has_active_consent, casework.is_current_advisor_for_case, casework.has_active_advisor_assignment, integration.has_active_channel_grant, core.has_verified_guardian_authority, core.can_read_subject_basics, docs.can_read_document, auth.current_backend_start, auth.current_principal_id, auth.current_actor_person_id, auth.current_family_id, auth.current_channel
+== pg_hba: local all all  scram-sha-256 | host all all 127.0.0.1 scram-sha-256 | host all all ::1 scram-sha-256 | local replication all  scram-sha-256 | host replication all 127.0.0.1 scram-sha-256 | host replication all ::1 scram-sha-256 | host all all all scram-sha-256
+== default privileges entries=0
+exit=0

@@ -52,6 +52,9 @@ existing="$(psql_exec -Atqc "SELECT CASE WHEN to_regclass('canonical_migrations.
 test "$existing" = "empty" || { echo "restore target is not a fresh Canonical database" >&2; exit 1; }
 
 cat > "$runtime_sql" <<SQL
+-- Role statements carry password literals: keep them and their error context out of the server log.
+SET log_min_messages = panic;
+SET log_min_error_statement = panic;
 DO \$roles\$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='phoenix_canonical_migrator') THEN CREATE ROLE phoenix_canonical_migrator NOLOGIN NOINHERIT; END IF;

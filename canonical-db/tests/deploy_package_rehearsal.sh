@@ -25,6 +25,7 @@ mkpkg() { # $1 = package dir name
 }
 hex() { head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n'; }
 SRC_PKG="$(mkpkg src)"; RST_PKG="$(mkpkg rst)"
+NMIG="$(ls "$ROOT"/migrations/canonical/[0-9][0-9][0-9][0-9]_*.sql | wc -l)"
 cleanup() {
   (cd "$SRC_PKG" && docker compose -p "rehearsal_src_$SUFFIX" --env-file .env down -v --remove-orphans >/dev/null 2>&1)
   (cd "$RST_PKG" && docker compose -p "rehearsal_rst_$SUFFIX" --env-file .env down -v --remove-orphans >/dev/null 2>&1)
@@ -51,7 +52,7 @@ printf '%s\n' "$out" | grep -E 'APPLIED|service principal|PASS' ; grep -q APPLIE
 grep -q 'SKIP service principal' <<<"$out" || fail "second install did not skip the service principal"
 echo "PASS second install applied nothing and skipped the service principal"
 echo "=== 3. health"
-h="$(cd "$SRC_PKG" && bash health.sh 2>&1)"; printf '%s\n' "$h"; grep -q '^migrations=16$' <<<"$h" || fail health
+h="$(cd "$SRC_PKG" && bash health.sh 2>&1)"; printf '%s\n' "$h"; grep -q "^migrations=$NMIG$" <<<"$h" || fail health
 
 echo "=== 4. API write through the deployed runtime logins (binder ticket -> app)"
 dc() { (cd "$SRC_PKG" && docker compose -p "rehearsal_src_$SUFFIX" --env-file .env "$@"); }
@@ -81,7 +82,7 @@ sed 's/"sha256":"[0-9a-f]\{4\}/"sha256":"0000/' "$RST_PKG/$dump.manifest.json" >
 t="$(cd "$RST_PKG" && bash restore.sh backups/phoenix_canonical_tampered.dump 2>&1)"; rc=$?
 printf '%s\n' "$t" | tail -1; [ $rc -ne 0 ] && grep -q 'digest mismatch' <<<"$t" && echo "PASS tampered backup refused" || fail "tampered backup accepted"
 echo "=== 7. health and data after restore"
-h="$(cd "$RST_PKG" && bash health.sh 2>&1)"; printf '%s\n' "$h"; grep -q '^migrations=16$' <<<"$h" || fail "health after restore"
+h="$(cd "$RST_PKG" && bash health.sh 2>&1)"; printf '%s\n' "$h"; grep -q "^migrations=$NMIG$" <<<"$h" || fail "health after restore"
 BACKUP_PW="$(envval PHOENIX_DB_BACKUP_PASSWORD "$RST_PKG/.env")"
 printf '%s\n' "*:*:*:phoenix_canonical_backup_runtime:$BACKUP_PW" | rc_ exec -T postgres sh -c 'umask 077; cat > /tmp/r-backup.pgpass'
 r="$(rc_ exec -T -e PGPASSFILE=/tmp/r-backup.pgpass postgres psql -X -At -h 127.0.0.1 -U phoenix_canonical_backup_runtime -d phoenix_canonical_dev -c "SELECT 'families='||count(*) FROM core.families; SELECT 'service_principals='||count(*) FROM auth.principals WHERE principal_kind='SERVICE' AND person_id IS NULL; SELECT 'audit_rows='||count(*) FROM audit.access_events;")"
@@ -89,3 +90,56 @@ printf '%s\n' "$r"; grep -q '^families=1$' <<<"$r" && grep -q '^service_principa
 rc_ exec -T postgres sh -c 'rm -f /tmp/r-backup.pgpass'
 { dc ps --format '{{.Name}} {{.Ports}}'; rc_ ps --format '{{.Name}} {{.Ports}}'; } | sed 's/^/CONTAINER_PORTS /'
 echo "PASS deploy package rehearsal: install, idempotent re-install, health, runtime API write, backup, verified restore, health"
+
+echo "=== 8. FD-7 ops: second verified backup"
+b2="$(cd "$SRC_PKG" && bash backup.sh 2>&1)"; printf '%s\n' "$b2"; grep -q '^VERIFIED ' <<<"$b2" || fail "backup verification marker"
+echo "=== 9. retention: 4 synthetic old backups, dry-run then apply (keep newest 3 verified)"
+real="$(ls "$SRC_PKG"/backups/phoenix_canonical_*.dump | sort | tail -1)"; rsha="$(sha256sum "$real" | awk '{print $1}')"
+for s in 20260801T000000Z:v 20260802T000000Z:v 20260803T000000Z:u 20260804T000000Z:v; do
+  st="${s%%:*}"; f="$SRC_PKG/backups/phoenix_canonical_$st.dump"; cp "$real" "$f"
+  printf '{"database":"phoenix_canonical_dev","created_utc":"%s","sha256":"%s","format":"pg_custom"}\n' "$st" "$rsha" > "$f.manifest.json"
+  [ "${s##*:}" = v ] && printf '{"verified_utc":"%s","pg_restore_entries":1}\n' "$st" > "$f.verified"
+done
+dry="$(cd "$SRC_PKG" && bash prune_backups.sh 2>&1)"; printf '%s\n' "$dry"
+[ "$(grep -c '^WOULD_REMOVE' <<<"$dry")" = 3 ] && grep -q 'KEEP backups/phoenix_canonical_20260804T000000Z.dump (newest verified)' <<<"$dry" || fail "prune dry-run selection"
+[ "$(ls "$SRC_PKG"/backups/*.dump | wc -l)" = 6 ] || fail "dry-run removed files"
+app="$(cd "$SRC_PKG" && bash prune_backups.sh --apply 2>&1)"; printf '%s\n' "$app" | grep -E '^(REMOVED|PRUNE)'
+[ "$(ls "$SRC_PKG"/backups/*.dump | wc -l)" = 3 ] || fail "prune apply result"
+echo "PASS retention: dry-run changed nothing; apply removed exactly the 3 old unprotected backups"
+echo "=== 10. restore drill (disposable container)"
+dr="$(cd "$SRC_PKG" && bash restore_drill.sh 2>&1)"; printf '%s\n' "$dr"
+grep -q '^RESULT=PASS$' <<<"$dr" && grep -q '^LEDGER_MATCHES_MIGRATION_FILES' <<<"$dr" || fail "restore drill"
+echo "=== 11. audit extraction and hash chain"
+today="$(date -u +%Y-%m-%d)"
+ex="$(cd "$SRC_PKG" && bash audit_extract.sh --date "$today" 2>&1)"; printf '%s\n' "$ex"; grep -qE "^EXTRACTED $today lines=[1-9]" <<<"$ex" || fail "audit extraction"
+grep -q 'Rehearsal Family\|PASSWORD' "$SRC_PKG/audit/$today.audit" && fail "names or passwords in the audit extract"
+(cd "$SRC_PKG" && bash audit_extract.sh --date "$today") | grep -q "^SKIP $today" || fail "re-extraction not refused"
+(cd "$SRC_PKG" && bash audit_extract.sh --verify) | tee /dev/null | grep -q '^CHAIN_OK' || fail "chain verify"
+echo "PASS audit extract: IDs and codes only, append-only, chain verified"
+echo "=== 12. alert check (local file only)"
+al="$(cd "$SRC_PKG" && bash alert_check.sh 2>&1)"; printf '%s\n' "$al"
+grep ' ALERT ' <<<"$al" | grep -v 'ALERT DISK_USAGE' | grep -q . && fail "unexpected alert on a healthy rehearsal"
+echo "PASS alert check raised no alert other than host disk usage"
+echo "=== 13. tamper detection"
+chmod u+w "$SRC_PKG/audit/$today.audit"; echo "PHOENIX_AUDIT attempt_id=00000000-0000-4000-8000-000000000000 forged" >> "$SRC_PKG/audit/$today.audit"
+# Both commands exit non-zero by design when they find a problem; capture first (pipefail is on).
+tv="$(cd "$SRC_PKG" && bash audit_extract.sh --verify 2>&1)"; tv_rc=$?; printf '%s\n' "$tv"
+[ $tv_rc -ne 0 ] && grep -q 'CHAIN_BROKEN' <<<"$tv" && echo "PASS tampered audit file detected by chain verify (exit $tv_rc)" || fail "tamper not detected"
+ta="$(cd "$SRC_PKG" && bash alert_check.sh 2>&1)"; ta_rc=$?; printf '%s\n' "$ta" | grep 'ALERT'
+[ $ta_rc -ne 0 ] && grep -q 'ALERT AUDIT_CHAIN_BROKEN' <<<"$ta" && echo "PASS alert raised for broken chain (exit $ta_rc)" || fail "no alert for broken chain"
+echo "=== 14. password literals stay out of the server log on failed role statements"
+marker="leakprobe$(hex | cut -c1-16)"
+BOOT_PW="$(envval PHOENIX_DB_BOOTSTRAP_PASSWORD "$SRC_PKG/.env")"
+printf '%s\n' "*:*:*:phoenix_bootstrap:$BOOT_PW" | dc exec -T postgres sh -c 'umask 077; cat > /tmp/r-boot.pgpass'
+printf "SET log_min_messages = panic;\nSET log_min_error_statement = panic;\nDO \$x\$ BEGIN CREATE ROLE phoenix_canonical_app PASSWORD '%s'; END \$x\$;\n" "${marker}hardened" \
+  | dc exec -T -e PGPASSFILE=/tmp/r-boot.pgpass postgres psql -X -q -h 127.0.0.1 -U phoenix_bootstrap -d phoenix_canonical_dev -f - >/dev/null 2>&1
+printf "DO \$x\$ BEGIN CREATE ROLE phoenix_canonical_app PASSWORD '%s'; END \$x\$;\n" "${marker}control" \
+  | dc exec -T -e PGPASSFILE=/tmp/r-boot.pgpass postgres psql -X -q -h 127.0.0.1 -U phoenix_bootstrap -d phoenix_canonical_dev -f - >/dev/null 2>&1
+dc exec -T postgres sh -c 'rm -f /tmp/r-boot.pgpass'; sleep 1
+hard="$(dc exec -T postgres sh -c "cat \"\$PGDATA\"/log/*.log | grep -c '${marker}hardened'" | tr -d '\r')"
+ctrl="$(dc exec -T postgres sh -c "cat \"\$PGDATA\"/log/*.log | grep -c '${marker}control'" | tr -d '\r')"
+echo "LOG_HITS hardened=$hard control=$ctrl"
+[ "$hard" = 0 ] && [ "$ctrl" -gt 0 ] && echo "PASS hardened session kept the password literal out of the server log (control session leaked it as expected)" || fail "password log hardening"
+gen_hits=0; for n in BOOTSTRAP MIGRATOR APP READER BINDER BACKUP; do p="$(envval "PHOENIX_DB_${n}_PASSWORD" "$SRC_PKG/.env")"; c="$(dc exec -T postgres sh -c "cat \"\$PGDATA\"/log/*.log | grep -c '$p'" | tr -d '\r')"; gen_hits=$((gen_hits + c)); done
+[ "$gen_hits" = 0 ] && echo "PASS no deployment password appears in the server log" || fail "deployment password in server log ($gen_hits hits)"
+echo "PASS FD-7 ops rehearsal: verified backup, retention, restore drill, audit chain, alerts, tamper detection, log hardening"

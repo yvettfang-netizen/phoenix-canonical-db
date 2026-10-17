@@ -2,6 +2,29 @@ services:
   postgres:
     image: mirror.ccs.tencentyun.com/library/postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d
     restart: unless-stopped
+    # FD-7 rule 5: server log in the data volume, one file per day (0600), kept for audit extraction
+    # (audit_extract.sh). Container stdout/stderr is size-capped below.
+    command:
+      - postgres
+      - -c
+      - logging_collector=on
+      - -c
+      - log_directory=log
+      - -c
+      - log_filename=postgresql-%Y-%m-%d.log
+      - -c
+      - log_rotation_age=1d
+      - -c
+      - log_rotation_size=0
+      - -c
+      - log_truncate_on_rotation=off
+      - -c
+      - log_file_mode=0600
+    logging:
+      driver: json-file
+      options:
+        max-size: 20m
+        max-file: "5"
     environment:
       POSTGRES_DB: ${PHOENIX_DB_NAME}
       POSTGRES_USER: phoenix_bootstrap

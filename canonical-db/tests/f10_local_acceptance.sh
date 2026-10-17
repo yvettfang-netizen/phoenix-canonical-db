@@ -63,6 +63,7 @@ run "G1-G5" exec "$SRC" bash /opt/tests/f10_v15_gap_regression.sh
 run "V1.6 T1-T4" exec "$SRC" bash /opt/tests/f10_v16_contract_gaps.sh
 psqlf "$SRC" f10_v16_document_trigger.sql
 run "V1.7 assignment scope" exec "$SRC" bash /opt/tests/f10_v17_assignment_scope.sh
+run "V1.8 external identity, request trace, pool conformance" exec "$SRC" bash /opt/tests/f10_v18_identity_pool.sh
 
 echo "=== D-9 reconciliation (server log vs persisted audit rows)"
 docker logs "$SRC" 2>&1 | grep 'PHOENIX_AUDIT' > "$AUDLOG"
@@ -75,6 +76,8 @@ echo "LOG_ATTEMPTS=$total PERSISTED_MATCHES=$((total-logonly)) LOG_ONLY_ATTEMPTS
 comm -23 "$AUDLOG.ids" "$AUDIDS" | while read -r id; do grep "attempt_id=$id" "$AUDLOG" | sed -E 's/.*(PHOENIX_AUDIT .*) principal_id.*/ROLLED_BACK_ATTEMPT \1/'; done
 comm -23 "$AUDLOG.ids" "$AUDIDS" | while read -r id; do grep "attempt_id=$id" "$AUDLOG"; done | grep -q 'resource_id=018f0000-0000-7000-8000-000000009902 decision=DENY' \
   && echo "PASS D9 rolled-back denial present only in server log" || { echo "FAIL D9 reconciliation"; exit 1; }
+grep -q 'request_nonce=018f0000-0000-7000-8000-00000000d099$' "$AUDLOG" \
+  && echo "PASS FD-6 request number present in the PHOENIX_AUDIT server log line" || { echo "FAIL request number missing from server log"; exit 1; }
 psqlf "$SRC" f10_d6_immutability_regression.sql
 psqlf "$SRC" f10_v15_schema_installer.sql
 

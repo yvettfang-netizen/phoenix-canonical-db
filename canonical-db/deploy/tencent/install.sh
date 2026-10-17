@@ -72,6 +72,9 @@ done
 
 sql="$(mktemp)"
 cat > "$sql" <<SQL
+-- Role statements carry password literals: keep them and their error context out of the server log.
+SET log_min_messages = panic;
+SET log_min_error_statement = panic;
 DO \$roles\$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='phoenix_canonical_migrator_runtime') THEN

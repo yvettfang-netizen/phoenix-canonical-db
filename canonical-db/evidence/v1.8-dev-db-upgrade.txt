@@ -1,0 +1,27 @@
+TASK=local dev DB upgrade 0016 -> 0017 (synthetic, empty) 2026-10-17 14:21:39 +0800
+=== PG16
+ledger | f | applied=16 last=0016_assignment_scope_integrity.sql
+live_context_tickets | f | rows=0
+live_session_contexts | f | rows=0 (stop binder/app; ephemeral, safe to clear)
+manifest_confirmed_without_time | f | rows=0 (only relevant when 0011 is pending; needs a data decision)
+non_service_principal_without_person | f | rows=0
+service_principal_with_person | f | rows=0 (0012 requires SERVICE principals without a natural person)
+APPLIED 0017_external_identity_request_trace.sql
+PASS migration counts processed=17 directory=17 ledger=17 expected=17
+ledger=17
+tables=27
+policies=20
+exit=0
+=== PG17
+ledger | f | applied=16 last=0016_assignment_scope_integrity.sql
+live_context_tickets | f | rows=0
+live_session_contexts | f | rows=0 (stop binder/app; ephemeral, safe to clear)
+manifest_confirmed_without_time | f | rows=0 (only relevant when 0011 is pending; needs a data decision)
+non_service_principal_without_person | f | rows=0
+service_principal_with_person | f | rows=0 (0012 requires SERVICE principals without a natural person)
+APPLIED 0017_external_identity_request_trace.sql
+PASS migration counts processed=17 directory=17 ledger=17 expected=17
+ledger=17
+tables=27
+policies=20
+exit=0
