@@ -1,0 +1,63 @@
+TASK=local dev DB upgrade 0011 -> 0016 (synthetic, empty) 2026-10-17 13:58:54 +0800
+=== PG16 container=phoenix-canonical-foundation-pg16-1
+--- preflight (bootstrap via dev pgpass):
+ledger | f | applied=11 last=0011_verified_capacity_official_facts_manifest_confirmation.sql
+live_context_tickets | f | rows=0
+live_session_contexts | f | rows=0 (stop binder/app; ephemeral, safe to clear)
+manifest_confirmed_without_time | f | rows=0 (only relevant when 0011 is pending; needs a data decision)
+non_service_principal_without_person | f | rows=0
+service_principal_with_person | f | rows=0 (0012 requires SERVICE principals without a natural person)
+--- upgrade:
+SKIP 0001_foundation.sql checksum verified
+SKIP 0002_education_identity_skeleton.sql checksum verified
+SKIP 0003_core_consent_access.sql checksum verified
+SKIP 0004_casework_education_identity.sql checksum verified
+SKIP 0005_documents_submissions.sql checksum verified
+SKIP 0006_access_decision_api.sql checksum verified
+SKIP 0007_security_boundary_fixes.sql checksum verified
+SKIP 0008_expiry_and_ephemeral_cleanup.sql checksum verified
+SKIP 0009_application_write_api.sql checksum verified
+SKIP 0010_reader_ledger_usage.sql checksum verified
+SKIP 0011_verified_capacity_official_facts_manifest_confirmation.sql checksum verified
+APPLIED 0012_service_principal_and_context.sql
+APPLIED 0013_management_write_api.sql
+APPLIED 0014_rollback_resistant_write_audit.sql
+APPLIED 0015_contract_gap_controls.sql
+APPLIED 0016_assignment_scope_integrity.sql
+PASS migration counts processed=16 directory=16 ledger=16 expected=16
+ledger=16
+tables=26
+policies=20
+exit=0
+reader view: ledger=16 last=0016_assignment_scope_integrity.sql
+=== PG17 container=phoenix-canonical-foundation-pg17-1
+--- preflight (bootstrap via dev pgpass):
+ledger | f | applied=11 last=0011_verified_capacity_official_facts_manifest_confirmation.sql
+live_context_tickets | f | rows=0
+live_session_contexts | f | rows=0 (stop binder/app; ephemeral, safe to clear)
+manifest_confirmed_without_time | f | rows=0 (only relevant when 0011 is pending; needs a data decision)
+non_service_principal_without_person | f | rows=0
+service_principal_with_person | f | rows=0 (0012 requires SERVICE principals without a natural person)
+--- upgrade:
+SKIP 0001_foundation.sql checksum verified
+SKIP 0002_education_identity_skeleton.sql checksum verified
+SKIP 0003_core_consent_access.sql checksum verified
+SKIP 0004_casework_education_identity.sql checksum verified
+SKIP 0005_documents_submissions.sql checksum verified
+SKIP 0006_access_decision_api.sql checksum verified
+SKIP 0007_security_boundary_fixes.sql checksum verified
+SKIP 0008_expiry_and_ephemeral_cleanup.sql checksum verified
+SKIP 0009_application_write_api.sql checksum verified
+SKIP 0010_reader_ledger_usage.sql checksum verified
+SKIP 0011_verified_capacity_official_facts_manifest_confirmation.sql checksum verified
+APPLIED 0012_service_principal_and_context.sql
+APPLIED 0013_management_write_api.sql
+APPLIED 0014_rollback_resistant_write_audit.sql
+APPLIED 0015_contract_gap_controls.sql
+APPLIED 0016_assignment_scope_integrity.sql
+PASS migration counts processed=16 directory=16 ledger=16 expected=16
+ledger=16
+tables=26
+policies=20
+exit=0
+reader view: ledger=16 last=0016_assignment_scope_integrity.sql

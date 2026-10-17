@@ -111,5 +111,26 @@ SQL
 psql_exec -f - < "$sql"
 rm -f "$sql"
 
+# D-10: the management SERVICE principal is created only by the installer. The ID (UUIDv7) and the
+# label are not secrets; both must be set together. Without them, no family can be created through
+# the API, so the install reports it instead of failing.
+service_id="${PHOENIX_DB_SERVICE_PRINCIPAL_ID:-}"
+service_label="${PHOENIX_DB_SERVICE_PRINCIPAL_LABEL:-}"
+if [ -n "$service_id" ] || [ -n "$service_label" ]; then
+  [[ "$service_id" =~ ^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$ ]] || { echo "PHOENIX_DB_SERVICE_PRINCIPAL_ID must be a lowercase UUIDv7" >&2; exit 1; }
+  [[ "$service_label" =~ ^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$ ]] || { echo "PHOENIX_DB_SERVICE_PRINCIPAL_LABEL must be 1-200 characters from A-Z a-z 0-9 . _ - (no spaces: .env is sourced by bash)" >&2; exit 1; }
+  existing_service="$(psql_exec -Atqc "SELECT principal_kind||':'||status FROM auth.principals WHERE principal_id='$service_id';")"
+  if [ -z "$existing_service" ]; then
+    [ "$(psql_exec -Atqc "SELECT auth.install_service_principal('$service_id','$service_label');")" = "t" ] || { echo "service principal install denied" >&2; exit 1; }
+    echo "INSTALLED service principal $service_id"
+  elif [ "$existing_service" = "SERVICE:ACTIVE" ]; then
+    echo "SKIP service principal $service_id already active"
+  else
+    echo "service principal ID in use by $existing_service" >&2; exit 1
+  fi
+else
+  echo "NOTE no PHOENIX_DB_SERVICE_PRINCIPAL_ID set: no management SERVICE principal installed"
+fi
+
 psql_exec -Atqc "SELECT current_database(); SELECT count(*) FROM canonical_migrations.applied; SELECT count(*) FROM pg_tables WHERE schemaname IN ('auth','core','consent','audit','integration','docs','casework','education','identity'); SELECT count(*) FROM pg_policies WHERE schemaname IN ('core','consent','audit','integration','docs','casework','education','identity');"
 echo "PASS Phoenix Canonical PostgreSQL install"

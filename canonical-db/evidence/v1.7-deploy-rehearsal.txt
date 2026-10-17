@@ -1,0 +1,622 @@
+TASK=deploy package rehearsal HEAD=a1ec169 IMAGE=postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d 2026-10-17 14:10:44 +0800
+PACKAGE_DIFF (copy vs repository compose.yaml):
+  3c3
+  <     image: mirror.ccs.tencentyun.com/library/postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d
+  ---
+  >     image: postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d
+  11c11
+  <       - phoenix_canonical_pg16_data:/var/lib/postgresql/data
+  ---
+  >       - phoenix_rehearsal_src_179221744330691:/var/lib/postgresql/data
+  15c15
+  <       - phoenix_canonical_private
+  ---
+  >       - phoenix_rehearsal_net_src_179221744330691
+  27,28c27,28
+  <   phoenix_canonical_pg16_data:
+  <     name: phoenix_canonical_pg16_data
+  ---
+  >   phoenix_rehearsal_src_179221744330691:
+  >     name: phoenix_rehearsal_src_179221744330691
+  31,32c31,32
+  <   phoenix_canonical_private:
+  <     name: phoenix_canonical_private
+  ---
+  >   phoenix_rehearsal_net_src_179221744330691:
+  >     name: phoenix_rehearsal_net_src_179221744330691
+=== 1. install
+ Network phoenix_rehearsal_net_src_179221744330691 Creating 
+ Volume phoenix_rehearsal_src_179221744330691 Creating 
+ Network phoenix_rehearsal_net_src_179221744330691 Creating 
+ Volume phoenix_rehearsal_src_179221744330691 Creating 
+ Volume phoenix_rehearsal_src_179221744330691 Created 
+ Volume phoenix_rehearsal_src_179221744330691 Created 
+ Network phoenix_rehearsal_net_src_179221744330691 Created 
+ Network phoenix_rehearsal_net_src_179221744330691 Created 
+ Container rehearsal_src_179221744330691-postgres-1 Creating 
+ Container rehearsal_src_179221744330691-postgres-1 Created 
+ Container rehearsal_src_179221744330691-postgres-1 Starting 
+ Container rehearsal_src_179221744330691-postgres-1 Started 
+ Container rehearsal_src_179221744330691-postgres-1 Waiting 
+ Container rehearsal_src_179221744330691-postgres-1 Healthy 
+BEGIN
+ pg_advisory_xact_lock 
+-----------------------
+(1 row)
+CREATE SCHEMA
+CREATE SCHEMA
+CREATE SCHEMA
+CREATE SCHEMA
+CREATE SCHEMA
+CREATE SCHEMA
+CREATE SCHEMA
+CREATE TABLE
+DO
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+DO
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+APPLIED 0001_foundation.sql
+BEGIN
+ pg_advisory_xact_lock 
+-----------------------
+(1 row)
+DO
+CREATE SCHEMA
+CREATE SCHEMA
+REVOKE
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+APPLIED 0002_education_identity_skeleton.sql
+BEGIN
+ pg_advisory_xact_lock 
+-----------------------
+(1 row)
+DO
+CREATE SCHEMA
+REVOKE
+GRANT
+GRANT
+DO
+DO
+GRANT
+CREATE FUNCTION
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TRIGGER
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+APPLIED 0003_core_consent_access.sql
+BEGIN
+ pg_advisory_xact_lock 
+-----------------------
+(1 row)
+DO
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+APPLIED 0004_casework_education_identity.sql
+BEGIN
+ pg_advisory_xact_lock 
+-----------------------
+(1 row)
+DO
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+REVOKE
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+APPLIED 0005_documents_submissions.sql
+BEGIN
+ pg_advisory_xact_lock 
+-----------------------
+(1 row)
+DO
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+GRANT
+INSERT 0 1
+COMMIT
+APPLIED 0006_access_decision_api.sql
+BEGIN
+ pg_advisory_xact_lock 
+-----------------------
+(1 row)
+DO
+DO
+GRANT ROLE
+DO
+ALTER TABLE
+DELETE 0
+ALTER TABLE
+CREATE INDEX
+ALTER TABLE
+ALTER TABLE
+UPDATE 0
+UPDATE 0
+ALTER TABLE
+ALTER TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TABLE
+REVOKE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+DROP POLICY
+CREATE POLICY
+DROP POLICY
+CREATE POLICY
+DROP POLICY
+CREATE POLICY
+DROP POLICY
+CREATE POLICY
+DROP POLICY
+CREATE POLICY
+DROP POLICY
+CREATE POLICY
+REVOKE
+REVOKE
+DO
+CREATE INDEX
+CREATE FUNCTION
+DROP TRIGGER
+psql:<stdin>:389: NOTICE:  trigger "protect_advisor_assignment" for relation "casework.advisor_assignments" does not exist, skipping
+CREATE TRIGGER
+CREATE FUNCTION
+psql:<stdin>:408: NOTICE:  trigger "protect_guardian_authority" for relation "core.guardian_authorities" does not exist, skipping
+DROP TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE FUNCTION
+psql:<stdin>:443: NOTICE:  trigger "validate_submission_target" for relation "docs.submission_manifests" does not exist, skipping
+DROP TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE FUNCTION
+GRANT
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+APPLIED 0007_security_boundary_fixes.sql
+BEGIN
+ pg_advisory_xact_lock 
+-----------------------
+(1 row)
+DO
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+DROP TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+DROP TRIGGER
+CREATE TRIGGER
+UPDATE 0
+UPDATE 0
+UPDATE 0
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+GRANT
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+APPLIED 0008_expiry_and_ephemeral_cleanup.sql
+BEGIN
+ pg_advisory_xact_lock 
+-----------------------
+(1 row)
+DO
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+GRANT
+REVOKE
+INSERT 0 1
+COMMIT
+APPLIED 0009_application_write_api.sql
+BEGIN
+ pg_advisory_xact_lock 
+-----------------------
+(1 row)
+DO
+GRANT
+INSERT 0 1
+COMMIT
+APPLIED 0010_reader_ledger_usage.sql
+BEGIN
+ pg_advisory_xact_lock 
+-----------------------
+(1 row)
+DO
+CREATE TABLE
+CREATE INDEX
+ALTER TABLE
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE FUNCTION
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+GRANT
+INSERT 0 1
+COMMIT
+APPLIED 0011_verified_capacity_official_facts_manifest_confirmation.sql
+BEGIN
+ pg_advisory_xact_lock 
+-----------------------
+(1 row)
+DO
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+ALTER TABLE
+ALTER TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+CREATE FUNCTION
+INSERT 0 1
+COMMIT
+APPLIED 0012_service_principal_and_context.sql
+BEGIN
+ pg_advisory_xact_lock 
+-----------------------
+(1 row)
+DO
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+APPLIED 0013_management_write_api.sql
+BEGIN
+ pg_advisory_xact_lock 
+-----------------------
+(1 row)
+DO
+ALTER TABLE
+CREATE INDEX
+CREATE FUNCTION
+REVOKE
+INSERT 0 1
+COMMIT
+APPLIED 0014_rollback_resistant_write_audit.sql
+BEGIN
+ pg_advisory_xact_lock 
+-----------------------
+(1 row)
+DO
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+GRANT
+INSERT 0 1
+COMMIT
+APPLIED 0015_contract_gap_controls.sql
+BEGIN
+ pg_advisory_xact_lock 
+-----------------------
+(1 row)
+DO
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+INSERT 0 1
+COMMIT
+APPLIED 0016_assignment_scope_integrity.sql
+DO
+GRANT ROLE
+GRANT ROLE
+GRANT ROLE
+GRANT ROLE
+psql:<stdin>:34: NOTICE:  role "phoenix_canonical_backup_runtime" has already been granted membership in role "pg_read_all_data" by role "phoenix_bootstrap"
+GRANT ROLE
+GRANT
+INSTALLED service principal 018f0000-0000-7000-8000-0000000f0001
+phoenix_canonical_dev
+16
+26
+20
+PASS Phoenix Canonical PostgreSQL install
+=== 2. install again (idempotent)
+SKIP service principal 018f0000-0000-7000-8000-0000000f0001 already active
+PASS Phoenix Canonical PostgreSQL install
+PASS second install applied nothing and skipped the service principal
+=== 3. health
+127.0.0.1:5432 - accepting connections
+version=16.15 (Debian 16.15-1.pgdg13+2)
+migrations=16
+tables=26
+policies=20
+=== 4. API write through the deployed runtime logins (binder ticket -> app)
+CREATE_FAMILY=true
+PASS app runtime direct table write denied
+=== 5. backup
+BACKUP backups/phoenix_canonical_20261017T061147Z.dump
+{"database":"phoenix_canonical_dev","created_utc":"20261017T061147Z","sha256":"774c5bcd03ab7f021709c68a74cd6bf427f312df951322f02cbe5e49f0fa0f53","format":"pg_custom"}
+
+=== 6. restore into a fresh volume (separate compose project)
+ Volume phoenix_rehearsal_rst_179221744330691 Creating 
+ Volume phoenix_rehearsal_rst_179221744330691 Creating 
+ Network phoenix_rehearsal_net_rst_179221744330691 Creating 
+ Network phoenix_rehearsal_net_rst_179221744330691 Creating 
+ Volume phoenix_rehearsal_rst_179221744330691 Created 
+ Volume phoenix_rehearsal_rst_179221744330691 Created 
+ Network phoenix_rehearsal_net_rst_179221744330691 Created 
+ Network phoenix_rehearsal_net_rst_179221744330691 Created 
+ Container rehearsal_rst_179221744330691-postgres-1 Creating 
+ Container rehearsal_rst_179221744330691-postgres-1 Created 
+ Container rehearsal_rst_179221744330691-postgres-1 Starting 
+ Container rehearsal_rst_179221744330691-postgres-1 Started 
+ Container rehearsal_rst_179221744330691-postgres-1 Waiting 
+ Container rehearsal_rst_179221744330691-postgres-1 Healthy 
+DO
+GRANT ROLE
+GRANT ROLE
+GRANT ROLE
+GRANT ROLE
+GRANT ROLE
+GRANT
+ rehearsal_rst_179221744330691-postgres-1 Copying backups/phoenix_canonical_20261017T061147Z.dump to rehearsal_rst_179221744330691-postgres-1:/tmp/phoenix-restore.dump
+ rehearsal_rst_179221744330691-postgres-1 Copied backups/phoenix_canonical_20261017T061147Z.dump to rehearsal_rst_179221744330691-postgres-1:/tmp/phoenix-restore.dump
+ledger=16
+tables=26
+policies=20
+backup_role=false:true
+PASS fresh-cluster restore with role bootstrap and manifest verification
+--- tampered manifest must be refused
+backup manifest digest mismatch
+PASS tampered backup refused
+=== 7. health and data after restore
+127.0.0.1:5432 - accepting connections
+version=16.15 (Debian 16.15-1.pgdg13+2)
+migrations=16
+tables=26
+policies=20
+families=1
+service_principals=1
+audit_rows=2
+CONTAINER_PORTS rehearsal_src_179221744330691-postgres-1 5432/tcp
+CONTAINER_PORTS rehearsal_rst_179221744330691-postgres-1 5432/tcp
+PASS deploy package rehearsal: install, idempotent re-install, health, runtime API write, backup, verified restore, health
+exit=0

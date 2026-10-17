@@ -23,15 +23,12 @@ esac
 test -f "$backup" || { echo "backup not found" >&2; exit 1; }
 manifest="$backup.manifest.json"
 test -f "$manifest" || { echo "backup manifest not found" >&2; exit 1; }
-expected="$(python3 - "$manifest" <<'PY'
-import json, sys
-with open(sys.argv[1], encoding='utf-8') as f:
-    m = json.load(f)
-if m.get('database') != 'phoenix_canonical_dev' or m.get('format') != 'pg_custom':
-    raise SystemExit('invalid backup manifest')
-print(m.get('sha256', ''))
-PY
-)"
+# The manifest is the single-line JSON written by backup.sh; parse it without a host interpreter and
+# accept only that exact shape.
+manifest_line="$(cat "$manifest")"
+[[ "$manifest_line" =~ ^\{\"database\":\"phoenix_canonical_dev\",\"created_utc\":\"[0-9]{8}T[0-9]{6}Z\",\"sha256\":\"([0-9a-f]{64})\",\"format\":\"pg_custom\"\}$ ]] \
+  || { echo "invalid backup manifest" >&2; exit 1; }
+expected="${BASH_REMATCH[1]}"
 actual="$(sha256sum "$backup" | awk '{print $1}')"
 test "$expected" = "$actual" || { echo "backup manifest digest mismatch" >&2; exit 1; }
 
