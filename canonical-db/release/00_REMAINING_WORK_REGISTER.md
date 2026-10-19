@@ -25,7 +25,7 @@
 | W-06 | P1 | 部署包缺少安装器服务主体步骤（D-10） | 已补（`install.sh`） | `12e7a63`；演练第 1–2 步 |
 | W-07 | P1 | 升级路径（0006→最新）未验证；缺少升级前预检 | 新增 `preflight_upgrade.sql` 与升级验收，PASS | `12e7a63` / `c5e81e6` |
 | W-08 | P2 | `restore.sh` 依赖主机 python3 | 已去掉 | `12e7a63` |
-| W-09 | P1 | 本机没有 pwsh，验收无法复现 | 新增 bash 版 F10 验收（步骤相同） | `12e7a63` |
+| W-09 | P1 | 当时环境没有 pwsh，验收无法复现 | 新增 bash 版 F10 验收（步骤相同）；后续 W-22 已补跑 pwsh | `12e7a63`；`072ea74` |
 | W-10 | P1 | D7 / FD-6 数据库侧：外部身份映射、请求编号 | 已实现（0017） | `c5e81e6` |
 | W-11 | P1 | D7 / FD-6 连接池符合性测试 | PASS | `c5e81e6`；`f10_v18` |
 | W-12 | P1 | D7 / FD-7 运维：备份校验、保留期清理、恢复演练、日志按天轮转、审计链、告警 | 已实现，演练 PASS | `c5e81e6`；演练第 8–13 步 |
@@ -34,18 +34,18 @@
 | W-15 | P1 | 安全与隔离目录审计 | 完成，见 `04` | `c5e81e6` |
 | W-16 | P1 | 生产候选文档（10 份） | 完成，见 `release/` | `74533a3` |
 | W-17 | P2 | 测试与演练脚本删除容器时未删除镜像自带的匿名数据卷 | `f10_local_acceptance.sh`、`upgrade_path_acceptance.sh`、`restore_drill.sh` 改为 `docker rm -f -v`；复测 F10 与升级路径各一次，悬空卷数前后均为 125，没有新增 | 本条所在提交 |
+| W-22 | P2 | pwsh 版脚本对 0016 / 0017 未运行 | 已用 PowerShell 7.6.5 在 PG16 / PG17 补跑 F10、缺陷回归、SCRAM 与全新集群恢复，全部 PASS | `072ea74`；`release/v1.9/PWSH_CROSS_ACCEPTANCE_REPORT_V1.0.md` |
 
 ## 2. 仍未关闭
 
 | ID | 级别 | 事项 | 原因 / 依赖 | 去向 |
 |---|---|---|---|---|
 | W-20 | P2 | S-1：全部对象属主为超级用户，SECURITY DEFINER 函数以超级用户执行 | 改变执行身份模型，属于授权模型变更 | **Founder 决定**（`09` F-1） |
-| W-21 | P2 | S-2：binder 仍能执行旧的 `auth.bind_context` | 撤销后须同步修改 `scripts/db.ps1` 的校验；本机没有 pwsh，无法验证 | 工程待办（下一个有 pwsh 的批次） |
-| W-22 | P2 | pwsh 版脚本（`f10_local_acceptance.ps1`、`db.ps1`、`phase3_*.ps1`）对 0016 / 0017 未运行 | 本机没有 pwsh；bash 版本已覆盖相同步骤 | 在有 pwsh 的环境中补跑一次 |
+| W-21 | P2 | S-2：binder 仍能执行旧的 `auth.bind_context` | 撤销范围属于 0018 的 D-2 决定；pwsh 运行条件已经具备 | **Founder 决定**（D-2）后实现并回归 |
 | W-23 | P2 | 架构文档 V1.1 中 `legacy_id_mappings` 字段名（`source_entity_id` / `canonical_entity_id` / `classification` / `review_status`）与实现（`legacy_id` / `canonical_id` / `mapping_status` / `evidence_ref`）不同 | 语义等价；旧数据导入为 HOLD | 导入立项时统一文档 |
 | W-24 | P2 | E3-3 提交类型、E4-4 身份案件类型受控词表 | 须由领域负责人（Founder）定义 | **Founder / 领域负责人** |
 | W-25 | P2 | 性能与并发基线 | 不在已批准的需求内；空库阶段没有基线 | 真实数据前评估 |
-| W-26 | P2 | 本机有 125 个悬空匿名卷，是历次一次性测试容器（Claude 与 Codex 的脚本）留下的，只含合成数据 | 无法逐一区分来源，未擅自删除；`f10_local_acceptance.ps1` 等 pwsh 脚本仍用 `docker rm` 不带 `-v` | 由你决定是否执行 `docker volume prune`（只删除悬空卷，不影响开发库的命名卷）；pwsh 脚本在 W-22 时一并修正 |
+| W-26 | P2 | 本机有 125 个悬空匿名卷，是历次一次性测试容器（Claude 与 Codex 的脚本）留下的，只含合成数据 | 无法逐一区分来源，未擅自删除；bash 与 pwsh 一次性容器脚本现均使用 `docker rm -v`，W-22 实跑后数量仍为 125，没有新增 | 如需清理，先列出明确卷名与来源，再由 Founder 决定 |
 
 ## 3. HOLD（超出授权或依赖生产权限）
 

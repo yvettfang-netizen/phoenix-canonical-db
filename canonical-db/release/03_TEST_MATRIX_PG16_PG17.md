@@ -4,8 +4,8 @@
 - PostgreSQL 16.15：`postgres:16@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d`
 - PostgreSQL 17.11：`postgres:17@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3`
 
-**环境：** Windows 11 + Docker 29.8.2（git-bash）。每轮测试都在一次性容器中进行（`--network none`，没有端口映射，合成凭据，结束即清理）。
-**代码基线：** `c5e81e6`（0001–0017）。
+**环境：** Windows 11 + Docker 29.8.2；git-bash 与 PowerShell 7.6.5 两条验收路径。每轮测试都在一次性容器中进行（`--network none`，没有端口映射，合成凭据，结束即清理）。
+**代码基线：** `c5e81e6`（0001–0017）；PowerShell 交叉验收与证据提交 `072ea74`。
 **数据：** 只用合成数据。
 
 ## 1. 测试套件与结果
@@ -31,6 +31,7 @@
 | 17 | 安全目录审计 | 角色、成员关系、schema / 表 / 函数权限、RLS、属主、pg_hba、默认权限 | `tests/security_catalog_audit.sql` | PASS（S-1 待决定） | PASS（S-1 待决定） | `evidence/v1.8-security-catalog-pg16.txt` / `-pg17.txt` |
 | 18 | 部署包加运维全流程演练（14 步） | 安装（幂等）、健康检查、运行账号 API 写入、备份与校验、恢复与篡改拒绝、保留期清理、恢复演练、审计链、告警、篡改检测、口令日志加固 | `tests/deploy_package_rehearsal.sh <dir>` | PASS | 不适用：部署包固定使用 PG16 | `evidence/v1.8-deploy-rehearsal.txt` |
 | 19 | 独立复核（Claude 探针） | V1.5 / V1.6 收尾复跑；P1–P3 缺陷发现 | `evidence/claude-v1.6-closeout-run_f10.sh` | PASS，发现 3 项缺陷（已由 0016 修复） | 同左 | `evidence/claude-v1.6-closeout-pg16.txt` / `-pg17.txt` |
+| 20 | PowerShell 跨路径验收 | F10、缺陷回归、SCRAM、全新集群恢复；覆盖 0016 / 0017 | `tests/f10_local_acceptance.ps1`、`tests/phase3_*.ps1` | PASS | PASS | `evidence/v1.9-pwsh-*.txt`；`release/v1.9/PWSH_CROSS_ACCEPTANCE_REPORT_V1.0.md` |
 
 **断言总数**（`PASS` 行，含各套件内部的 NOTICE）：PG16 228，PG17 228；意外 FAIL 为 0。
 
@@ -38,7 +39,6 @@
 
 | 项 | 状态 | 原因 |
 |---|---|---|
-| `tests/f10_local_acceptance.ps1`、`scripts/db.ps1`、`tests/phase3_*.ps1`（pwsh 版本） | NOT RUN（本次） | 本机没有 pwsh。V1.6 时 Codex 已用 pwsh 跑通 0001–0015 的 pwsh 版本（`evidence/v1.6-f10-pg16/17.txt`）；之后的改动（0016 / 0017、守卫值）只在 bash 版本中执行。bash 版本步骤与 pwsh 版本相同，另多一个守卫 |
 | 部署包 PG17 版本 | 不适用 | 部署包按批准固定为 PG16 |
 | 真实数据、真实对象存储、腾讯环境 | NOT RUN / HOLD | 不在授权范围内（见 `09`） |
 | 性能、并发压测 | NOT RUN | 不在已批准的需求范围内；空库阶段没有基线 |
@@ -52,6 +52,19 @@ bash tests/f10_local_acceptance.sh 17 evidence/<name>-pg17.txt
 bash tests/upgrade_path_acceptance.sh 16 evidence/<name>-upgrade-pg16.txt
 bash tests/upgrade_path_acceptance.sh 17 evidence/<name>-upgrade-pg17.txt
 bash tests/deploy_package_rehearsal.sh "$(pwd)/runtime/rehearsal" evidence/<name>-rehearsal.txt
+```
+
+PowerShell 路径：
+
+```powershell
+pwsh -NoLogo -NoProfile -File tests/f10_local_acceptance.ps1 -Version 16
+pwsh -NoLogo -NoProfile -File tests/f10_local_acceptance.ps1 -Version 17
+pwsh -NoLogo -NoProfile -File tests/phase3_defect_regression.ps1 -Version 16
+pwsh -NoLogo -NoProfile -File tests/phase3_defect_regression.ps1 -Version 17
+pwsh -NoLogo -NoProfile -File tests/phase3_pg_hba_auth_regression.ps1 -Version 16
+pwsh -NoLogo -NoProfile -File tests/phase3_pg_hba_auth_regression.ps1 -Version 17
+pwsh -NoLogo -NoProfile -File tests/phase3_fresh_cluster_restore.ps1 -Version 16
+pwsh -NoLogo -NoProfile -File tests/phase3_fresh_cluster_restore.ps1 -Version 17
 ```
 
 **前提：**

@@ -75,7 +75,7 @@
 | B-11 | Founder OS 聚合的最小人数阈值 | 产品 | 决定 | N-12 |
 | B-12 | 启明堂 Freeze 与 ASKWISE 两页、Family OS 页 ACCESS BLOCKED | 来源 | 恢复访问后重新核对本计划的所有 PROPOSED 条目 | 用户处理（见 Notion 核验文件）|
 | B-13 | 排课排除约束需要 btree_gist，扩展可用性未核实 | 技术 | 在隔离容器中核实 | 无需决定 |
-| B-14 | pwsh 脚本 NOT RUN | 门禁 | 有 pwsh 的环境补跑 | N-5 |
+| B-14 | pwsh 脚本补跑 | **CLOSED（2026-10-19）** | PG16 / PG17 全部 PASS | N-5 已关闭 |
 
 ## 6. 需要 Founder 决定的事项（学习域）
 

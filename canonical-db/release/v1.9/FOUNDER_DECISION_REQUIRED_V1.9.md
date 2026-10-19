@@ -120,7 +120,7 @@
 | 事项 | 说明 |
 |---|---|
 | Notion 账号切换 | 当前浏览器中的 Notion 登录的是另一个工作区，不是 Jimson 的账号。请你自己登出并以 Jimson 账号登录；我不会替你输入凭据。登录后我再同步今日进度 |
-| pwsh 脚本补跑 | 需要一台有 pwsh 的环境执行 `f10_local_acceptance.ps1` 等脚本（当前 NOT RUN）|
+| pwsh 脚本补跑 | **已完成（2026-10-19）**：PowerShell 7.6.5，PG16 / PG17 的 F10、缺陷回归、SCRAM 与全新集群恢复全部 PASS |
 
 ## G. 建议的决定顺序
 

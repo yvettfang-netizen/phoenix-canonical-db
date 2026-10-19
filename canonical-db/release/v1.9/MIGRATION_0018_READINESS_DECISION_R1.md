@@ -15,7 +15,7 @@
 | C-6 | 恢复方式（D-1b）| **不纳入 0018** | 去掉 `--no-owner` 的验证本轮 NOT RUN（见 `LEAST_PRIVILEGE_OWNER_RESTORE_OPTIONS_R1.md` 第 4 节）|
 | C-7 | 冻结的历史迁移不得修改 | **已满足** | git 核对为空 |
 | C-8 | 候选文件不在 `migrations/` 目录 | **已满足** | `tests/candidates/e_r6_0018_candidate.sql` |
-| C-9 | pwsh 版本的 F10 脚本 | **NOT RUN** | 本机没有 pwsh。不是 0018 的开工条件，但是发布门禁（N-5）|
+| C-9 | pwsh 版本的 F10 脚本 | **PASS（2026-10-19）** | PG16 / PG17 的 F10、缺陷回归、SCRAM 与全新集群恢复全部通过；不是 0018 开工条件，现已关闭 N-5 |
 | C-10 | 学习域与 ASKWISE 的设计来源 | **BLOCKED** | Notion 五页本轮 ACCESS BLOCKED。不影响 0018（0018 只涉及现有实体），但影响 0019 及之后的批次 |
 
 **结论：** C-3、C-4 未满足，所以 0018 不能开工。C-1、C-2、C-7、C-8 已满足。
