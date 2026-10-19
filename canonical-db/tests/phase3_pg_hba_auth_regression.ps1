@@ -32,6 +32,6 @@ try {
     Write-Output "PASS PostgreSQL $Version local socket and host authentication require SCRAM/pgpass"
 }
 finally {
-    & docker rm -f $name 2>$null | Out-Host
+    & docker rm -f -v $name 2>$null | Out-Host
     Remove-Item -LiteralPath $envTmp -Force -ErrorAction SilentlyContinue
 }

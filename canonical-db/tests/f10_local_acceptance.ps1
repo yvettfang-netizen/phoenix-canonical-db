@@ -8,12 +8,12 @@ $image = if ($Version -eq '16') {
 } else {
     'postgres:17@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3'
 }
-$source = "phoenix-canonical-f10-v18-pg$Version"
-$restore = "phoenix-canonical-f10-v18-restore-pg$Version"
-$backupVolume = "phoenix_canonical_f10_backup_pg${Version}_v18"
+$source = "phoenix-canonical-f10-v19-pwsh-pg$Version"
+$restore = "phoenix-canonical-f10-v19-pwsh-restore-pg$Version"
+$backupVolume = "phoenix_canonical_f10_backup_pg${Version}_v19_pwsh"
 $sourceEnv = Join-Path $root "runtime/f10-final-pg$Version.env"
 $restoreEnv = Join-Path $root "runtime/f10-restore-pg$Version.env"
-$evidence = Join-Path $root "evidence/v1.8-f10-pg$Version.txt"
+$evidence = Join-Path $root "evidence/v1.9-pwsh-f10-pg$Version.txt"
 $names = @(docker ps -a --format '{{.Names}}')
 $volumes = @(docker volume ls --format '{{.Name}}')
 if ($names -contains $source -or $names -contains $restore -or $volumes -contains $backupVolume -or
@@ -106,9 +106,9 @@ try {
     Run-PsqlFile $source 'f10_v16_document_trigger.sql'
     Run-Checked "docker exec $source bash f10_v17_assignment_scope.sh" @('exec',$source,'bash','/opt/tests/f10_v17_assignment_scope.sh')
     Run-Checked "docker exec $source bash f10_v18_identity_pool.sh" @('exec',$source,'bash','/opt/tests/f10_v18_identity_pool.sh')
-    $auditLog = Join-Path $root "evidence/v1.8-audit-log-pg$Version.txt"
-    $auditIds = Join-Path $root "evidence/v1.8-audit-db-ids-pg$Version.txt"
-    $reconcile = Join-Path $root "evidence/v1.8-audit-reconcile-pg$Version.txt"
+    $auditLog = Join-Path $root "evidence/v1.9-pwsh-audit-log-pg$Version.txt"
+    $auditIds = Join-Path $root "evidence/v1.9-pwsh-audit-db-ids-pg$Version.txt"
+    $reconcile = Join-Path $root "evidence/v1.9-pwsh-audit-reconcile-pg$Version.txt"
     @(docker logs $source 2>&1 | Select-String 'PHOENIX_AUDIT' | ForEach-Object { $_.Line }) | Set-Content -LiteralPath $auditLog
     if ($LASTEXITCODE -ne 0) { throw 'Could not read disposable server audit log' }
     if ((Get-Content -LiteralPath $auditLog -Raw) -match 'Synthetic Renamed|Forbidden Cross Family') {
@@ -169,8 +169,8 @@ finally {
         if (@(docker ps -a --format '{{.Names}}') -contains $name) {
             Write-Output "CLEANUP: docker stop $name"
             & docker stop $name 2>&1 | Out-Host
-            Write-Output "CLEANUP: docker rm $name"
-            & docker rm $name 2>&1 | Out-Host
+            Write-Output "CLEANUP: docker rm -v $name"
+            & docker rm -v $name 2>&1 | Out-Host
         }
     }
     if (@(docker volume ls --format '{{.Name}}') -contains $backupVolume) {

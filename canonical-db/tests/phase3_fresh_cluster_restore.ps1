@@ -109,7 +109,7 @@ catch {
     throw
 }
 finally {
-    if ($freshContainerName) { & docker rm -f $freshContainerName | Out-Host }
+    if ($freshContainerName) { & docker rm -f -v $freshContainerName | Out-Host }
     if ($envTmp) { Remove-Item -LiteralPath $envTmp -Force -ErrorAction SilentlyContinue }
     Remove-Item -LiteralPath $dump,$manifest -Force -ErrorAction SilentlyContinue
     try { Stop-Transcript | Out-Null } catch {}

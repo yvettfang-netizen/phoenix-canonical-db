@@ -1,0 +1,60 @@
+ Container phoenix-canonical-foundation-pg16-1 Running 
+ Container phoenix-canonical-foundation-pg16-1 Waiting 
+ Container phoenix-canonical-foundation-pg16-1 Healthy 
+RESET phoenix_canonical_test_16
+APPLIED phoenix_canonical_test_16 0001_foundation.sql
+APPLIED phoenix_canonical_test_16 0002_education_identity_skeleton.sql
+APPLIED phoenix_canonical_test_16 0003_core_consent_access.sql
+APPLIED phoenix_canonical_test_16 0004_casework_education_identity.sql
+APPLIED phoenix_canonical_test_16 0005_documents_submissions.sql
+APPLIED phoenix_canonical_test_16 0006_access_decision_api.sql
+psql:<stdin>:11: NOTICE:  role "phoenix_canonical_backup_runtime" has already been granted membership in role "pg_read_all_data" by role "phoenix_bootstrap"
+psql:<stdin>:388: NOTICE:  trigger "protect_advisor_assignment" for relation "casework.advisor_assignments" does not exist, skipping
+psql:<stdin>:407: NOTICE:  trigger "protect_guardian_authority" for relation "core.guardian_authorities" does not exist, skipping
+psql:<stdin>:442: NOTICE:  trigger "validate_submission_target" for relation "docs.submission_manifests" does not exist, skipping
+APPLIED phoenix_canonical_test_16 0007_security_boundary_fixes.sql
+APPLIED phoenix_canonical_test_16 0008_expiry_and_ephemeral_cleanup.sql
+APPLIED phoenix_canonical_test_16 0009_application_write_api.sql
+APPLIED phoenix_canonical_test_16 0010_reader_ledger_usage.sql
+APPLIED phoenix_canonical_test_16 0011_verified_capacity_official_facts_manifest_confirmation.sql
+APPLIED phoenix_canonical_test_16 0012_service_principal_and_context.sql
+APPLIED phoenix_canonical_test_16 0013_management_write_api.sql
+APPLIED phoenix_canonical_test_16 0014_rollback_resistant_write_audit.sql
+APPLIED phoenix_canonical_test_16 0015_contract_gap_controls.sql
+APPLIED phoenix_canonical_test_16 0016_assignment_scope_integrity.sql
+APPLIED phoenix_canonical_test_16 0017_external_identity_request_trace.sql
+SKIP phoenix_canonical_test_16 0001_foundation.sql checksum verified
+SKIP phoenix_canonical_test_16 0002_education_identity_skeleton.sql checksum verified
+SKIP phoenix_canonical_test_16 0003_core_consent_access.sql checksum verified
+SKIP phoenix_canonical_test_16 0004_casework_education_identity.sql checksum verified
+SKIP phoenix_canonical_test_16 0005_documents_submissions.sql checksum verified
+SKIP phoenix_canonical_test_16 0006_access_decision_api.sql checksum verified
+SKIP phoenix_canonical_test_16 0007_security_boundary_fixes.sql checksum verified
+SKIP phoenix_canonical_test_16 0008_expiry_and_ephemeral_cleanup.sql checksum verified
+SKIP phoenix_canonical_test_16 0009_application_write_api.sql checksum verified
+SKIP phoenix_canonical_test_16 0010_reader_ledger_usage.sql checksum verified
+SKIP phoenix_canonical_test_16 0011_verified_capacity_official_facts_manifest_confirmation.sql checksum verified
+SKIP phoenix_canonical_test_16 0012_service_principal_and_context.sql checksum verified
+SKIP phoenix_canonical_test_16 0013_management_write_api.sql checksum verified
+SKIP phoenix_canonical_test_16 0014_rollback_resistant_write_audit.sql checksum verified
+SKIP phoenix_canonical_test_16 0015_contract_gap_controls.sql checksum verified
+SKIP phoenix_canonical_test_16 0016_assignment_scope_integrity.sql checksum verified
+SKIP phoenix_canonical_test_16 0017_external_identity_request_trace.sql checksum verified
+PASS PostgreSQL 16 foundation, repeat migration, and all synthetic probes
+BACKUP_ROLE_EXPORT digest=865dde23c75c89fe9aaa777a39527ad2e6ae8d43455bd2cda258798b1639243c
+82ad13e10a067d44af82dc849798d7df63150d21e55a1be662a6a664011bd130
+FRESH_CONTAINER_NAME=phoenix-canonical-fresh-restore-16-029790d7
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: No such file or directory
+	Is the server running locally and accepting connections on that socket?
+ledger=17
+tables=27
+policies=20
+roles=10
+PASS fresh-cluster foundation.sql
+PASS fresh-cluster rls_probe.sql
+PASS fresh-cluster docs_probe.sql
+PASS fresh-cluster contract_neutral_probe.sql
+PASS fresh-cluster trusted_context_probe.sql
+PASS fresh-cluster phase3_acceptance.sql
+PASS PostgreSQL 16 fresh-cluster restore using backup role export
+phoenix-canonical-fresh-restore-16-029790d7
