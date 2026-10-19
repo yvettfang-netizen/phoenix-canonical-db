@@ -1,0 +1,696 @@
+TASK=F10 bash acceptance VERSION=17 IMAGE=postgres:17@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3 MIGRATIONS=18 HEAD=f8775e5 DIRTY=27 2026-10-19 16:16:58 +0800
+MIGRATION_SHA256:
+  eea8d1deece72afdc3832d075fcfb42b71b4c1fe4fdccc8900104a0e0ca78a2d 0001_foundation.sql
+  bef7d9a902e8ad34491b7455987d7791667dcb8a5ab31945cf609a6aa97e4e7f 0002_education_identity_skeleton.sql
+  7dc0c5060237fae9069915ba8a1ecc39323cf74ab8ea0d49dd832ef9d8330618 0003_core_consent_access.sql
+  aec2be38c6ad363f5594d65016b8a2dfcb79fe76e77a225271379bb991a443e9 0004_casework_education_identity.sql
+  7bd581d16bb8c21278bd5bc013496779fe08f509d84bf74b652e5ce3b21cdbec 0005_documents_submissions.sql
+  2a3d6cd19febd62b7128c9ad4a2d7c94abdb9a4e11d499f36f4050eb2c2ed9d8 0006_access_decision_api.sql
+  49ec737393a4a4bc5f1e287add369db4f04fbde1c021521e8b4cf781f966ff93 0007_security_boundary_fixes.sql
+  51215c0b4d76e242c28197187bf1e017362700128ddd562e2da5d64980a8588d 0008_expiry_and_ephemeral_cleanup.sql
+  2a48d016c0b2dd952d56a15853c8092895df057e6a0d69f5ab391803ca0747c2 0009_application_write_api.sql
+  eb05a55b813695ef7c6252ffc00569a0d97920008773fc07b6d0f6109959825a 0010_reader_ledger_usage.sql
+  acc638a3d308b9a9c601238843b1f5dea75a4f376cfb4e77a48cd3afb8f1caa8 0011_verified_capacity_official_facts_manifest_confirmation.sql
+  385206d698db33cd6a26b7ea48ab5362f2fa2e4256ec96740c336429ad54afa8 0012_service_principal_and_context.sql
+  fcbeeea5b8fc35c0993b7b7b9dbe956fd0c6edc4a6142e49cb329fad41a320cb 0013_management_write_api.sql
+  92328ac4bf51b54980da63e96681220437ac20e4557fc008ab51431793ba4209 0014_rollback_resistant_write_audit.sql
+  a639f9f10c5130c780f008832bcf9e4852badd00fcec618379e94d4e7c82d683 0015_contract_gap_controls.sql
+  7b10af1992e548e065c68d947b47bb073cdc88c52e4312b9aa9ccbe1bfa962e4 0016_assignment_scope_integrity.sql
+  c701f74897ca13d503c8c165fd2182d77a06583afa832760dc80f8dd9524aab6 0017_external_identity_request_trace.sql
+  063f8ba5b57de24208579369ce75424526737953319544d0174c5a31e3f5d74b 0018_advisor_session_scope_and_binder_hardening.sql
+BOUNDARY: one-off containers, network none, no host ports, no existing Compose volumes
+COMMAND: volume create
+phoenix_canonical_f10sh_pg17_17923978174733
+COMMAND: docker run source --network none
+a80fdced0aa033c2d74729cf57a9ba30f9110404a4d610eb97c6230e68f4d734
+COMMAND: copy migrations
+COMMAND: copy tests
+=== migration inventory: 0001-0010 first, then the rest; repeat; guards
+COMMAND: init expected=10
+APPLIED 0001_foundation.sql eea8d1deece72afdc3832d075fcfb42b71b4c1fe4fdccc8900104a0e0ca78a2d
+APPLIED 0002_education_identity_skeleton.sql bef7d9a902e8ad34491b7455987d7791667dcb8a5ab31945cf609a6aa97e4e7f
+APPLIED 0003_core_consent_access.sql 7dc0c5060237fae9069915ba8a1ecc39323cf74ab8ea0d49dd832ef9d8330618
+APPLIED 0004_casework_education_identity.sql aec2be38c6ad363f5594d65016b8a2dfcb79fe76e77a225271379bb991a443e9
+APPLIED 0005_documents_submissions.sql 7bd581d16bb8c21278bd5bc013496779fe08f509d84bf74b652e5ce3b21cdbec
+APPLIED 0006_access_decision_api.sql 2a3d6cd19febd62b7128c9ad4a2d7c94abdb9a4e11d499f36f4050eb2c2ed9d8
+psql:/tmp/f10-atomic.sql:388: NOTICE:  trigger "protect_advisor_assignment" for relation "casework.advisor_assignments" does not exist, skipping
+psql:/tmp/f10-atomic.sql:407: NOTICE:  trigger "protect_guardian_authority" for relation "core.guardian_authorities" does not exist, skipping
+psql:/tmp/f10-atomic.sql:442: NOTICE:  trigger "validate_submission_target" for relation "docs.submission_manifests" does not exist, skipping
+APPLIED 0007_security_boundary_fixes.sql 49ec737393a4a4bc5f1e287add369db4f04fbde1c021521e8b4cf781f966ff93
+APPLIED 0008_expiry_and_ephemeral_cleanup.sql 51215c0b4d76e242c28197187bf1e017362700128ddd562e2da5d64980a8588d
+APPLIED 0009_application_write_api.sql 2a48d016c0b2dd952d56a15853c8092895df057e6a0d69f5ab391803ca0747c2
+APPLIED 0010_reader_ledger_usage.sql eb05a55b813695ef7c6252ffc00569a0d97920008773fc07b6d0f6109959825a
+PASS migration counts processed=10 directory=10 ledger=10 expected=10
+ledger=10
+tables=25
+policies=20
+COMMAND: init expected=18
+SKIP 0001_foundation.sql checksum verified
+SKIP 0002_education_identity_skeleton.sql checksum verified
+SKIP 0003_core_consent_access.sql checksum verified
+SKIP 0004_casework_education_identity.sql checksum verified
+SKIP 0005_documents_submissions.sql checksum verified
+SKIP 0006_access_decision_api.sql checksum verified
+SKIP 0007_security_boundary_fixes.sql checksum verified
+SKIP 0008_expiry_and_ephemeral_cleanup.sql checksum verified
+SKIP 0009_application_write_api.sql checksum verified
+SKIP 0010_reader_ledger_usage.sql checksum verified
+APPLIED 0011_verified_capacity_official_facts_manifest_confirmation.sql acc638a3d308b9a9c601238843b1f5dea75a4f376cfb4e77a48cd3afb8f1caa8
+APPLIED 0012_service_principal_and_context.sql 385206d698db33cd6a26b7ea48ab5362f2fa2e4256ec96740c336429ad54afa8
+APPLIED 0013_management_write_api.sql fcbeeea5b8fc35c0993b7b7b9dbe956fd0c6edc4a6142e49cb329fad41a320cb
+APPLIED 0014_rollback_resistant_write_audit.sql 92328ac4bf51b54980da63e96681220437ac20e4557fc008ab51431793ba4209
+APPLIED 0015_contract_gap_controls.sql a639f9f10c5130c780f008832bcf9e4852badd00fcec618379e94d4e7c82d683
+APPLIED 0016_assignment_scope_integrity.sql 7b10af1992e548e065c68d947b47bb073cdc88c52e4312b9aa9ccbe1bfa962e4
+APPLIED 0017_external_identity_request_trace.sql c701f74897ca13d503c8c165fd2182d77a06583afa832760dc80f8dd9524aab6
+APPLIED 0018_advisor_session_scope_and_binder_hardening.sql 063f8ba5b57de24208579369ce75424526737953319544d0174c5a31e3f5d74b
+PASS migration counts processed=18 directory=18 ledger=18 expected=18
+ledger=18
+tables=27
+policies=20
+COMMAND: init repeat
+SKIP 0001_foundation.sql checksum verified
+SKIP 0002_education_identity_skeleton.sql checksum verified
+SKIP 0003_core_consent_access.sql checksum verified
+SKIP 0004_casework_education_identity.sql checksum verified
+SKIP 0005_documents_submissions.sql checksum verified
+SKIP 0006_access_decision_api.sql checksum verified
+SKIP 0007_security_boundary_fixes.sql checksum verified
+SKIP 0008_expiry_and_ephemeral_cleanup.sql checksum verified
+SKIP 0009_application_write_api.sql checksum verified
+SKIP 0010_reader_ledger_usage.sql checksum verified
+SKIP 0011_verified_capacity_official_facts_manifest_confirmation.sql checksum verified
+SKIP 0012_service_principal_and_context.sql checksum verified
+SKIP 0013_management_write_api.sql checksum verified
+SKIP 0014_rollback_resistant_write_audit.sql checksum verified
+SKIP 0015_contract_gap_controls.sql checksum verified
+SKIP 0016_assignment_scope_integrity.sql checksum verified
+SKIP 0017_external_identity_request_trace.sql checksum verified
+SKIP 0018_advisor_session_scope_and_binder_hardening.sql checksum verified
+PASS migration counts processed=18 directory=18 ledger=18 expected=18
+ledger=18
+tables=27
+policies=20
+COMMAND: extra empty 0019 file (expected refusal)
+FAIL migration inventory expected=18 directory=19 matching=19
+PASS refused rc=1
+COMMAND: latest migration hidden (expected refusal)
+FAIL migration inventory expected=18 directory=17 matching=17
+PASS refused rc=1
+COMMAND: unnumbered .sql file (expected refusal)
+FAIL migration inventory expected=18 directory=19 matching=18
+PASS refused rc=1
+=== suites
+PASS psql foundation.sql
+PASS psql rls_probe.sql
+PASS psql docs_probe.sql
+PASS psql contract_neutral_probe.sql
+PASS psql trusted_context_probe.sql
+PASS psql phase3_acceptance.sql
+COMMAND: API seed
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:12: NOTICE:  PASS C3 unbound SERVICE created first family and has no person
+ clear_context 
+---------------
+ 
+(1 row)
+
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:21: NOTICE:  PASS D10 management APIs seed family A
+ clear_context 
+---------------
+ 
+(1 row)
+
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:7: NOTICE:  PASS D10 management APIs seed family B
+ clear_context 
+---------------
+ 
+(1 row)
+
+PASS API-seeded synthetic SERVICE(no person) families=2 guardian_authorities=2 assignments=4
+COMMAND: F10 regression
+TEST separate LOGIN accounts; no SET ROLE; one-use binder ticket exchanged on app connection
+psql:/opt/tests/f10_no_context_regression.sql:12: NOTICE:  PASS GUC forgery without trusted context denied
+PASS C1 app direct table write denied
+PASS D10 app cannot install SERVICE principal
+SESSION SERVICE_A binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:45: NOTICE:  PASS service create person/student/document/version without a natural-person SERVICE actor
+psql:<stdin>:45: NOTICE:  PASS C6/C7 service cross-family, duplicate, skipped version and non-Mock denials
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION STUDENT_UNVERIFIED binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:13: NOTICE:  PASS D12 unverified/minor self grant and family verification denied
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION SERVICE_VERIFY_MINOR binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:9: NOTICE:  PASS D12 service minor verification
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION STUDENT_MINOR binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:13: NOTICE:  PASS D12 unverified/minor self grant and family verification denied
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION SERVICE_VERIFY_ADULT binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:9: NOTICE:  PASS D12 service adult verification
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION STUDENT_ADULT binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:10: NOTICE:  PASS D12 verified adult self consent
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION SERVICE_RESET_UNVERIFIED binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:9: NOTICE:  PASS D12 append-only later capacity status
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION STUDENT_WITHDRAW_UNVERIFIED binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:8: NOTICE:  PASS D12 unverified subject can withdraw earlier self consent
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION FAMILY_A_CREATE binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:61: NOTICE:  PASS family actor cannot use internal service APIs
+psql:<stdin>:61: NOTICE:  PASS family creates education and identity records
+psql:<stdin>:61: NOTICE:  PASS education state skipping denied and identity DRAFT close allowed
+psql:<stdin>:61: NOTICE:  PASS manifest item denied before document Consent
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION ADVISOR_NO_CONSENT binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:13: NOTICE:  PASS advisor write denied without Consent and cannot grant itself
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION FAMILY_A_CONSENT binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:33: NOTICE:  PASS consent grant, duplicate denial, immediate withdrawal and regrant
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION ADVISOR_WITH_CONSENT binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:24: NOTICE:  PASS assigned advisor writes only with Consent
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION FAMILY_A_FINISH binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:25: NOTICE:  PASS C5 family cannot decide or resolve without official fact
+psql:<stdin>:25: NOTICE:  PASS C8 separate family confirmation, locked items and family submit denial
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION ADVISOR_OFFICIAL_FACT_AND_SUBMIT binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:26: NOTICE:  PASS D13/D14 official decision facts, advisor state changes and separate confirmation/submission
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION PARTNER_DENIED binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:26: NOTICE:  PASS partner channel cannot use write APIs across entities
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION CROSS_FAMILY binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:22: NOTICE:  PASS cross-family writes denied
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION EXPIRED_CONTEXT binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+ pg_sleep 
+----------
+ 
+(1 row)
+
+psql:<stdin>:10: NOTICE:  PASS expired trusted context denied within an open transaction
+psql:<stdin>:17: NOTICE:  PASS expired trusted context absent after transaction
+ clear_context 
+---------------
+ 
+(1 row)
+
+psql:<stdin>:24: NOTICE:  PASS clear_context removed binding
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION GUARDIAN_MANAGEMENT binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:27: NOTICE:  PASS R-7/D10 legacy and missing evidence denied; verified authority revoked and replaced by API
+ clear_context 
+---------------
+ 
+(1 row)
+
+SESSION MANAGEMENT_LIFECYCLE binder_LOGIN=phoenix_canonical_binder_f10 app_LOGIN=phoenix_canonical_app_f10
+ redeem_context_ticket 
+-----------------------
+ 
+(1 row)
+
+psql:<stdin>:25: NOTICE:  PASS D10 management lifecycle case/assignment/guardian/channel/login create and close or revoke
+ clear_context 
+---------------
+ 
+(1 row)
+
+psql:/opt/tests/f10_catalog_regression.sql:22: NOTICE:  PASS catalog app_write=0 public_execute=0 secdef_without_path=0
+audit_allow=84
+audit_deny=68
+ledger=18
+PASS F10 separated-login synthetic regression
+COMMAND: C1-C10 probes
+C1 app LOGIN direct INSERT into core.people: ERROR:  permission denied for table people
+C2 in-txn family-B create_application for family-A student returned=false
+C2 database rows after client ROLLBACK: 0; server LOG is asserted by f10_audit_reconcile.ps1
+C2b same attempt committed (control): DENY rows=1
+C3 unbound SERVICE family bootstrap exists: 1
+C3b SERVICE principal has no person: 1
+PASS C2/C3 rollback-resistant log handoff and unbound personless SERVICE expectations
+C4 student self-grants IDENTITY_SENSITIVE DOCUMENT_READ to partner returned=false
+C5 student creates own application=true
+C5 READY=true
+C5 SUBMITTED=true
+C5 DECIDED (no external decision fact)=false
+PASS C4/C5 unauthorized self grant and decision denied
+C5b external decision facts recorded for that application: 0
+C6 service bound to family A creates person in family B returned=false
+C7a service creates document=true
+C7b non-mock storage key cos://... returned=false
+C7c mock storage key returned=true
+C7d version 3 skipping 2 returned=false
+C8 submitted manifests where confirmed_by = submitted_by: 0 of 2
+PASS C8 submitter differs from confirmer
+C9 API coverage (functions app can execute that INSERT into casework/guardian/principal/channel tables): auth.create_login_principal,integration.create_channel_grant,casework.create_case,casework.create_advisor_assignment,core.create_guardian_authority
+C10 app executable write functions: 42
+END claude probes
+COMMAND: R-20 channel/kind
+PASS R20 FAMILY->ADVISOR refused CONTEXT_PRINCIPAL_CHANNEL_MISMATCH
+PASS R20 FAMILY->PARTNER refused CONTEXT_PRINCIPAL_CHANNEL_MISMATCH
+PASS R20 FAMILY->INTERNAL refused CONTEXT_PRINCIPAL_CHANNEL_MISMATCH
+PASS R20 ADVISOR->FAMILY refused CONTEXT_PRINCIPAL_CHANNEL_MISMATCH
+PASS R20 ADVISOR->PARTNER refused CONTEXT_PRINCIPAL_CHANNEL_MISMATCH
+PASS R20 ADVISOR->INTERNAL refused CONTEXT_PRINCIPAL_CHANNEL_MISMATCH
+PASS R20 CHANNEL->FAMILY refused CONTEXT_PRINCIPAL_CHANNEL_MISMATCH
+PASS R20 CHANNEL->ADVISOR refused CONTEXT_PRINCIPAL_CHANNEL_MISMATCH
+PASS R20 CHANNEL->INTERNAL refused CONTEXT_PRINCIPAL_CHANNEL_MISMATCH
+PASS R20 SERVICE->FAMILY refused CONTEXT_PRINCIPAL_CHANNEL_MISMATCH
+PASS R20 SERVICE->ADVISOR refused CONTEXT_PRINCIPAL_CHANNEL_MISMATCH
+PASS R20 SERVICE->PARTNER refused CONTEXT_PRINCIPAL_CHANNEL_MISMATCH
+PASS R20 all twelve mismatched principal/channel combinations
+COMMAND: G1-G5
+PASS setup-S0=true
+PASS setup-S1=true
+PASS setup-S2=true
+PASS setup-S4=true
+PASS setup-S5=true
+PASS G2=false
+PASS G2_reason=OFFICIAL_FACT_AUTHORITY_OR_INPUT_DENIED
+PASS G5=false
+PASS G5_reason=FAMILY_AUTHORITY_OR_STATE_DENIED
+PASS S3=true
+PASS G4=false
+PASS G4_reason=MANIFEST_OPERATOR_OR_STATE_DENIED
+PASS G1=false
+PASS S6=true
+PASS S7=true
+PASS S8=true
+PASS G3_attribution=t
+PASS G3_no_same_person=0
+PASS service_has_no_person=t
+PASS permanent G1-G5 with split LOGIN and one-use tickets
+COMMAND: V1.6 T1-T4
+PASS T1_PERSON=true
+PASS T1_PRINCIPAL=true
+PASS T1_RENAME_PERSON=true
+PASS T1_RENAME_FAMILY=true
+PASS T1_END=true
+PASS AUTH_GENERAL=true
+PASS AUTH_EDUCATION=true
+PASS DOC_B=true
+PASS VER_B=true
+PASS DOC_SELF=true
+PASS VER_SELF=true
+PASS DOC_ID=true
+PASS DOC_SERVICE=true
+PASS T1_CROSS_PERSON=false
+PASS T1_CROSS_FAMILY=false
+PASS T1_EXTEND=false
+PASS C_DOC_ADV=true
+PASS C_CASE_ADV=true
+PASS C_DOC_G=true
+PASS APP_B=true
+PASS M1=true
+PASS M2=true
+PASS ID_DRAFT=true
+PASS ID_DRAFT_CLOSE=true
+PASS ID_PENDING=true
+PASS ID_TO_PENDING=true
+PASS ID_PENDING_CLOSE=true
+PASS ID_NO_ADVISOR=true
+PASS T1_NON_SERVICE_PERSON=false
+PASS T1_NON_SERVICE_FAMILY=false
+PASS T1_NON_SERVICE_END=false
+PASS ID_CLOSED_FORWARD=false
+PASS T2_READ_BEFORE=false
+PASS T2_ADD_BEFORE=false
+PASS T4_ADVISOR_NO_ASSIGNMENT=false
+PASS T2_CASE=true
+PASS T2_ASSIGN=true
+PASS T2_READ_ACTIVE=true
+PASS T2_ADD_M1=true
+PASS T2_ADD_M2=true
+PASS T2_CONFIRM_M1=true
+PASS T2_CONFIRM_M2=true
+PASS T2_SUBMIT_ACTIVE=true
+PASS T2_REVOKE=true
+PASS T2_READ_REVOKED=false
+PASS T2_SUBMIT_REVOKED=false
+PASS T2_ASSIGN_SHORT=true
+PASS T2_READ_EXPIRED=false
+PASS T1_ENDED_IMMUTABLE=false
+PASS T3_SERVICE=true
+PASS T1 ended member ticket denied CONTEXT_FAMILY_MEMBERSHIP_INVALID
+PASS T3_SELF=true
+PASS T3_REPEAT=false
+PASS T3_ADVISOR=false
+PASS T3_CHANNEL=false
+PASS T3_SCOPE_MISMATCH=false
+PASS T3_GUARDIAN=true
+PASS T3_NEW_MANIFEST=true
+PASS T3_ADD_WITHDRAWN=false
+PASS T3_SUBMITTED_MANIFEST_VISIBLE=1
+PASS T3_SUBMITTED_ITEM_VISIBLE=1
+PASS T3_CONFIRMED_SUBMIT_WITHDRAWN=false
+PASS V1.6 T1-T4 split-LOGIN one-use-ticket synthetic regression
+psql:/opt/tests/f10_v16_document_trigger.sql:17: NOTICE:  PASS T3 withdrawn_at cannot be cleared or changed
+PASS psql f10_v16_document_trigger.sql
+COMMAND: V1.7 assignment scope
+PASS CASE_C1=true
+PASS ASSIGN_A1=true
+PASS ASSIGN_DUP=false
+PASS ASSIGN_DUP_REASON=ALREADY_ACTIVE
+PASS GUARD_FIRST=true
+PASS GUARD_DUP=false
+PASS GUARD_DUP_REASON=ALREADY_ACTIVE
+PASS APPX_CREATE=true
+PASS FACT_OPEN=true
+PASS READ_OPEN=1
+PASS CASE_MISMATCH=false
+PASS CASE_MISMATCH_REASON=RESOURCE_FAMILY_OR_SUBJECT_MISMATCH
+PASS CASE_C3=true
+PASS ASSIGN_A3=true
+PASS CLOSE_C1=true
+PASS FACT_CLOSED=false
+PASS ADVANCE_CLOSED=false
+PASS READ_CLOSED=0
+PASS FACT_CLOSED_ROWS=0
+PASS APPY_CREATE refused CASE_RESOURCE_FAMILY_OR_SUBJECT_MISMATCH
+PASS APPY_ROWS=0
+PASS V1.7 assignment scope: closed case and subject mismatch remove advisor authority; duplicate grants are audited denials
+COMMAND: V1.8 external identity, request trace, pool conformance
+=== external identity mapping
+PASS MAP_GUARDIAN=true
+PASS MAP_DUP=false
+PASS MAP_SERVICE=false
+PASS PERSON=true
+PASS PRINCIPAL=true
+PASS MAP_NEW=true
+PASS MAP_DUP_REASON=ALREADY_ACTIVE
+PASS MAP_BY_FAMILY=false
+PASS RESOLVE_KNOWN=018f0000-0000-7000-8000-000000002002
+PASS RESOLVE_UNKNOWN=NULL
+PASS RESOLVE_OTHER_ISSUER=NULL
+PASS app cannot resolve identities
+PASS binder cannot read the mapping table
+PASS UNMAP_GUARDIAN=true
+PASS DISABLE_NEW_PRINCIPAL=true
+PASS RESOLVE_AFTER_UNMAP=NULL
+PASS RESOLVE_DISABLED_PRINCIPAL=NULL
+=== request number reaches the audit row
+PASS AUDIT_NONCE=018f0000-0000-7000-8000-00000000d099
+=== pool conformance on one backend
+PASS same backend reused (pid 1476)
+PASS bound family A sees its people (4)
+PASS A_FAMILIES=018f0000-0000-7000-8000-000000000001
+PASS CLEARED_PEOPLE=0
+PASS CLEARED_FAMILIES=0
+PASS CLEARED_WRITE=false
+PASS B_FAMILIES=018f0000-0000-7000-8000-000000000002
+PASS B_SEES_A_PEOPLE=0
+PASS ticket reuse refused
+PASS expired ticket refused
+PASS ticket redeemed for another principal refused
+PASS ticket for disabled principal refused
+=== transaction-pooling hazard (expected behaviour, documented)
+PASS INHERITED_FAMILY=018f0000-0000-7000-8000-000000000001
+PASS AFTER_CLEAR_FAMILY=NULL
+NOTE context is bound to the backend: a pooler that hands one backend to several clients per transaction (for example PgBouncer transaction mode) would leak it; FD-6 rule 6 forbids such pooling and requires clear_context (or discarding the connection) before reuse
+PASS V1.8 external identity, request trace and pool conformance
+COMMAND: V1.9 E-R6 closed-case advisor boundary
+== setup: two families, two students, two guardians, one advisor, one case per family
+PASS setup has no ERROR lines got=[0]
+== T-A baseline: case open, assignment active, consent active
+PASS T-A advisor reads S1 basics (case open) got=[1]
+PASS T-A advisor reads APP1 (consent active) got=[1]
+PASS T-A positive: advisor reads C1 case row while open got=[1]
+PASS T-A positive: advisor reads AS1 assignment row while active got=[1]
+PASS T-A positive: advisor reads S1 student profile got=[1]
+PASS T-A positive: advisor reads S1 membership row got=[1]
+== T-B cross-family isolation
+PASS T-B advisor bound F1 reads S2 (F2) basics got=[0]
+PASS T-B advisor bound F2 reads S1 (F1) basics got=[0]
+PASS T-B advisor bound F2 reads APP1 (F1) got=[0]
+PASS T-B advisor bound F2 reads its own S2 basics (control) got=[1]
+== T-C consent withdrawal (guardian G1 withdraws EDUCATION_CASE consent)
+PASS T-C withdraw_grant returns true got=[true]
+PASS T-C advisor reads APP1 after consent withdrawn got=[0]
+OBSERVE T-C advisor reads S1 basics after consent withdrawn (basics are not consent-gated in can_read_subject_basics) got=[1]
+PASS T-C consent re-granted for the closure test got=[true]
+== T-E assignment revoked while the advisor session is bound (F2)
+PASS T-E revoke_advisor_assignment returns true got=[true]
+PASS T-E bound session reads S2 basics after assignment revoked got=[0]
+== T-F assignment expires while the advisor session is bound (F2, only AS3 active)
+PASS T-F short assignment created got=[true]
+PASS T-F bound session reads S2 basics before valid_until got=[1]
+PASS T-F bound session reads S2 basics after valid_until got=[0]
+== T-D E-R6: case closed while the advisor session is bound (F1)
+PASS T-D close_case returns true got=[true]
+PASS T-D bound session reads APP1 after case closed (0016 protects applications) got=[0]
+PASS T-D bound session reads the C1 case row after closure (cases_read) got=[0]
+PASS T-D bound session reads the AS1 assignment row after closure (assignments_read) got=[0]
+PASS T-D bound session reads S1 student profile after closure got=[0]
+PASS T-D bound session reads S1 membership row after closure got=[0]
+PASS T-D bound session reads S1 basics after case closed (E-R6) got=[0]
+PASS T-D bound session reads S1 basics after the context TTL (expired context) got=[0]
+PASS T-D a new binding after closure is refused got=[BIND_REFUSED CONTEXT_ADVISOR_ASSIGNMENT_INVALID]
+OBSERVE T-D assignment row after case closure (close_case does not end assignments) got=[ACTIVE|revoked=false|valid_now=true]
+OBSERVE T-D case row after closure got=[CLOSED]
+OBSERVE auth.session_contexts columns (expires_at is copied from the ticket, at most 60 s, and enforced by the current_* helpers) got=[backend_pid,principal_id,actor_person_id,family_id,channel,request_nonce,expires_at,bound_at,backend_start]
+SUMMARY findings=0
+COMMAND: 0018 D-2 legacy binder entry revocation
+== 0018 D-2 capability catalog using separate LOGIN accounts
+legacy_bind=false|issue_ticket=true|resolve_identity=true
+PASS binder cannot call legacy bind and retains ticket/identity capabilities
+redeem_ticket=true|clear_context=true
+PASS app retains redeem and clear capabilities
+== direct legacy bind must be rejected by PostgreSQL privilege checking
+ERROR:  permission denied for function bind_context
+PASS binder direct legacy bind rejected with permission denied
+=== D-9 reconciliation (server log vs persisted audit rows)
+PASS T1 display names absent from PHOENIX_AUDIT log
+LOG_ATTEMPTS=277 PERSISTED_MATCHES=276 LOG_ONLY_ATTEMPTS=1
+ROLLED_BACK_ATTEMPT PHOENIX_AUDIT attempt_id=741ca875-6761-4b89-b9a5-7f8a4dfe37ff action=CREATE resource_kind=EDUCATION_APPLICATION resource_id=018f0000-0000-7000-8000-000000009902 decision=DENY reason=FAMILY_ADVISOR_CONSENT_OR_INPUT_DENIED
+PASS D9 rolled-back denial present only in server log
+PASS FD-6 request number present in the PHOENIX_AUDIT server log line
+psql:/opt/tests/f10_d6_immutability_regression.sql:35: NOTICE:  PASS D12/D13/D14 append-only evidence, official fact and confirmed item locks
+PASS psql f10_d6_immutability_regression.sql
+psql:/opt/tests/f10_v15_schema_installer.sql:27: NOTICE:  PASS D11 person-kind constraints and installer-only SERVICE create/disable
+PASS psql f10_v15_schema_installer.sql
+=== socket / hba / drift / atomicity
+PASS socket password required
+local|scram-sha-256
+host|scram-sha-256
+host|scram-sha-256
+local|scram-sha-256
+host|scram-sha-256
+host|scram-sha-256
+host|scram-sha-256
+COMMAND: 0009 drift (expected refusal)
+SKIP 0008_expiry_and_ephemeral_cleanup.sql checksum verified
+DRIFT_REFUSED 0009_application_write_api.sql
+PASS refused rc=1
+COMMAND: restore pristine 0009
+COMMAND: forced migration failure (expected refusal)
+psql:/opt/tests/9000_atomicity_probe.sql:9: ERROR:  SYNTHETIC FORCED MIGRATION FAILURE
+CONTEXT:  PL/pgSQL function inline_code_block line 3 at RAISE
+PASS refused rc=3
+PASS atomic rollback left no schema; ledger=18
+=== backup LOGIN dump and fresh-cluster restore
+COMMAND: backup role dump
+DUMP_MODE=600 DUMP_SIZE=603731
+DUMP_SHA=5db4ac5dbcd844c78bfc15237a63aee29f0ed58d1cd47ab401f54c10779991a6
+PG_RESTORE_ENTRIES=493
+COMMAND: docker run restore --network none
+60053a2119cec30c0defafb88eb2113e2c49a4a9c7b2a8f6a906f90cc1e97529
+COMMAND: copy tests to restore
+COMMAND: fresh-cluster restore
+ledger=18
+tables=27
+policies=20
+people=13
+PASS restored foundation.sql
+PASS restored rls_probe.sql
+PASS restored docs_probe.sql
+PASS restored contract_neutral_probe.sql
+PASS restored trusted_context_probe.sql
+PASS restored phase3_acceptance.sql
+psql:/opt/tests/f10_catalog_regression.sql:22: NOTICE:  PASS catalog app_write=0 public_execute=0 secdef_without_path=0
+PASS restored f10_catalog_regression.sql
+psql:/opt/tests/f10_d6_immutability_regression.sql:35: NOTICE:  PASS D12/D13/D14 append-only evidence, official fact and confirmed item locks
+PASS restored f10_d6_immutability_regression.sql
+psql:/opt/tests/f10_v16_document_trigger.sql:17: NOTICE:  PASS T3 withdrawn_at cannot be cleared or changed
+PASS restored f10_v16_document_trigger.sql
+PASS restored f10_v20_0018_restore_regression.sql
+PASS fresh-cluster manifest-verified restore with synthetic rows and 0018
+SRC NETWORK=none PORTS={}
+RST NETWORK=none PORTS={}
+PASS PostgreSQL 17 F10 full synthetic acceptance (bash)
+END 2026-10-19 16:18:47 +0800

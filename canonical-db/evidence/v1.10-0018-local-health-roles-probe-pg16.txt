@@ -1,0 +1,35 @@
+ Container phoenix-canonical-foundation-pg16-1 Running 
+ Container phoenix-canonical-foundation-pg16-1 Waiting 
+ Container phoenix-canonical-foundation-pg16-1 Healthy 
+/var/run/postgresql:5432 - accepting connections
+ Container phoenix-canonical-foundation-pg16-1 Running 
+ Container phoenix-canonical-foundation-pg16-1 Waiting 
+ Container phoenix-canonical-foundation-pg16-1 Healthy 
+SKIP phoenix_canonical_dev 0001_foundation.sql checksum verified
+SKIP phoenix_canonical_dev 0002_education_identity_skeleton.sql checksum verified
+SKIP phoenix_canonical_dev 0003_core_consent_access.sql checksum verified
+SKIP phoenix_canonical_dev 0004_casework_education_identity.sql checksum verified
+SKIP phoenix_canonical_dev 0005_documents_submissions.sql checksum verified
+SKIP phoenix_canonical_dev 0006_access_decision_api.sql checksum verified
+SKIP phoenix_canonical_dev 0007_security_boundary_fixes.sql checksum verified
+SKIP phoenix_canonical_dev 0008_expiry_and_ephemeral_cleanup.sql checksum verified
+SKIP phoenix_canonical_dev 0009_application_write_api.sql checksum verified
+SKIP phoenix_canonical_dev 0010_reader_ledger_usage.sql checksum verified
+SKIP phoenix_canonical_dev 0011_verified_capacity_official_facts_manifest_confirmation.sql checksum verified
+SKIP phoenix_canonical_dev 0012_service_principal_and_context.sql checksum verified
+SKIP phoenix_canonical_dev 0013_management_write_api.sql checksum verified
+SKIP phoenix_canonical_dev 0014_rollback_resistant_write_audit.sql checksum verified
+SKIP phoenix_canonical_dev 0015_contract_gap_controls.sql checksum verified
+SKIP phoenix_canonical_dev 0016_assignment_scope_integrity.sql checksum verified
+SKIP phoenix_canonical_dev 0017_external_identity_request_trace.sql checksum verified
+SKIP phoenix_canonical_dev 0018_advisor_session_scope_and_binder_hardening.sql checksum verified
+psql:<stdin>:30: NOTICE:  role "phoenix_canonical_migrator_local" has already been granted membership in role "phoenix_canonical_migrator" by role "phoenix_bootstrap"
+psql:<stdin>:31: NOTICE:  role "phoenix_canonical_app_local" has already been granted membership in role "phoenix_canonical_app" by role "phoenix_bootstrap"
+psql:<stdin>:32: NOTICE:  role "phoenix_canonical_reader_local" has already been granted membership in role "phoenix_canonical_reader" by role "phoenix_bootstrap"
+psql:<stdin>:33: NOTICE:  role "phoenix_canonical_context_binder_local" has already been granted membership in role "phoenix_canonical_context_binder" by role "phoenix_bootstrap"
+psql:<stdin>:34: NOTICE:  role "phoenix_canonical_backup_local" has already been granted membership in role "phoenix_canonical_backup_runtime" by role "phoenix_bootstrap"
+PASS local-only login and least-privilege checks on PostgreSQL 16
+ Container phoenix-canonical-foundation-pg16-1 Running 
+ Container phoenix-canonical-foundation-pg16-1 Waiting 
+ Container phoenix-canonical-foundation-pg16-1 Healthy 
+PASS PostgreSQL 16 nondestructive transactional synthetic probes

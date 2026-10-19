@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# V1.9-R1 P1 (E-R6). Runs inside the disposable PG container after migrations 0001-0017 are installed.
+# Permanent E-R6 regression. Runs inside the disposable PG container after migrations 0001-0018 are installed.
 # Synthetic data only: families F1 and F2; students S1 (F1) and S2 (F2); guardians G1 (F1) and G2 (F2);
 # advisor A1 assigned to one case in each family.
 # PASS = behaviour the access contract requires. FINDING = behaviour that contradicts it.

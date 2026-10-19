@@ -107,12 +107,13 @@ END
 $test$;
 
 SET ROLE phoenix_canonical_context_binder;
-SELECT auth.bind_context(
+SELECT auth.issue_context_ticket(
  '01940000-0000-7000-8000-000000000201','01940000-0000-7000-8000-000000000101',
- '01940000-0000-7000-8000-000000000001','FAMILY',clock_timestamp()+interval '1 hour',
- '01940000-0000-7000-8000-000000000c01');
+ '01940000-0000-7000-8000-000000000001','FAMILY',clock_timestamp()+interval '45 seconds',
+ '01940000-0000-7000-8000-000000000c01','01940000-0000-7000-8000-000000000201') AS context_ticket \gset
 RESET ROLE;
 SET ROLE phoenix_canonical_app;
+SELECT auth.redeem_context_ticket(:'context_ticket','01940000-0000-7000-8000-000000000201');
 DO $test$
 BEGIN
   IF (SELECT count(*) FROM core.families) <> 1 THEN RAISE EXCEPTION 'family RLS leaked cross-family row'; END IF;
@@ -131,16 +132,17 @@ BEGIN
   END;
 END
 $test$;
+SELECT auth.clear_context();
 RESET ROLE;
-SET ROLE phoenix_canonical_context_binder; SELECT auth.clear_context(); RESET ROLE;
 
 SET ROLE phoenix_canonical_context_binder;
-SELECT auth.bind_context(
+SELECT auth.issue_context_ticket(
  '01940000-0000-7000-8000-000000000203','01940000-0000-7000-8000-000000000106',
- '01940000-0000-7000-8000-000000000001','ADVISOR',clock_timestamp()+interval '1 hour',
- '01940000-0000-7000-8000-000000000c03');
+ '01940000-0000-7000-8000-000000000001','ADVISOR',clock_timestamp()+interval '45 seconds',
+ '01940000-0000-7000-8000-000000000c03','01940000-0000-7000-8000-000000000203') AS context_ticket \gset
 RESET ROLE;
 SET ROLE phoenix_canonical_app;
+SELECT auth.redeem_context_ticket(:'context_ticket','01940000-0000-7000-8000-000000000203');
 DO $test$
 BEGIN
   IF NOT education.authorize_application_read('01940000-0000-7000-8000-000000000501') OR
@@ -168,16 +170,17 @@ BEGIN
   END IF;
 END
 $test$;
+SELECT auth.clear_context();
 RESET ROLE;
-SET ROLE phoenix_canonical_context_binder; SELECT auth.clear_context(); RESET ROLE;
 
 SET ROLE phoenix_canonical_context_binder;
-SELECT auth.bind_context(
+SELECT auth.issue_context_ticket(
  '01940000-0000-7000-8000-000000000204','01940000-0000-7000-8000-000000000107',
- '01940000-0000-7000-8000-000000000001','PARTNER',clock_timestamp()+interval '1 hour',
- '01940000-0000-7000-8000-000000000c04');
+ '01940000-0000-7000-8000-000000000001','PARTNER',clock_timestamp()+interval '45 seconds',
+ '01940000-0000-7000-8000-000000000c04','01940000-0000-7000-8000-000000000204') AS context_ticket \gset
 RESET ROLE;
 SET ROLE phoenix_canonical_app;
+SELECT auth.redeem_context_ticket(:'context_ticket','01940000-0000-7000-8000-000000000204');
 DO $test$
 BEGIN
   IF NOT identity.authorize_case_read('01940000-0000-7000-8000-000000000601') OR
@@ -193,18 +196,19 @@ BEGIN
   END IF;
 END
 $test$;
+SELECT auth.clear_context();
 RESET ROLE;
-SET ROLE phoenix_canonical_context_binder; SELECT auth.clear_context(); RESET ROLE;
 
 UPDATE core.guardian_authorities SET valid_until=clock_timestamp()-interval '1 minute'
  WHERE authority_id='01940000-0000-7000-8000-000000000401';
 SET ROLE phoenix_canonical_context_binder;
-SELECT auth.bind_context(
+SELECT auth.issue_context_ticket(
  '01940000-0000-7000-8000-000000000201','01940000-0000-7000-8000-000000000101',
- '01940000-0000-7000-8000-000000000001','FAMILY',clock_timestamp()+interval '1 hour',
- '01940000-0000-7000-8000-000000000c05');
+ '01940000-0000-7000-8000-000000000001','FAMILY',clock_timestamp()+interval '45 seconds',
+ '01940000-0000-7000-8000-000000000c05','01940000-0000-7000-8000-000000000201') AS context_ticket \gset
 RESET ROLE;
 SET ROLE phoenix_canonical_app;
+SELECT auth.redeem_context_ticket(:'context_ticket','01940000-0000-7000-8000-000000000201');
 DO $test$
 BEGIN
   IF docs.authorize_document_read('01940000-0000-7000-8000-000000000b01') OR
@@ -213,8 +217,8 @@ BEGIN
   END IF;
 END
 $test$;
+SELECT auth.clear_context();
 RESET ROLE;
-SET ROLE phoenix_canonical_context_binder; SELECT auth.clear_context(); RESET ROLE;
 
 UPDATE docs.documents SET withdrawn_at=clock_timestamp(),legal_hold=true
  WHERE document_id='01940000-0000-7000-8000-000000000b01';

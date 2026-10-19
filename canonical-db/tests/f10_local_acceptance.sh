@@ -75,6 +75,8 @@ run "V1.6 T1-T4" exec "$SRC" bash /opt/tests/f10_v16_contract_gaps.sh
 psqlf "$SRC" f10_v16_document_trigger.sql
 run "V1.7 assignment scope" exec "$SRC" bash /opt/tests/f10_v17_assignment_scope.sh
 run "V1.8 external identity, request trace, pool conformance" exec "$SRC" bash /opt/tests/f10_v18_identity_pool.sh
+run "V1.9 E-R6 closed-case advisor boundary" exec "$SRC" bash /opt/tests/f10_v19_e_r6_repro.sh
+run "0018 D-2 legacy binder entry revocation" exec "$SRC" bash /opt/tests/f10_v20_0018_acl.sh
 
 echo "=== D-9 reconciliation (server log vs persisted audit rows)"
 docker logs "$SRC" 2>&1 | grep 'PHOENIX_AUDIT' > "$AUDLOG"

@@ -1,0 +1,16 @@
+COMMAND: SHA-256 formal Migration 0018
+0018_SHA256=063f8ba5b57de24208579369ce75424526737953319544d0174c5a31e3f5d74b
+COMMAND: verify 0001-0017 have no working-tree diff
+PASS 0001-0017 unchanged
+COMMAND: compare verified E-R6 candidate body with formal 0018 before D-2 REVOKE
+PASS candidate E-R6 body equivalent
+COMMAND: count CR bytes in source .sh/.sql/.yaml excluding ignored runtime and backups
+CR_BYTES=0
+COMMAND: disposable F10 resource cleanup
+TEMP_CONTAINERS=0
+TEMP_VOLUMES=0
+COMMAND: final PASS markers
+v1.10-0018-pwsh-f10-pg16.txt: PASS PostgreSQL 16 F10 full synthetic acceptance
+v1.10-0018-pwsh-f10-pg17.txt: PASS PostgreSQL 17 F10 full synthetic acceptance
+v1.10-0018-bash-f10-pg16.txt: PASS PostgreSQL 16 F10 full synthetic acceptance (bash)
+v1.10-0018-bash-f10-pg17.txt: PASS PostgreSQL 17 F10 full synthetic acceptance (bash)
