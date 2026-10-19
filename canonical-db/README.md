@@ -1,6 +1,6 @@
 # Phoenix Canonical PostgreSQL — greenfield Canonical database
 
-This directory contains the implemented greenfield Canonical database. It does not connect to legacy databases, Feishu, D1 or COS. All acceptance data is synthetic. Migrations `0003`–`0007` implement the new Canonical business baseline while legacy migration remains separately held. Migration `0007` contains the post-audit security boundary fixes; `0008` closes the local reaudit's expiry and cleanup findings. Local-only `0009` adds the Founder-authorized application write API and R-7 guardian evidence protection. Migrations `0001`–`0008` are byte-preserved. `0009` must not be deployed to Tencent before Claude reaudit and Founder approval.
+This directory contains the implemented greenfield Canonical database. It does not connect to legacy databases, Feishu, D1 or COS. All acceptance data is synthetic. Migrations `0003`–`0007` implement the new Canonical business baseline while legacy migration remains separately held. Migration `0007` contains the post-audit security boundary fixes; `0008` closes the local reaudit's expiry and cleanup findings. Local-only `0009` adds the Founder-authorized application write API and R-7 guardian evidence protection. Founder-approved local Migration `0018` closes advisor reads when a case is no longer open or paused and removes the binder role's legacy direct-bind privilege. Migrations `0001`–`0017` are byte-preserved.
 
 ## Layout
 
@@ -24,6 +24,7 @@ This directory contains the implemented greenfield Canonical database. It does n
 | `migrations/canonical/0015_contract_gap_controls.sql` | Approved family membership/name controls, advisor document scope, document withdrawal and identity early close |
 | `migrations/canonical/0016_assignment_scope_integrity.sql` | Closed-case authority removal, resource/subject integrity and audited duplicate-grant denial |
 | `migrations/canonical/0017_external_identity_request_trace.sql` | External identity mapping, request trace and FD-6 pool-conformance controls |
+| `migrations/canonical/0018_advisor_session_scope_and_binder_hardening.sql` | Closed-case advisor access removal and legacy binder direct-bind revocation |
 | `scripts/db.ps1` | Initialization, migration, local login provisioning, exact-name test reset, health, backup and restore test |
 | `scripts/native-db.ps1` | Optional local fallback; PG17 was used for a supplemental check before Docker became available |
 | `scripts/mock-object-store.ps1` | Synthetic local object put/get, deduplication and backup/restore test |
@@ -52,6 +53,7 @@ This directory contains the implemented greenfield Canonical database. It does n
 | `FIX_EXECUTION_REPORT_V1.5.md` | Local D5 and R-20 execution with PG16/17 restore and rollback-resistant audit evidence; pending Claude review |
 | `FIX_EXECUTION_REPORT_V1.6.md`–`V1.8.md` | Contract-gap, assignment-scope and FD-6/FD-7 local execution reports |
 | `release/v1.9/PWSH_CROSS_ACCEPTANCE_REPORT_V1.0.md` | PG16/17 PowerShell cross-path F10, defect, SCRAM and fresh-restore evidence |
+| `FIX_EXECUTION_REPORT_V1.10.md` | Founder-approved 0018 implementation, local upgrade and PG16/PG17 evidence |
 
 ## Run locally when Docker is available
 
@@ -95,7 +97,7 @@ The migrations create migrator, application, reader and trusted context-binder `
 | `phoenix_canonical_migrator` | Connect; schema DDL and migration ledger | Migration execution only |
 | `phoenix_canonical_app` | Connect and exact schema usage | RLS-filtered reads and audited SECURITY DEFINER write functions; no direct table DML |
 | `phoenix_canonical_reader` | Connect and exact schema usage | RLS-filtered metadata reads |
-| `phoenix_canonical_context_binder` | Auth schema usage | Bind/clear trusted backend context only |
+| `phoenix_canonical_context_binder` | Auth schema usage | Issue one-time context tickets and resolve approved external identities; no direct context bind |
 | `phoenix_canonical_migrator_local` | Inherits only migrator capability | Ledger select/insert; domain schema create |
 | `phoenix_canonical_app_local` | Inherits only app capability | No domain table rights or ledger access |
 | `phoenix_canonical_reader_local` | Inherits only reader capability | RLS-filtered metadata reads; no ledger access |
@@ -106,8 +108,8 @@ The migrations create migrator, application, reader and trusted context-binder `
 
 The migration ledger is inaccessible to the app role. Phase 3 RLS uses a private backend-bound context that the application role cannot forge. Family, advisor and partner access requires the applicable membership, assignment, subject grant, Consent and authority. The 0009 write functions record allow/deny reason codes; Guardian evidence level cannot be edited in place. Acceptance data exists only inside removed disposable containers. FD-6 application authentication and real Web integration remain HOLD.
 
-The Founder authorized rebuilding the two local development volumes. That run stopped under the instruction's HOLD rule when bootstrap authentication failed on the newly created PG16 volume; PG17 remains stopped without its old volume. Neither development database is current acceptance evidence. The F-10 / 0009 checks instead ran in disposable `--network none` PG16 and PG17 clusters, which were removed after each run. See the separate V1.2 A and C execution reports.
+The local PostgreSQL 16 and 17 development databases are running with migrations 0001–0018, 18 matching ledger rows, 27 tables, 20 RLS policies and zero selected domain rows. The formal 0018 evidence also comes from disposable `--network none` PG16 and PG17 clusters, including fresh-cluster restore. See `FIX_EXECUTION_REPORT_V1.10.md`.
 
 ## Contract holds
 
-The new Canonical business schema is implemented. The post-audit catalog is 25 tables and 20 RLS policies on PG16/17. Historical Family Context and Founder OS originals remain unavailable, so legacy compatibility, Founder OS/D1/Operations reuse, Feishu import, real-data migration and automatic identity reconciliation remain HOLD. No old `006` migration is copied into this namespace.
+The new Canonical business schema is implemented. The post-audit catalog is 27 tables and 20 RLS policies on PG16/17. Historical Family Context and Founder OS originals remain unavailable, so legacy compatibility, Founder OS/D1/Operations reuse, Feishu import, real-data migration and automatic identity reconciliation remain HOLD. No old `006` migration is copied into this namespace.
