@@ -46,3 +46,8 @@ Unsigned decision-file SHA-256: `50a4b3aafd87fa7b11f006221d5541967b75ef1c078b64f
 
 After approval, `CODEX_INSTRUCTION_0021_AFTER_D8_APPROVAL_V1.0.md` is the bounded execution instruction. It requires PG16/PG17 F10, separated LOGIN accounts, one-time tickets and fresh-cluster recovery before 0021 can pass.
 
+## 6. Local commits
+
+- D-8 decision package and evidence: `257fc97cd6a5d7e431abbd0941f76fa43d08d5cd`
+- Report metadata / LF enforcement: recorded by the following local commit; see repository HEAD in the final execution response.
+
