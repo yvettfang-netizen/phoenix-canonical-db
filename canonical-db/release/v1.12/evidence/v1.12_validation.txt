@@ -1,0 +1,40 @@
+Phoenix Canonical PostgreSQL V1.12 validation
+Date: 2026-10-20
+
+COMMAND
+Validate required V1.12 files, recorded contract hash, migration inventory, historical migration diff, LF bytes, secret patterns and git whitespace.
+
+RAW OUTPUT
+required_files=PASS
+contract_hash_match=True
+migration_file_count=20
+last_migration=0020_education_service_read_hardening.sql
+changed_migration_count=0
+v1.12_carriage_return_bytes=0
+secret_pattern_hits=0
+git_diff_check=PASS
+
+COMMAND
+For each of pg16 and pg17, query the current local catalog as phoenix_canonical_reader_local through the existing container-local pgpass file.
+
+RAW OUTPUT
+--- pg16 catalog ---
+ledger=20
+tables=28
+policies=27
+operations_ref_absent=true
+--- pg17 catalog ---
+ledger=20
+tables=28
+policies=27
+operations_ref_absent=true
+
+DOCUMENT SHA-256
+0ae2db22506517ab05abe17d9f1ef53a8c069b23037f6ab8be6b627faa74f3e9  CODEX_INSTRUCTION_0021_AFTER_D8_APPROVAL_V1.0.md
+50a4b3aafd87fa7b11f006221d5541967b75ef1c078b64fb802bfe9701495adb  FOUNDER_DECISION_D8_V1.0.md
+e75f9ff155bc02b0d6bff963e9409b879b8e4e870c818beafe84875fc2c9eb8d  MIGRATION_0021_READINESS_AUDIT_V1.0.md
+7754ccf9f682973f0ee282090df9961760a3007493dee71d27d5dd6af6c7a784  OPERATIONS_ENTITLEMENT_REFERENCE_CONTRACT_DRAFT_V1.0.md
+f2149cf0fb586370625a1eeed2589304ae095497fa551520a9f468f30d75aa77  RISK_AND_HOLD_REGISTER_V1.1.md
+ac9c0c522f7a6eaa7dbee754fa32eef213454e2a279e7b150c2f523a58a18a44  evidence/d8_repository_audit.txt
+
+Note: this evidence file is generated after the listed document hashes and therefore does not list its own hash.

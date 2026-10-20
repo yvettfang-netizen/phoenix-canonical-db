@@ -1,0 +1,52 @@
+Phoenix Canonical PostgreSQL D-8 repository audit
+Date: 2026-10-20
+Working tree: D:\CODEX\01_PHOENIX\01_NOVA\_worktrees\canonical-postgresql-phase1
+
+COMMAND
+rg -n --glob '!evidence/**' --glob '!runtime/**' --glob '!backups/**' "D-8|Operations 引用|operations_ref|entitlement" canonical-db/release canonical-db/phase2-gate
+
+RELEVANT RAW OUTPUT
+canonical-db/release\v1.11\RISK_AND_HOLD_REGISTER_V1.0.md:9:| Operations entitlement reference | HOLD | D-8 must define owner, interface, identifier format, expiry and revocation notification |
+canonical-db/release\v1.11\MIGRATION_NUMBERING_ADDENDUM_V1.0.md:9:| 0020 | 0021 | Operations entitlement references | D-8 Operations owner/interface/identifier/expiry contract |
+canonical-db/release\v1.9\CANONICAL_MIGRATION_NEXT_PHASE_PLAN_V1.0.md:94:| `operations_ref.entitlement_ref` | id、external_entitlement_id（外部编号）、product_kind（EDUCATION_SERVICE / COURSE / ASKWISE）、subject_person_id、family_id、course_id（可空）、valid_from、valid_until、status | 只存引用与有效期，不存金额 |
+canonical-db/release\v1.9\CANONICAL_MIGRATION_NEXT_PHASE_PLAN_V1.0.md:96:**函数：** `operations_ref.has_valid_entitlement(subject, product_kind, course_id)`，SECURITY DEFINER，只读。
+canonical-db/release\v1.9\CANONICAL_MIGRATION_NEXT_PHASE_PLAN_V1.0.md:98:**依赖：** D-8（Operations 引用契约：外部编号格式、来源系统、撤销通知方式）。
+canonical-db/release\v1.9\CANONICAL_MIGRATION_NEXT_PHASE_PLAN_V1.0.md:100:**索引：** `(subject_person_id, product_kind)`、`(external_entitlement_id)` 唯一。
+canonical-db/release\learning-v2.0\LEARNING_END_TO_END_CONTRACT_V2.0.md:90:| Operations 通知延迟 | 权益状态未及时更新 | 权益仍为 ACTIVE 时，新报名会被允许；已报名不受影响。**这是一项已知风险**，需要 D-8 规定通知时限 |
+canonical-db/release\learning-v2.0\LEARNING_MIGRATION_PLAN_V2.0.md:94:| D-8 | Operations 引用契约（编号格式、通知方式、有效期规则）| 需要 Operations 负责人确认 |
+canonical-db/release\v1.9\FOUNDER_DECISION_REQUIRED_V1.9.md:67:### D-8 Operations 引用契约
+canonical-db/release\v1.9\FOUNDER_DECISION_SUMMARY_R1.md:35:| D-8 | Operations 引用契约 | 待决定；学习域 0020 依赖它 |
+
+COMMAND
+git diff --name-only -- canonical-db/migrations/canonical
+
+RAW OUTPUT
+[no output]
+
+INTERPRETATION
+No existing migration file changed in this batch. Repository sources consistently label D-8 as pending and do not contain a signed Operations owner/source/interface contract.
+
+COMMAND
+docker compose --env-file canonical-db/.env -f canonical-db/compose.yaml ps --format json
+
+RELEVANT RAW OUTPUT
+pg16: image postgres:16@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d, State=running, Health=healthy, Ports=5432/tcp with PublishedPort=0
+pg17: image postgres:17@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3, State=running, Health=healthy, Ports=5432/tcp with PublishedPort=0
+
+COMMAND
+For each of pg16 and pg17, run psql as phoenix_canonical_reader_local using the existing container-local 0600 pgpass file and query ledger count, base-table count, policy count and operations_ref schema absence.
+
+RAW OUTPUT
+--- pg16 catalog ---
+ledger=20
+tables=28
+policies=27
+operations_ref_absent=true
+--- pg17 catalog ---
+ledger=20
+tables=28
+policies=27
+operations_ref_absent=true
+
+INTERPRETATION
+Both local versions are healthy and remain at Migration 0020. The proposed operations_ref schema has not been created.
