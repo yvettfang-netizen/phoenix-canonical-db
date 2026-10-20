@@ -45,13 +45,13 @@ fi
 
 catalog="$(psql_restore -Atqc "SELECT 'ledger='||count(*) FROM canonical_migrations.applied; SELECT 'tables='||count(*) FROM pg_tables WHERE schemaname IN ('auth','core','consent','audit','integration','docs','casework','education','identity'); SELECT 'policies='||count(*) FROM pg_policies WHERE schemaname IN ('core','consent','audit','integration','docs','casework','education','identity'); SELECT 'people='||count(*) FROM core.people;")"
 printf '%s\n' "$catalog"
-grep -qx 'ledger=18' <<<"$catalog"
-grep -qx 'tables=27' <<<"$catalog"
-grep -qx 'policies=20' <<<"$catalog"
+grep -qx 'ledger=20' <<<"$catalog"
+grep -qx 'tables=34' <<<"$catalog"
+grep -qx 'policies=27' <<<"$catalog"
 grep -q '^people=[1-9]' <<<"$catalog"
 
-for suite in foundation.sql rls_probe.sql docs_probe.sql contract_neutral_probe.sql trusted_context_probe.sql phase3_acceptance.sql f10_catalog_regression.sql f10_d6_immutability_regression.sql f10_v16_document_trigger.sql f10_v20_0018_restore_regression.sql; do
+for suite in foundation.sql rls_probe.sql docs_probe.sql contract_neutral_probe.sql trusted_context_probe.sql phase3_acceptance.sql f10_catalog_regression.sql f10_d6_immutability_regression.sql f10_v16_document_trigger.sql f10_v20_0018_restore_regression.sql f10_v21_0019_restore_regression.sql; do
   psql_restore -f "/opt/tests/$suite" >/tmp/f10-restore-suite.log
   echo "PASS restored $suite"
 done
-echo 'PASS fresh-cluster manifest-verified restore with synthetic rows and 0018'
+echo 'PASS fresh-cluster manifest-verified restore with synthetic rows and 0020 security hardening'
