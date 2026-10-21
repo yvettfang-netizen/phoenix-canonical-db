@@ -23,6 +23,7 @@ GRANT CONNECT ON DATABASE phoenix_canonical_dev TO phoenix_canonical_app_f10,pho
 SQL
 unset app_secret binder_secret backup_secret
 test "$(psql -X -At -h 127.0.0.1 -U phoenix_bootstrap -d phoenix_canonical_dev -c "SELECT auth.install_service_principal('018f0000-0000-7000-8000-000000002001','Synthetic management service')")" = t
+test "$(psql -X -At -h 127.0.0.1 -U phoenix_bootstrap -d phoenix_canonical_dev -c "SELECT auth.install_service_principal('018f0000-0000-7000-8000-000000002009','operations_entitlement_service')")" = t
 
 app_psql() { PGPASSFILE=/tmp/f10-app.pgpass psql -X -q -h 127.0.0.1 -U phoenix_canonical_app_f10 -d phoenix_canonical_dev -v ON_ERROR_STOP=1 "$@"; }
 binder_psql() { PGPASSFILE=/tmp/f10-binder.pgpass psql -X -q -h 127.0.0.1 -U phoenix_canonical_binder_f10 -d phoenix_canonical_dev -v ON_ERROR_STOP=1 "$@"; }
@@ -41,4 +42,4 @@ run_seed() {
 run_seed NULL /opt/tests/f10_seed_unbound.sql
 run_seed '018f0000-0000-7000-8000-000000000001' /opt/tests/f10_seed_family_a.sql
 run_seed '018f0000-0000-7000-8000-000000000002' /opt/tests/f10_seed_family_b.sql
-echo 'PASS API-seeded synthetic SERVICE(no person) families=2 guardian_authorities=2 assignments=4'
+echo 'PASS API-seeded synthetic SERVICE(no person) families=2 guardian_authorities=2 assignments=4 operations_service=1'

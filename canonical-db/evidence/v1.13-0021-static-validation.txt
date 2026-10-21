@@ -1,0 +1,6 @@
+CR_TOTAL=0
+MIGRATION_FILES=21
+D:\CODEX\01_PHOENIX\01_NOVA\_worktrees\canonical-postgresql-phase1\canonical-db\release\v1.12\OPERATIONS_ENTITLEMENT_REFERENCE_CONTRACT_DRAFT_V1.0.md|7754ccf9f682973f0ee282090df9961760a3007493dee71d27d5dd6af6c7a784
+D:\CODEX\01_PHOENIX\01_NOVA\_worktrees\canonical-postgresql-phase1\canonical-db\release\v1.12\FOUNDER_DECISION_D8_V1.1_EFFECTIVE.md|3289c5ce78b2c3ffe1a51004a14c8952a3d0aa307fe83f765e928b2b56b52358
+D:\CODEX\01_PHOENIX\01_NOVA\_worktrees\canonical-postgresql-phase1\canonical-db\migrations\canonical\0021_operations_entitlement_reference.sql|adb8ec15e956c726e5717f9b19aebaae9d37ba4acece6a960729a204aa746d09
+PRE_0021_MIGRATIONS_UNCHANGED=PASS

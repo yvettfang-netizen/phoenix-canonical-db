@@ -2,7 +2,9 @@
 
 DO $test$
 BEGIN
-  IF (SELECT count(*) FROM canonical_migrations.applied) <> 20 THEN
+  IF (SELECT count(*) FROM canonical_migrations.applied
+      WHERE migration_name IN ('0019_education_master_and_records.sql',
+        '0020_education_service_read_hardening.sql')) <> 2 THEN
     RAISE EXCEPTION '0019/0020 restore ledger mismatch';
   END IF;
   IF (SELECT count(*) FROM pg_tables WHERE schemaname='education'

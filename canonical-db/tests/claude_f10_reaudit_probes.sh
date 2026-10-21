@@ -29,9 +29,10 @@ test "$c2_control" = 1 || exit 1
 
 c3_family="$(bootstrap_psql -Atqc "SELECT count(*) FROM core.families WHERE family_id='018f0000-0000-7000-8000-000000000001'")"
 c3_service="$(bootstrap_psql -Atqc "SELECT count(*) FROM auth.principals WHERE principal_kind='SERVICE' AND person_id IS NULL")"
+c3_management="$(bootstrap_psql -Atqc "SELECT count(*) FROM auth.principals WHERE principal_id='$SVC_P' AND principal_kind='SERVICE' AND person_id IS NULL")"
 echo "C3 unbound SERVICE family bootstrap exists: $c3_family"
 echo "C3b SERVICE principal has no person: $c3_service"
-test "$c3_family" = 1 && test "$c3_service" = 1 || exit 1
+test "$c3_family" = 1 && test "$c3_management" = 1 && test "$c3_service" -ge 1 || exit 1
 echo 'PASS C2/C3 rollback-resistant log handoff and unbound personless SERVICE expectations'
 
 T="$(ticket $STU_P $STU $FA FAMILY)"
@@ -62,5 +63,5 @@ echo "C8 submitted manifests where confirmed_by = submitted_by: $c8"
 test "${c8%% of *}" = 0 || exit 1
 echo 'PASS C8 submitter differs from confirmer'
 echo "C9 API coverage (functions app can execute that INSERT into casework/guardian/principal/channel tables): $(bootstrap_psql -Atqc "SELECT coalesce(string_agg(n.nspname||'.'||p.proname,','),'none') FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE has_function_privilege('phoenix_canonical_app',p.oid,'EXECUTE') AND (p.prosrc ~* 'INSERT INTO (casework\.|core\.guardian_authorities|auth\.principals|integration\.channel_grants)')")"
-echo "C10 app executable write functions: $(bootstrap_psql -Atqc "SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname IN ('auth','core','consent','audit','integration','docs','casework','education','identity') AND p.provolatile='v' AND has_function_privilege('phoenix_canonical_app',p.oid,'EXECUTE')")"
+echo "C10 app executable write functions: $(bootstrap_psql -Atqc "SELECT count(*) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname IN ('auth','core','consent','audit','integration','docs','casework','education','identity','operations_ref') AND p.provolatile='v' AND has_function_privilege('phoenix_canonical_app',p.oid,'EXECUTE')")"
 echo "END claude probes"

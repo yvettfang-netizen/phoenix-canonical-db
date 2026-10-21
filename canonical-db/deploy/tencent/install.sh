@@ -135,5 +135,5 @@ else
   echo "NOTE no PHOENIX_DB_SERVICE_PRINCIPAL_ID set: no management SERVICE principal installed"
 fi
 
-psql_exec -Atqc "SELECT current_database(); SELECT count(*) FROM canonical_migrations.applied; SELECT count(*) FROM pg_tables WHERE schemaname IN ('auth','core','consent','audit','integration','docs','casework','education','identity'); SELECT count(*) FROM pg_policies WHERE schemaname IN ('core','consent','audit','integration','docs','casework','education','identity');"
+psql_exec -Atqc "SELECT current_database(); SELECT count(*) FROM canonical_migrations.applied; SELECT count(*) FROM pg_tables WHERE schemaname IN ('auth','core','consent','audit','integration','docs','casework','education','identity','operations_ref'); SELECT count(*) FROM pg_policies WHERE schemaname IN ('core','consent','audit','integration','docs','casework','education','identity','operations_ref');"
 echo "PASS Phoenix Canonical PostgreSQL install"
