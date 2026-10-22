@@ -1,0 +1,21 @@
+FILE=C:\Users\phoen\.codex\.chatgpt-projects\g-p-6a69bd0fa2208191a426cc972dc57488\sources\Phoenix_Nova_Product_Architecture_and_Service_Catalog_V1.0.docx
+SHA256=5c14ec8df3b291569053bf876564baf754d4ef7eff778be0d5a3c6fa56d76d2d
+KEYWORD 启明堂=0
+KEYWORD learning_record=0
+KEYWORD teacher=0
+KEYWORD 教师=0
+KEYWORD 教务=0
+KEYWORD 课后卡片=0
+KEYWORD askwise=0
+FAMILY_OS_STUDENT_GROWTH_RECORDS=True
+
+FILE=C:\Users\phoen\.codex\.chatgpt-projects\g-p-6a69bd0fa2208191a426cc972dc57488\sources\Phoenix_Nova_Enterprise_Baseline_V1.0.docx
+SHA256=74d9a1b522de77ec91e3f46b90ce6e7b1b4c196da56974fe9bb4c61bdcc1d1ab
+KEYWORD 启明堂=0
+KEYWORD learning_record=0
+KEYWORD teacher=0
+KEYWORD 教师=0
+KEYWORD 教务=0
+KEYWORD 课后卡片=0
+KEYWORD askwise=0
+FAMILY_OS_STUDENT_GROWTH_RECORDS=True

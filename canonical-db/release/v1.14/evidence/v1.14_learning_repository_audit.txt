@@ -1,0 +1,13 @@
+COMMAND: SHA-256 candidate Learning V2.0 files
+D:\CODEX\01_PHOENIX\01_NOVA\_worktrees\canonical-postgresql-phase1\canonical-db\release\learning-v2.0\LEARNING_END_TO_END_CONTRACT_V2.0.md|847d8823e9610148727a02b6d0e7b14c224d3b34d8743d613143f6b37b99f2bd
+D:\CODEX\01_PHOENIX\01_NOVA\_worktrees\canonical-postgresql-phase1\canonical-db\release\learning-v2.0\LEARNING_SCHEMA_DICTIONARY_V2.0.md|b24c9903eb6032bf7535894796285a0dc4ab0a72afa0072a289c8b81b4196135
+D:\CODEX\01_PHOENIX\01_NOVA\_worktrees\canonical-postgresql-phase1\canonical-db\release\learning-v2.0\LEARNING_ROLE_PERMISSION_MATRIX_V2.0.md|c702ffff86b0536f4f4f21be65466fd56dd1486c25568f1e13c1cdc735f6a8b1
+D:\CODEX\01_PHOENIX\01_NOVA\_worktrees\canonical-postgresql-phase1\canonical-db\release\learning-v2.0\LEARNING_MIGRATION_PLAN_V2.0.md|df8e090f64f6556b73b51d9118626169eba210e080589f84317f4ac9dc479a89
+COMMAND: migration inventory
+MIGRATION_COUNT=21
+LATEST_MIGRATION=0021_operations_entitlement_reference.sql
+COMMAND: worktree status before v1.14 documents
+## codex/canonical-postgresql-phase1...origin/main [ahead 57, behind 3]
+?? canonical-db/evidence/v1.14-0022-readiness-pg16.txt
+?? canonical-db/evidence/v1.14-0022-readiness-pg17.txt
+?? canonical-db/release/v1.14/

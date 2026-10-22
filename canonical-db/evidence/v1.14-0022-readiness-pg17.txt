@@ -1,0 +1,8 @@
+server=17.11 (Debian 17.11-1.pgdg13+2)
+btree_gist=1.7:not_installed
+principal_kind=CHECK (((principal_kind = 'SERVICE'::text) = (person_id IS NULL)))
+principal_kind=CHECK ((((principal_kind = 'SERVICE'::text) AND ((length(btrim(service_label)) >= 1) AND (length(btrim(service_label)) <= 200))) OR ((principal_kind <> 'SERVICE'::text) AND (service_label IS NULL))))
+principal_kind=CHECK ((principal_kind = ANY (ARRAY['FAMILY'::text, 'ADVISOR'::text, 'CHANNEL'::text, 'SERVICE'::text])))
+consent=CHECK ((purpose = ANY (ARRAY['DOCUMENT_READ'::text, 'EDUCATION_CASE'::text, 'IDENTITY_CASE'::text])))
+consent=CHECK ((data_class = ANY (ARRAY['GENERAL'::text, 'EDUCATION'::text, 'IDENTITY_SENSITIVE'::text])))
+guardian=CHECK ((scope = ANY (ARRAY['GENERAL'::text, 'EDUCATION'::text, 'IDENTITY'::text])))
