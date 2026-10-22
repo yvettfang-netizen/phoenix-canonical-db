@@ -41,8 +41,8 @@ ledger="$(q -c "SELECT migration_name||' '||sha256 FROM canonical_migrations.app
 files="$(for m in ../../migrations/canonical/[0-9][0-9][0-9][0-9]_*.sql; do echo "$(basename "$m") $(sha256sum "$m" | awk '{print $1}')"; done)"
 if [ "$ledger" = "$files" ]; then echo "LEDGER_MATCHES_MIGRATION_FILES count=$(wc -l <<<"$ledger")"; else
   echo "LEDGER_DIFF:"; diff <(echo "$ledger") <(echo "$files") | sed 's/^/  /'; fail "ledger does not match the migration files"; fi
-q -c "SELECT 'tables='||count(*) FROM pg_tables WHERE schemaname IN ('auth','core','consent','audit','integration','docs','casework','education','identity','operations_ref');
-      SELECT 'policies='||count(*) FROM pg_policies WHERE schemaname IN ('core','consent','audit','integration','docs','casework','education','identity','operations_ref');
+q -c "SELECT 'tables='||count(*) FROM pg_tables WHERE schemaname IN ('auth','core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning');
+      SELECT 'policies='||count(*) FROM pg_policies WHERE schemaname IN ('core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning');
       SELECT 'families='||count(*) FROM core.families; SELECT 'audit_rows='||count(*) FROM audit.access_events;" || fail "catalog read"
 docker inspect "$name" --format 'NETWORK={{.HostConfig.NetworkMode}} PORTS={{json .HostConfig.PortBindings}}'
 echo "RESULT=PASS"

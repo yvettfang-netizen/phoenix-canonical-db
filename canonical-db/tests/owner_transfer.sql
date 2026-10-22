@@ -11,20 +11,20 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = o) THEN
     EXECUTE format('CREATE ROLE %I NOLOGIN NOINHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOBYPASSRLS', o);
   END IF;
-  FOREACH s IN ARRAY ARRAY['auth','core','consent','audit','integration','docs','casework','education','identity','operations_ref'] LOOP
+  FOREACH s IN ARRAY ARRAY['auth','core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning'] LOOP
     EXECUTE format('GRANT USAGE, CREATE ON SCHEMA %I TO %I', s, o);
   END LOOP;
   FOR r IN SELECT n.nspname, c.relname FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
-            WHERE n.nspname IN ('auth','core','consent','audit','integration','docs','casework','education','identity','operations_ref')
+            WHERE n.nspname IN ('auth','core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning')
               AND c.relkind IN ('r','v') LOOP
     EXECUTE format('ALTER TABLE %I.%I OWNER TO %I', r.nspname, r.relname, o);
   END LOOP;
   FOR r IN SELECT p.oid::regprocedure AS sig FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
-            WHERE n.nspname IN ('auth','core','consent','audit','integration','docs','casework','education','identity','operations_ref')
+            WHERE n.nspname IN ('auth','core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning')
               AND p.prokind = 'f' LOOP
     EXECUTE format('ALTER FUNCTION %s OWNER TO %I', r.sig, o);
   END LOOP;
-  RAISE NOTICE 'PASS owner transfer applied to tables/sequences/functions in 10 Canonical schemas';
+  RAISE NOTICE 'PASS owner transfer applied to tables/sequences/functions in 11 Canonical schemas';
 END
 $owner$;
 

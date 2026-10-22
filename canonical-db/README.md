@@ -1,6 +1,6 @@
 # Phoenix Canonical PostgreSQL — greenfield Canonical database
 
-This directory contains the implemented greenfield Canonical database. It does not connect to legacy databases, Feishu, D1 or COS. All acceptance data is synthetic. Migrations `0003`–`0007` implement the new Canonical business baseline while legacy migration remains separately held. Migration `0007` contains the post-audit security boundary fixes; `0008` closes the local reaudit's expiry and cleanup findings. Local-only `0009` adds the Founder-authorized application write API and R-7 guardian evidence protection. Founder-approved local Migration `0018` closes advisor reads when a case is no longer open or paused and removes the binder role's legacy direct-bind privilege. Founder-authorized local Migration `0019` adds Education master data and structured student records; forward Migration `0020` preserves the established SERVICE write-only RLS boundary. Founder-authorized local Migration `0021` adds the Operations entitlement reference boundary without importing Operations data. Migrations `0001`–`0020` are byte-preserved.
+This directory contains the implemented greenfield Canonical database. It does not connect to legacy databases, Feishu, D1 or COS. All acceptance data is synthetic. Migrations `0003`–`0007` implement the new Canonical business baseline while legacy migration remains separately held. Migration `0007` contains the post-audit security boundary fixes; `0008` closes the local reaudit's expiry and cleanup findings. Local-only `0009` adds the Founder-authorized application write API and R-7 guardian evidence protection. Founder-approved local Migration `0018` closes advisor reads when a case is no longer open or paused and removes the binder role's legacy direct-bind privilege. Founder-authorized local Migration `0019` adds Education master data and structured student records; forward Migration `0020` preserves the established SERVICE write-only RLS boundary. Founder-authorized local Migration `0021` adds the Operations entitlement reference boundary without importing Operations data. Founder-authorized local Migration `0022` adds the internal Learning delivery domain with separate staff identities, Consent, Operations entitlement validation, assignments, schedules, attendance and supervised publication. Migrations `0001`–`0021` are byte-preserved.
 
 ## Layout
 
@@ -28,6 +28,7 @@ This directory contains the implemented greenfield Canonical database. It does n
 | `migrations/canonical/0019_education_master_and_records.sql` | Versioned institution/program drafts, academic/score/language records, education plans and application master references |
 | `migrations/canonical/0020_education_service_read_hardening.sql` | Forward security correction: SERVICE keeps controlled writes but cannot read student Education records through RLS |
 | `migrations/canonical/0021_operations_entitlement_reference.sql` | Source-qualified Operations entitlement references, controlled register/revoke/check APIs and fail-closed product validity |
+| `migrations/canonical/0022_learning_core.sql` | Internal Learning courses, classes, enrollments, staff assignments, schedules, attendance, cards, reports and supervised publication |
 | `scripts/db.ps1` | Initialization, migration, local login provisioning, exact-name test reset, health, backup and restore test |
 | `scripts/native-db.ps1` | Optional local fallback; PG17 was used for a supplemental check before Docker became available |
 | `scripts/mock-object-store.ps1` | Synthetic local object put/get, deduplication and backup/restore test |
@@ -43,6 +44,8 @@ This directory contains the implemented greenfield Canonical database. It does n
 | `tests/f10_local_acceptance.ps1` | Independent PG16/17 network-isolated synthetic write API, role, drift, atomicity and fresh-cluster restore acceptance |
 | `tests/f10_v21_0019_education.sh` | Split-LOGIN Education master, evidence, tenant isolation, advisor Consent and SERVICE write-only regression |
 | `tests/f10_v22_0021_operations_entitlement.sh` | Split-LOGIN Operations service, source-event, tenant, product, expiry, revocation, Consent and ACL regression |
+| `tests/f10_v23_0022_learning.sh` | Split-LOGIN Learning SERVICE, TEACHER, SUPERVISOR and FAMILY positive/negative regression with one-use tickets |
+| `tests/f10_v23_0022_restore_regression.sql` | Restored Learning catalog, RLS, ACL and zero-row boundary checks |
 | `tests/9000_atomicity_probe.sql` | Deliberately failing synthetic migration used only by the audit action; never part of the Canonical migration directory |
 | `PHASE1_REPORT.md` | Executed evidence and contract holds |
 | `PHASE2A_EXECUTION_REPORT.md` | Executed Phase 2A empty-schema and mock-store results |
@@ -60,6 +63,7 @@ This directory contains the implemented greenfield Canonical database. It does n
 | `release/v1.9/PWSH_CROSS_ACCEPTANCE_REPORT_V1.0.md` | PG16/17 PowerShell cross-path F10, defect, SCRAM and fresh-restore evidence |
 | `FIX_EXECUTION_REPORT_V1.10.md` | Founder-approved 0018 implementation, local upgrade and PG16/PG17 evidence |
 | `FIX_EXECUTION_REPORT_V1.13.md` | Founder-approved D-8 / 0021 implementation, local upgrade and PG16/PG17 fresh-restore evidence |
+| `FIX_EXECUTION_REPORT_V1.15.md` | Founder-approved Learning / 0022 implementation, PG16/PG17 disposable acceptance, local upgrade and restore evidence |
 
 ## Run locally when Docker is available
 
@@ -114,8 +118,8 @@ The migrations create migrator, application, reader and trusted context-binder `
 
 The migration ledger is inaccessible to the app role. Phase 3 RLS uses a private backend-bound context that the application role cannot forge. Family, advisor and partner access requires the applicable membership, assignment, subject grant, Consent and authority. The 0009 write functions record allow/deny reason codes; Guardian evidence level cannot be edited in place. Acceptance data exists only inside removed disposable containers. FD-6 application authentication and real Web integration remain HOLD.
 
-The local PostgreSQL 16 and 17 development databases are running with migrations 0001–0021, 21 matching ledger rows, 36 tables and 27 RLS policies. The `operations_ref` tables contain no real or synthetic development rows. Formal 0021 evidence also comes from disposable `--network none` PG16 and PG17 clusters, including fresh-cluster restore. See `FIX_EXECUTION_REPORT_V1.13.md`.
+The local PostgreSQL 16 and 17 development databases are running with migrations 0001–0022, 22 matching ledger rows, 50 tables and 41 RLS policies. All 14 Learning tables contain zero development rows. Formal 0022 evidence also comes from disposable `--network none` PG16 and PG17 clusters, including split LOGIN accounts, one-use tickets, dedicated backup-role export, manifest verification and fresh-cluster restore. See `FIX_EXECUTION_REPORT_V1.15.md`.
 
 ## Contract holds
 
-The new Canonical business schema, approved Education 0019 scope and local Operations entitlement reference boundary are implemented. The post-0021 catalog is 36 tables and 27 RLS policies on PG16/17. Institution/program activation remains fail-closed until the two-person review design and initial list are approved. Operations application integration and real-source synchronization, document-kind vocabulary, Offer/Visa/Enrollment rules, historical Family Context and Founder OS originals, legacy compatibility, Feishu import, real-data migration and automatic identity reconciliation remain HOLD. No old `006` migration is copied into this namespace.
+The new Canonical business schema, approved Education 0019 scope, local Operations entitlement reference boundary and approved local Learning 0022 scope are implemented. The post-0022 catalog is 50 tables and 41 RLS policies on PG16/17. Institution/program activation remains fail-closed until the two-person review design and initial list are approved. Learning application authentication, real staff provisioning, real Operations entitlement synchronization, ASKWISE integration, document-kind vocabulary, Offer/Visa/Enrollment rules, historical Family Context and Founder OS originals, legacy compatibility, Feishu import, real-data migration and automatic identity reconciliation remain HOLD. No old `006` migration is copied into this namespace.

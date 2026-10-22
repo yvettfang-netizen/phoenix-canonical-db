@@ -1,0 +1,5 @@
+role=phoenix_canonical_backup_local
+learning_tables=14
+learning_rows=0
+ledger=22
+policies=41

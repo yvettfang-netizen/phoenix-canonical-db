@@ -79,6 +79,7 @@ run "V1.9 E-R6 closed-case advisor boundary" exec "$SRC" bash /opt/tests/f10_v19
 run "0018 D-2 legacy binder entry revocation" exec "$SRC" bash /opt/tests/f10_v20_0018_acl.sh
 run "0019 Education master and records" exec "$SRC" bash /opt/tests/f10_v21_0019_education.sh
 run "0021 Operations entitlement reference" exec "$SRC" bash /opt/tests/f10_v22_0021_operations_entitlement.sh
+run "0022 Learning Core" exec "$SRC" bash /opt/tests/f10_v23_0022_learning.sh
 
 echo "=== D-9 reconciliation (server log vs persisted audit rows)"
 docker logs "$SRC" 2>&1 | grep 'PHOENIX_AUDIT' > "$AUDLOG"

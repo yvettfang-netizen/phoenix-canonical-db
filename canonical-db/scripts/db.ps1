@@ -241,11 +241,11 @@ function Test-MigrationChecksumDrift([string]$database) {
 function New-CanonicalBackup([string]$sourceDatabase = $devDb) {
     Start-Database
     Assert-MigrationsApplied $sourceDatabase
-    $domainTables = Invoke-Psql $sourceDatabase "SELECT format('%I.%I', n.nspname, c.relname) FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE c.relkind IN ('r','p') AND n.nspname IN ('auth','core','consent','audit','integration','docs','casework','education','identity') ORDER BY 1;"
+    $domainTables = Invoke-Psql $sourceDatabase "SELECT format('%I.%I', n.nspname, c.relname) FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE c.relkind IN ('r','p') AND n.nspname IN ('auth','core','consent','audit','integration','docs','casework','education','identity','learning') ORDER BY 1;"
     $domainRows = 0L
     foreach ($table in @($domainTables)) {
         if (-not $table) { continue }
-        $rowCount = Invoke-Psql $devDb "SELECT count(*) FROM $table;"
+        $rowCount = Invoke-Psql $sourceDatabase "SELECT count(*) FROM $table;"
         $domainRows += [long]((@($rowCount) -join '').Trim())
     }
     if ($domainRows -ne 0) { throw 'Synthetic-only backup requires zero persistent domain rows.' }

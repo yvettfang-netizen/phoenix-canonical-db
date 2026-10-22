@@ -1,0 +1,9 @@
+ Container phoenix-canonical-foundation-pg17-1 Running 
+ Container phoenix-canonical-foundation-pg17-1 Waiting 
+ Container phoenix-canonical-foundation-pg17-1 Healthy 
+BACKUP D:\CODEX\01_PHOENIX\01_NOVA\_worktrees\canonical-postgresql-phase1\canonical-db\backups\phoenix_canonical_dev_pg17_20261022-165433_2045594d7e6c4182a2e800032a016ddb.dump
+ Container phoenix-canonical-foundation-pg17-1 Running 
+ Container phoenix-canonical-foundation-pg17-1 Waiting 
+ Container phoenix-canonical-foundation-pg17-1 Healthy 
+RESET phoenix_canonical_restore_test_17
+PASS restore into phoenix_canonical_restore_test_17

@@ -1,0 +1,13 @@
+branch=codex/canonical-postgresql-phase1
+head=5685bbbf7fc1caf50e3994c99bd3fdc2595e90fd
+contract_sha=3a3c95d671dfd66c872ffb61c4855bb04eff6dabdb8a41f1c61a44f5ba43fc16
+migration_sha=4df4b55cc9b2830c357d676906a77a9fa7ac981bbe4673c156285aa40fba2f5f
+diff_check=PASS
+migrations_0001_0021_byte_preserved=PASS
+deploy_cr_bytes=0
+deploy_lf=PASS
+bash_syntax_files=27
+bash_syntax=PASS
+powershell_parse=PASS
+compose_config=PASS
+deploy_package_rehearsal=PASS

@@ -1,0 +1,39 @@
+ Container phoenix-canonical-foundation-pg16-1 Running 
+ Container phoenix-canonical-foundation-pg16-1 Waiting 
+ Container phoenix-canonical-foundation-pg16-1 Healthy 
+RESET phoenix_canonical_test_16
+APPLIED phoenix_canonical_test_16 0001_foundation.sql
+APPLIED phoenix_canonical_test_16 0002_education_identity_skeleton.sql
+APPLIED phoenix_canonical_test_16 0003_core_consent_access.sql
+APPLIED phoenix_canonical_test_16 0004_casework_education_identity.sql
+APPLIED phoenix_canonical_test_16 0005_documents_submissions.sql
+APPLIED phoenix_canonical_test_16 0006_access_decision_api.sql
+psql:<stdin>:11: NOTICE:  role "phoenix_canonical_backup_runtime" has already been granted membership in role "pg_read_all_data" by role "phoenix_bootstrap"
+psql:<stdin>:388: NOTICE:  trigger "protect_advisor_assignment" for relation "casework.advisor_assignments" does not exist, skipping
+psql:<stdin>:407: NOTICE:  trigger "protect_guardian_authority" for relation "core.guardian_authorities" does not exist, skipping
+psql:<stdin>:442: NOTICE:  trigger "validate_submission_target" for relation "docs.submission_manifests" does not exist, skipping
+APPLIED phoenix_canonical_test_16 0007_security_boundary_fixes.sql
+APPLIED phoenix_canonical_test_16 0008_expiry_and_ephemeral_cleanup.sql
+APPLIED phoenix_canonical_test_16 0009_application_write_api.sql
+APPLIED phoenix_canonical_test_16 0010_reader_ledger_usage.sql
+APPLIED phoenix_canonical_test_16 0011_verified_capacity_official_facts_manifest_confirmation.sql
+APPLIED phoenix_canonical_test_16 0012_service_principal_and_context.sql
+APPLIED phoenix_canonical_test_16 0013_management_write_api.sql
+APPLIED phoenix_canonical_test_16 0014_rollback_resistant_write_audit.sql
+APPLIED phoenix_canonical_test_16 0015_contract_gap_controls.sql
+APPLIED phoenix_canonical_test_16 0016_assignment_scope_integrity.sql
+APPLIED phoenix_canonical_test_16 0017_external_identity_request_trace.sql
+APPLIED phoenix_canonical_test_16 0018_advisor_session_scope_and_binder_hardening.sql
+APPLIED phoenix_canonical_test_16 0019_education_master_and_records.sql
+APPLIED phoenix_canonical_test_16 0020_education_service_read_hardening.sql
+APPLIED phoenix_canonical_test_16 0021_operations_entitlement_reference.sql
+APPLIED phoenix_canonical_test_16 0022_learning_core.sql
+ Container phoenix-canonical-foundation-pg16-1 Running 
+ Container phoenix-canonical-foundation-pg16-1 Waiting 
+ Container phoenix-canonical-foundation-pg16-1 Healthy 
+ Container phoenix-canonical-foundation-pg16-1 Running 
+ Container phoenix-canonical-foundation-pg16-1 Waiting 
+ Container phoenix-canonical-foundation-pg16-1 Healthy 
+RESET phoenix_canonical_restore_test_16
+RESET phoenix_canonical_restore_test_16
+PASS PostgreSQL 16 backup digest/provenance tamper refusal with restore database preserved
