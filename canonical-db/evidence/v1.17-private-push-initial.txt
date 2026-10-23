@@ -1,0 +1,6 @@
+COMMAND=git push --porcelain canonical-private HEAD:refs/heads/codex/canonical-postgresql-phase1
+LOCAL_HEAD=090b7be24ead3d582a9d1ffa28e884172217dab6
+REMOTE_BEFORE=d3caaacda61d8367523c1f877c8a6b1cfeabd666
+OUTPUT=HEAD:refs/heads/codex/canonical-postgresql-phase1 d3caaac..090b7be
+REMOTE_AFTER=090b7be24ead3d582a9d1ffa28e884172217dab6
+RESULT=PASS_FAST_FORWARD_PRIVATE_BRANCH

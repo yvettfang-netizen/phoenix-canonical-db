@@ -1,0 +1,113 @@
+=== V1.17 isolated application authorization ===
+HOST=VM-0-15-ubuntu
+UTC=2026-10-23T08:20:46Z
+DEPLOY_PATH=/home/ubuntu/phoenix-canonical-db-deploy
+SERVICE_PRINCIPAL_CLASS=SYNTHETIC_NONPRODUCTION
+SERVICE_PRINCIPAL_ID=018f0000-0000-7000-8000-00000000a001
+ENV_MODE=600
+SERVICE_ID_CONFIGURED_BEFORE=yes
+SERVICE_LABEL_CONFIGURED_BEFORE=yes
+CONTAINER=/tencent-postgres-1 STATUS=running HEALTH=healthy PORTS={}
+ENV_CONFIG_ACTION=preserved_existing_exact_values
+ENV_MODE_AFTER=600
+SERVICE_CONFIG_VALIDATED=yes
+=== repeat-safe installer and service principal registration ===
+ Container tencent-postgres-1  Running
+ Container tencent-postgres-1  Waiting
+ Container tencent-postgres-1  Healthy
+SKIP 0001_foundation.sql checksum verified
+SKIP 0002_education_identity_skeleton.sql checksum verified
+SKIP 0003_core_consent_access.sql checksum verified
+SKIP 0004_casework_education_identity.sql checksum verified
+SKIP 0005_documents_submissions.sql checksum verified
+SKIP 0006_access_decision_api.sql checksum verified
+SKIP 0007_security_boundary_fixes.sql checksum verified
+SKIP 0008_expiry_and_ephemeral_cleanup.sql checksum verified
+SKIP 0009_application_write_api.sql checksum verified
+SKIP 0010_reader_ledger_usage.sql checksum verified
+SKIP 0011_verified_capacity_official_facts_manifest_confirmation.sql checksum verified
+SKIP 0012_service_principal_and_context.sql checksum verified
+SKIP 0013_management_write_api.sql checksum verified
+SKIP 0014_rollback_resistant_write_audit.sql checksum verified
+SKIP 0015_contract_gap_controls.sql checksum verified
+SKIP 0016_assignment_scope_integrity.sql checksum verified
+SKIP 0017_external_identity_request_trace.sql checksum verified
+SKIP 0018_advisor_session_scope_and_binder_hardening.sql checksum verified
+SKIP 0019_education_master_and_records.sql checksum verified
+SKIP 0020_education_service_read_hardening.sql checksum verified
+SKIP 0021_operations_entitlement_reference.sql checksum verified
+SKIP 0022_learning_core.sql checksum verified
+SET
+SET
+DO
+GRANT ROLE
+psql:<stdin>:33: NOTICE:  role "phoenix_canonical_migrator_runtime" has already been granted membership in role "phoenix_canonical_migrator" by role "phoenix_bootstrap"
+psql:<stdin>:34: NOTICE:  role "phoenix_canonical_app_runtime" has already been granted membership in role "phoenix_canonical_app" by role "phoenix_bootstrap"
+GRANT ROLE
+GRANT ROLE
+GRANT ROLE
+GRANT ROLE
+psql:<stdin>:35: NOTICE:  role "phoenix_canonical_reader_runtime" has already been granted membership in role "phoenix_canonical_reader" by role "phoenix_bootstrap"
+psql:<stdin>:36: NOTICE:  role "phoenix_canonical_binder_runtime" has already been granted membership in role "phoenix_canonical_context_binder" by role "phoenix_bootstrap"
+psql:<stdin>:37: NOTICE:  role "phoenix_canonical_backup_runtime" has already been granted membership in role "pg_read_all_data" by role "phoenix_bootstrap"
+GRANT
+SKIP service principal 018f0000-0000-7000-8000-00000000a001 already active
+phoenix_canonical_dev
+22
+50
+41
+PASS Phoenix Canonical PostgreSQL install
+=== separate LOGIN proof and one-use ticket flow ===
+BINDER_LOGIN=phoenix_canonical_binder_runtime/phoenix_canonical_binder_runtime
+APP_LOGIN=phoenix_canonical_app_runtime/phoenix_canonical_app_runtime
+TICKET_ISSUED=yes ttl_seconds=45
+
+PRINCIPAL_MATCH=true
+CHANNEL=INTERNAL
+ACTOR_IS_NULL=true
+FAMILY_IS_NULL=true
+
+CLEARED=true
+PASS ticket reuse rejected
+PASS wrong-principal redemption rejected
+
+CORRECT_TARGET_AFTER_REJECTION=true
+
+PASS SERVICE/FAMILY channel mismatch rejected
+PASS app direct table write rejected
+APP_DIRECT_DML_TABLES=0
+PUBLIC_CONTROLLED_FUNCTIONS=0
+=== installed-state and zero-business-data proof ===
+SERVICE_ROWS=1
+OTHER_PRINCIPALS=0
+PEOPLE=0
+FAMILIES=0
+MEMBERSHIPS=0
+STUDENTS=0
+CONSENTS=0
+CASES=0
+DOCUMENTS=0
+EDUCATION_APPLICATIONS=0
+IDENTITY_CASES=0
+LEARNING_ENROLLMENTS=0
+=== health, backup, fresh restore, and isolation ===
+127.0.0.1:5432 - accepting connections
+version=16.15 (Debian 16.15-1.pgdg13+2)
+migrations=22
+tables=50
+policies=41
+BACKUP backups/phoenix_canonical_20261023T082057Z.dump
+VERIFIED backups/phoenix_canonical_20261023T082057Z.dump entries=867
+DRILL 20261023T082057Z backup=backups/phoenix_canonical_20261023T082057Z.dump image=mirror.ccs.tencentyun.com/library/postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d
+LEDGER_MATCHES_MIGRATION_FILES count=22
+tables=50
+policies=41
+families=0
+audit_rows=1
+NETWORK=none PORTS={}
+RESULT=PASS
+ELAPSED_SECONDS=5
+2026-10-23T08:21:02Z ALERT_CHECK done alerts=0
+FINAL_CONTAINER=/tencent-postgres-1 STATUS=running HEALTH=healthy PORTS={}
+ENV_FINAL_MODE=600
+RESULT=PASS_SYNTHETIC_APPLICATION_AUTHORIZATION

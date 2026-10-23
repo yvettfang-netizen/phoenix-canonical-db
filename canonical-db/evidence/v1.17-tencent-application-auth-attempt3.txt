@@ -1,0 +1,87 @@
+=== V1.17 isolated application authorization ===
+HOST=VM-0-15-ubuntu
+UTC=2026-10-23T08:20:18Z
+DEPLOY_PATH=/home/ubuntu/phoenix-canonical-db-deploy
+SERVICE_PRINCIPAL_CLASS=SYNTHETIC_NONPRODUCTION
+SERVICE_PRINCIPAL_ID=018f0000-0000-7000-8000-00000000a001
+ENV_MODE=600
+SERVICE_ID_CONFIGURED_BEFORE=yes
+SERVICE_LABEL_CONFIGURED_BEFORE=yes
+CONTAINER=/tencent-postgres-1 STATUS=running HEALTH=healthy PORTS={}
+ENV_CONFIG_ACTION=preserved_existing_exact_values
+ENV_MODE_AFTER=600
+SERVICE_CONFIG_VALIDATED=yes
+=== repeat-safe installer and service principal registration ===
+ Container tencent-postgres-1  Running
+ Container tencent-postgres-1  Waiting
+ Container tencent-postgres-1  Healthy
+SKIP 0001_foundation.sql checksum verified
+SKIP 0002_education_identity_skeleton.sql checksum verified
+SKIP 0003_core_consent_access.sql checksum verified
+SKIP 0004_casework_education_identity.sql checksum verified
+SKIP 0005_documents_submissions.sql checksum verified
+SKIP 0006_access_decision_api.sql checksum verified
+SKIP 0007_security_boundary_fixes.sql checksum verified
+SKIP 0008_expiry_and_ephemeral_cleanup.sql checksum verified
+SKIP 0009_application_write_api.sql checksum verified
+SKIP 0010_reader_ledger_usage.sql checksum verified
+SKIP 0011_verified_capacity_official_facts_manifest_confirmation.sql checksum verified
+SKIP 0012_service_principal_and_context.sql checksum verified
+SKIP 0013_management_write_api.sql checksum verified
+SKIP 0014_rollback_resistant_write_audit.sql checksum verified
+SKIP 0015_contract_gap_controls.sql checksum verified
+SKIP 0016_assignment_scope_integrity.sql checksum verified
+SKIP 0017_external_identity_request_trace.sql checksum verified
+SKIP 0018_advisor_session_scope_and_binder_hardening.sql checksum verified
+SKIP 0019_education_master_and_records.sql checksum verified
+SKIP 0020_education_service_read_hardening.sql checksum verified
+SKIP 0021_operations_entitlement_reference.sql checksum verified
+SKIP 0022_learning_core.sql checksum verified
+psql:<stdin>:33: NOTICE:  role "phoenix_canonical_migrator_runtime" has already been granted membership in role "phoenix_canonical_migrator" by role "phoenix_bootstrap"
+psql:<stdin>:34: NOTICE:  role "phoenix_canonical_app_runtime" has already been granted membership in role "phoenix_canonical_app" by role "phoenix_bootstrap"
+psql:<stdin>:35: NOTICE:  role "phoenix_canonical_reader_runtime" has already been granted membership in role "phoenix_canonical_reader" by role "phoenix_bootstrap"
+psql:<stdin>:36: NOTICE:  role "phoenix_canonical_binder_runtime" has already been granted membership in role "phoenix_canonical_context_binder" by role "phoenix_bootstrap"
+psql:<stdin>:37: NOTICE:  role "phoenix_canonical_backup_runtime" has already been granted membership in role "pg_read_all_data" by role "phoenix_bootstrap"
+SET
+SET
+DO
+GRANT ROLE
+GRANT ROLE
+GRANT ROLE
+GRANT ROLE
+GRANT ROLE
+GRANT
+SKIP service principal 018f0000-0000-7000-8000-00000000a001 already active
+phoenix_canonical_dev
+22
+50
+41
+PASS Phoenix Canonical PostgreSQL install
+=== separate LOGIN proof and one-use ticket flow ===
+BINDER_LOGIN=phoenix_canonical_binder_runtime/phoenix_canonical_binder_runtime
+APP_LOGIN=phoenix_canonical_app_runtime/phoenix_canonical_app_runtime
+TICKET_ISSUED=yes ttl_seconds=45
+
+PRINCIPAL_MATCH=true
+CHANNEL=INTERNAL
+ACTOR_IS_NULL=true
+FAMILY_IS_NULL=true
+
+CLEARED=true
+PASS ticket reuse rejected
+PASS wrong-principal redemption rejected
+
+CORRECT_TARGET_AFTER_REJECTION=true
+
+PASS SERVICE/FAMILY channel mismatch rejected
+PASS app direct table write rejected
+APP_DIRECT_DML_TABLES=0
+PUBLIC_CONTROLLED_FUNCTIONS=0
+=== installed-state and zero-business-data proof ===
+SERVICE_ROWS=1
+ERROR:  relation "core.memberships" does not exist
+LINE 1: ...re.families; SELECT 'MEMBERSHIPS='||count(*) FROM core.membe...
+                                                             ^
+OTHER_PRINCIPALS=0
+PEOPLE=0
+FAMILIES=0
