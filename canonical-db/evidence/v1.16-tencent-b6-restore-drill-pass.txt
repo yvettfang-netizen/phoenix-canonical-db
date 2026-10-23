@@ -1,0 +1,9 @@
+DRILL 20261023T031034Z backup=backups/phoenix_canonical_20261023T030949Z.dump image=mirror.ccs.tencentyun.com/library/postgres@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d
+LEDGER_MATCHES_MIGRATION_FILES count=22
+tables=50
+policies=41
+families=0
+audit_rows=0
+NETWORK=none PORTS={}
+RESULT=PASS
+ELAPSED_SECONDS=4

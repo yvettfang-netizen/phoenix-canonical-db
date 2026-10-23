@@ -1,0 +1,2 @@
+tar_scp_exit=0
+manifest_scp_exit=0

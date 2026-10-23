@@ -1,0 +1,6 @@
+head=7b620344af7f87b1a0d882c5f6ae251432440382
+tar=D:\CODEX\01_PHOENIX\01_NOVA\_worktrees\canonical-postgresql-phase1\canonical-db\runtime\v1.16-tencent-upload-20261023T110752.tar
+tar_sha256=3e015325c8d2819957c5170db106299bbca237b49cdb47ac2f95de7a77f76b9b
+manifest=D:\CODEX\01_PHOENIX\01_NOVA\_worktrees\canonical-postgresql-phase1\canonical-db\runtime\v1.16-tencent-upload-20261023T110752.sha256
+payload_files=36
+forbidden_paths=0

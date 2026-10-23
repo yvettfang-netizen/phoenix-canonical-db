@@ -1,0 +1,4 @@
+timestamp=2026-10-23T10:58:23+08:00
+remote=canonical-private
+exit_code=0
+d3caaacda61d8367523c1f877c8a6b1cfeabd666	refs/heads/codex/canonical-postgresql-phase1

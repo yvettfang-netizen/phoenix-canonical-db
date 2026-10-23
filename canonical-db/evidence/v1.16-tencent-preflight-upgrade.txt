@@ -1,0 +1,15 @@
+COMMAND=preflight_upgrade.sql via protected container pgpass
+scp_exit=0
+ssh_exit=0
+                check                 | blocking |                               detail                               
+--------------------------------------+----------+--------------------------------------------------------------------
+ ledger                               | f        | applied=6 last=0006_access_decision_api.sql
+ live_context_tickets                 | f        | rows=0
+ live_session_contexts                | f        | rows=0 (stop binder/app; ephemeral, safe to clear)
+ manifest_confirmed_without_time      | f        | rows=0 (only relevant when 0011 is pending; needs a data decision)
+ non_service_principal_without_person | f        | rows=0
+ service_principal_with_person        | f        | rows=0 (0012 requires SERVICE principals without a natural person)
+(6 rows)
+
+
+

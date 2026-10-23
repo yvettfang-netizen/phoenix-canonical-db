@@ -1,0 +1,14 @@
+COMMAND=list backup artifacts after update; names sizes modes only
+exit_code=0
+phoenix_canonical_20261014T092721Z.dump|133047|600
+phoenix_canonical_20261014T092721Z.dump.manifest.json|167|600
+phoenix_canonical_20261015T064743Z.dump|133047|600
+phoenix_canonical_20261015T064743Z.dump.manifest.json|167|600
+phoenix_canonical_20261023T030949Z.dump|516148|600
+phoenix_canonical_20261023T030949Z.dump.manifest.json|167|600
+phoenix_canonical_20261023T030949Z.dump.verified|61|600
+phoenix_canonical_preupgrade_v116_20261023T030657Z.dump|0|600
+phoenix_canonical_preupgrade_v116_20261023T030718Z.dump|133047|600
+phoenix_canonical_preupgrade_v116_20261023T030728Z.dump|133047|600
+phoenix_canonical_preupgrade_v116_20261023T030728Z.dump.manifest.json|196|600
+phoenix_canonical_preupgrade_v116_20261023T030728Z.dump.verified|61|600

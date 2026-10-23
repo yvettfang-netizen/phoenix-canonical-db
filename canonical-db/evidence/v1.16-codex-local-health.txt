@@ -1,0 +1,16 @@
+DOCKER:
+client=29.8.2 server=29.8.2 os=linux arch=amd64
+COMPOSE:
+Docker Compose version v5.5.1
+PG16_HEALTH:
+ Container phoenix-canonical-foundation-pg16-1 Running 
+ Container phoenix-canonical-foundation-pg16-1 Waiting 
+ Container phoenix-canonical-foundation-pg16-1 Healthy 
+/var/run/postgresql:5432 - accepting connections
+pg16_exit=0
+PG17_HEALTH:
+ Container phoenix-canonical-foundation-pg17-1 Running 
+ Container phoenix-canonical-foundation-pg17-1 Waiting 
+ Container phoenix-canonical-foundation-pg17-1 Healthy 
+/var/run/postgresql:5432 - accepting connections
+pg17_exit=0

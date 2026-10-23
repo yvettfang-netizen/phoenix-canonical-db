@@ -1,0 +1,7 @@
+COMMAND=deploy committed restore selector fix from HEAD 6a7634e
+exit_code=0
+deployed_head=6a7634e
+restore_drill_sha256=9c333de4eb16ab38d3ca8ab54891b35b9fdf3f0414a7e9f3e66ec98c47da43bd
+RESULT=PASS_RESTORE_SELECTOR_FIX
+
+

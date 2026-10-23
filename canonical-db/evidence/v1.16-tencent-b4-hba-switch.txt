@@ -1,0 +1,22 @@
+COMMAND=switch existing data volume local pg_hba rules to SCRAM with rollback backup
+exit_code=0
+socket_auth_phoenix_canonical_reader_runtime=PASS
+socket_auth_phoenix_canonical_backup_runtime=PASS
+socket_auth_phoenix_canonical_binder_runtime=PASS
+hba_backup=/var/lib/postgresql/data/pg_hba.conf.codex-v116-20261023T030942Z.bak
+hba_before_sha256=45b68cd420caab6d19725857c309871880a66a4c195bcd7e1604e7c334b6be82
+hba_after_sha256=7580c87d60bb8dcd34ff202ae2c11c2814f4488ed16b95406f985f36ee471991
+trust_rules_before=2
+trust_rules_after=0
+socket_without_password=REFUSED
+pg_hba_rules:
+local|{all}|{all}||scram-sha-256
+host|{all}|{all}|127.0.0.1|scram-sha-256
+host|{all}|{all}|::1|scram-sha-256
+local|{replication}|{all}||scram-sha-256
+host|{replication}|{all}|127.0.0.1|scram-sha-256
+host|{replication}|{all}|::1|scram-sha-256
+host|{all}|{all}|all|scram-sha-256
+RESULT=PASS_B4_HBA_SWITCH
+
+

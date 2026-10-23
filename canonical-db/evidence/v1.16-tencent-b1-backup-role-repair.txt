@@ -1,0 +1,5 @@
+COMMAND=repair dedicated backup role credential; no database rows changed
+exit_code=0
+RESULT=PASS_BACKUP_ROLE_CREDENTIAL_REPAIRED
+
+

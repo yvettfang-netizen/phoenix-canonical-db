@@ -1,0 +1,42 @@
+COMMAND=verify all deployed payload files against git-archive HEAD 2734189
+exit_code=0
+deploy/tencent/.env.example: OK
+deploy/tencent/.gitattributes: OK
+deploy/tencent/alert_check.sh: OK
+deploy/tencent/audit_extract.sh: OK
+deploy/tencent/backup.sh: OK
+deploy/tencent/compose.yaml: OK
+deploy/tencent/health.sh: OK
+deploy/tencent/install.sh: OK
+deploy/tencent/preflight_upgrade.sql: OK
+deploy/tencent/prune_backups.sh: OK
+deploy/tencent/README.md: OK
+deploy/tencent/restore_drill.sh: OK
+deploy/tencent/restore.sh: OK
+migrations/canonical/.gitattributes: OK
+migrations/canonical/0001_foundation.sql: OK
+migrations/canonical/0002_education_identity_skeleton.sql: OK
+migrations/canonical/0003_core_consent_access.sql: OK
+migrations/canonical/0004_casework_education_identity.sql: OK
+migrations/canonical/0005_documents_submissions.sql: OK
+migrations/canonical/0006_access_decision_api.sql: OK
+migrations/canonical/0007_security_boundary_fixes.sql: OK
+migrations/canonical/0008_expiry_and_ephemeral_cleanup.sql: OK
+migrations/canonical/0009_application_write_api.sql: OK
+migrations/canonical/0010_reader_ledger_usage.sql: OK
+migrations/canonical/0011_verified_capacity_official_facts_manifest_confirmation.sql: OK
+migrations/canonical/0012_service_principal_and_context.sql: OK
+migrations/canonical/0013_management_write_api.sql: OK
+migrations/canonical/0014_rollback_resistant_write_audit.sql: OK
+migrations/canonical/0015_contract_gap_controls.sql: OK
+migrations/canonical/0016_assignment_scope_integrity.sql: OK
+migrations/canonical/0017_external_identity_request_trace.sql: OK
+migrations/canonical/0018_advisor_session_scope_and_binder_hardening.sql: OK
+migrations/canonical/0019_education_master_and_records.sql: OK
+migrations/canonical/0020_education_service_read_hardening.sql: OK
+migrations/canonical/0021_operations_entitlement_reference.sql: OK
+migrations/canonical/0022_learning_core.sql: OK
+files=36
+env_mode=600
+container_host_ports=none
+RESULT=PASS_FINAL_PAYLOAD_MATCH

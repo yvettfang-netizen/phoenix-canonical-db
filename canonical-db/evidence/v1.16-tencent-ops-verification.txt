@@ -1,0 +1,8 @@
+EXTRACTED 2026-10-23 lines=0 sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+CHAIN_OK days=1
+PRUNE mode=dry-run days=14 keep_newest_verified=3 cutoff_utc=20261009T080109Z total=3 verified=1
+KEEP backups/phoenix_canonical_20261014T092721Z.dump (within 14 days)
+KEEP backups/phoenix_canonical_20261015T064743Z.dump (within 14 days)
+KEEP backups/phoenix_canonical_20261023T030949Z.dump (newest verified)
+PRUNE done candidates=0
+2026-10-23T08:01:09Z ALERT_CHECK done alerts=0

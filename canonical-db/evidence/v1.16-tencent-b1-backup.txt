@@ -1,0 +1,11 @@
+COMMAND=pre-upgrade backup via dedicated backup login and protected pgpass
+exit_code=0
+BACKUP=backups/phoenix_canonical_preupgrade_v116_20261023T030728Z.dump
+SHA256=d3a162a043c052625117a8f310c7443cba1a07f724d126e4df1759cac0c84ee7
+PG_RESTORE_ENTRIES=299
+MODES=600,600,600
+600,600,600
+600,600,600
+RESULT=PASS_B1_BACKUP
+
+

@@ -1,0 +1,47 @@
+verified_at=2026-10-23T16:01:28+08:00
+remote_url=https://github.com/yvettfang-netizen/phoenix-canonical-db.git
+remote_branch=codex/canonical-postgresql-phase1
+remote_head=d3caaacda61d8367523c1f877c8a6b1cfeabd666
+local_head=273418911a9160a40e18959d3c6da038ad90277f
+merge_base=d3caaacda61d8367523c1f877c8a6b1cfeabd666
+remote_left_local_right_counts=0	26
+remote_is_ancestor_of_local=yes
+remote_contains_0022=no
+remote_contains_v1_15_report=no
+remote_write_performed=no
+REMOTE_LOG:
+d3caaac docs(canonical-db): record Founder approval of EV-1, EV-3, EV-4 contracts
+4a8f8bb docs(canonical-db): draft EV-1, EV-3, EV-4 effective-candidate contracts
+334097a docs(canonical-db): approve remaining decisions and re-audit Codex batch 2
+24fe28b Record V1.4 PG16 PG17 execution evidence
+85df24f Implement V1.4 E1-E3 and local 0011 D6 regression
+00690d6 docs(canonical-db): correct observation time in instruction V1.4
+2d2cae2 docs(canonical-db): align instruction V1.4 with Codex D6 work in progress
+862b3a6 docs(canonical-db): re-audit Codex V1.3 batch 1 and issue instruction V1.4
+LOCAL_ONLY_LOG:
+2734189 fix(canonical-db): isolate runtime backup selection
+6a7634e fix(canonical-db): select latest runtime restore backup
+7b62034 docs(canonical-db): report Learning 0022 execution
+c8c5a3a feat(canonical-db): implement approved Learning migration 0022
+5685bbb docs(canonical-db): prepare Learning 0022 gate
+48ad6d8 docs(canonical-db): close D-8 local gate
+6569481 feat(canonical-db): add operations entitlement references
+8d4accf docs(db): record D-8 gate evidence
+257fc97 docs(db): prepare D-8 entitlement gate
+a3c464f docs(canonical-db): close local education gate
+9188f59 feat(canonical-db): add local education foundation
+97b9b47 docs(canonical-db): close local 0018 acceptance gate
+3bb16a3 feat(canonical-db): apply founder-approved 0018 hardening
+f8775e5 docs(canonical-db): close W-22 pwsh release gate
+072ea74 test(canonical-db): complete pwsh cross acceptance
+d791ac6 docs(canonical-db): V1.9-R1 evidence pack, E-R6 reproduction, learning-v2.0 design
+3545376 docs(canonical-db): list all SECURITY DEFINER functions with grants (V1.9 P5)
+6d75d4f docs(canonical-db): V1.9 schema audit, domain coverage and owner-model PoC
+32f6b1b docs(canonical-db): refresh deploy rehearsal evidence at final code
+58096af fix(canonical-db): remove anonymous volumes with disposable test containers
+74533a3 docs(canonical-db): release candidate documents and remaining work register
+c5e81e6 feat(canonical-db): V1.8 FD-6/FD-7 local implementation (0017) and ops tooling
+12e7a63 fix(canonical-db): V1.7 assignment scope integrity (0016), upgrade path and deploy rehearsal
+a1ec169 feat(canonical-db): close out V1.6 contract-gap controls (0015)
+05fca5b docs(canonical-db): report v1.5 third batch
+4a9a29e feat(canonical-db): complete v1.5 service and audit controls

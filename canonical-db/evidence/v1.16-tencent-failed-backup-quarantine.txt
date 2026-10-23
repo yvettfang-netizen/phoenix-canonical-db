@@ -1,0 +1,5 @@
+COMMAND=quarantine exact failed pre-upgrade artifacts; no verified backup removed
+exit_code=0
+phoenix_canonical_preupgrade_v116_20261023T030657Z.dump|0|600
+phoenix_canonical_preupgrade_v116_20261023T030718Z.dump|133047|600
+RESULT=PASS_FAILED_ARTIFACTS_QUARANTINED

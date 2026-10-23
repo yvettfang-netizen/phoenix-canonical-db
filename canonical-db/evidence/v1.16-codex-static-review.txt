@@ -1,0 +1,26 @@
+reviewed_at=2026-10-23T11:00:26+08:00
+head=7b620344af7f87b1a0d882c5f6ae251432440382
+STATUS:
+## codex/canonical-postgresql-phase1...origin/main [ahead 60, behind 3]
+?? canonical-db/evidence/v1.16-private-remote-ls-remote.txt
+?? canonical-db/evidence/v1.16-private-remote-verification.txt
+DIFF_CHECK:
+diff_check_exit=0
+TRACKED_DEPLOY_ENV:
+none
+MIGRATION_COUNT:
+count=22 first=0001_foundation.sql last=0022_learning_core.sql
+0022_SHA256:
+4df4b55cc9b2830c357d676906a77a9fa7ac981bbe4673c156285aa40fba2f5f
+DEPLOY_LF_SCAN:
+alert_check.sh cr_bytes=0
+audit_extract.sh cr_bytes=0
+backup.sh cr_bytes=0
+compose.yaml cr_bytes=0
+health.sh cr_bytes=0
+install.sh cr_bytes=0
+preflight_upgrade.sql cr_bytes=0
+prune_backups.sh cr_bytes=0
+restore_drill.sh cr_bytes=0
+restore.sh cr_bytes=0
+total_cr_bytes=0

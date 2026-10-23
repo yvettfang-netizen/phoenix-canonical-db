@@ -1,0 +1,13 @@
+COMMAND=final Tencent isolated runtime verification
+exit_code=0
+127.0.0.1:5432 - accepting connections
+version=16.15 (Debian 16.15-1.pgdg13+2)
+migrations=22
+tables=50
+policies=41
+CHAIN_OK days=1
+2026-10-23T08:02:43Z ALERT_CHECK done alerts=0
+container_host_ports=none
+disposable_restore_containers=none
+env_mode=600
+RESULT=PASS_FINAL_RUNTIME_STATE
