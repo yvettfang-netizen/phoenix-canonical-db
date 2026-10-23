@@ -11,7 +11,10 @@ mkdir -p drills; chmod 700 drills
 start_s="$(date +%s)"; stamp="$(date -u +%Y%m%dT%H%M%SZ)"; report="drills/drill-$stamp.txt"
 exec > >(tee "$report") 2>&1
 fail() { echo "RESULT=FAIL $*"; echo "ELAPSED_SECONDS=$(( $(date +%s) - start_s ))"; exit 1; }
-backup="${1:-$(for d in $(ls backups/phoenix_canonical_*.dump 2>/dev/null | sort -r); do [ -f "$d.verified" ] && { echo "$d"; break; }; done)}"
+# Default only to regular timestamped runtime backups. Pre-upgrade snapshots use a descriptive
+# suffix and remain available when passed explicitly, but must not outrank the newest runtime dump.
+backup="${1:-$(find backups -maxdepth 1 -type f -name 'phoenix_canonical_[0-9]*.dump' -printf '%T@ %p\n' 2>/dev/null |
+  sort -nr | cut -d' ' -f2- | while IFS= read -r d; do [ -f "$d.verified" ] && { echo "$d"; break; }; done)}"
 [ -n "$backup" ] && [ -f "$backup" ] || fail "no verified backup found"
 manifest_line="$(cat "$backup.manifest.json" 2>/dev/null)"
 [[ "$manifest_line" =~ \"sha256\":\"([0-9a-f]{64})\" ]] || fail "manifest missing or invalid"
