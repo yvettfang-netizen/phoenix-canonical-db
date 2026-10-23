@@ -18,7 +18,9 @@ done
 [ -d backups ] || { echo "no backups directory"; exit 0; }
 cutoff="$(date -u -d "-$days days" +%Y%m%dT%H%M%SZ)"
 # Backup file names carry the UTC creation stamp: backups/phoenix_canonical_<stamp>.dump
-mapfile -t all < <(ls backups/phoenix_canonical_*.dump 2>/dev/null | sort)
+# Pre-upgrade snapshots use descriptive names and are governed by the upgrade evidence lifecycle.
+# Runtime retention only considers the strict UTC timestamp naming convention produced by backup.sh.
+mapfile -t all < <(find backups -maxdepth 1 -type f -name 'phoenix_canonical_[0-9]*.dump' -print 2>/dev/null | sort)
 mapfile -t verified < <(for d in "${all[@]}"; do [ -f "$d.verified" ] && [ -f "$d.manifest.json" ] && echo "$d"; done | sort)
 protected=" $(printf '%s\n' "${verified[@]}" | tail -n "$keep" | tr '\n' ' ') "
 echo "PRUNE mode=$([ $apply = 1 ] && echo apply || echo dry-run) days=$days keep_newest_verified=$keep cutoff_utc=$cutoff total=${#all[@]} verified=${#verified[@]}"

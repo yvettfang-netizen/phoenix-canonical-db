@@ -19,8 +19,10 @@ alert() { echo "$now ALERT $1 $2" | tee -a "$out"; count=$((count+1)); }
 envval() { grep "^$1=" .env | cut -d= -f2-; }
 dbname="$(envval PHOENIX_DB_NAME)"
 
-newest="$(ls backups/phoenix_canonical_*.dump 2>/dev/null | sort | tail -1)"
-newest_verified="$(for d in $(ls backups/phoenix_canonical_*.dump 2>/dev/null | sort -r); do [ -f "$d.verified" ] && { echo "$d"; break; }; done)"
+mapfile -t runtime_backups < <(find backups -maxdepth 1 -type f -name 'phoenix_canonical_[0-9]*.dump' -printf '%T@ %p\n' 2>/dev/null |
+  sort -nr | cut -d' ' -f2-)
+newest="${runtime_backups[0]:-}"
+newest_verified="$(for d in "${runtime_backups[@]}"; do [ -f "$d.verified" ] && { echo "$d"; break; }; done)"
 if [ -z "$newest_verified" ]; then alert BACKUP_STALE "no verified backup"; else
   s="$(basename "$newest_verified" .dump)"; s="${s#phoenix_canonical_}"
   age_h=$(( ( $(date -u +%s) - $(date -u -d "${s:0:4}-${s:4:2}-${s:6:2}T${s:9:2}:${s:11:2}:${s:13:2}Z" +%s) ) / 3600 ))
