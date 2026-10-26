@@ -55,6 +55,7 @@ This directory contains the implemented greenfield Canonical database. It does n
 | `PHASE3_EXECUTION_REPORT.md` | Effective greenfield contract, applied business schema, RLS and PG16/17 formal acceptance |
 | `phase2-gate/` | Source evidence, the effective greenfield contract and approval register |
 | `deploy/tencent/` | No-public-port PostgreSQL 16 deployment, health and backup package |
+| `integration/auth-gateway/` | FD-6 fail-closed application-auth configuration contract, validator, synthetic fixture and application-team facts register |
 | `FIX_EXECUTION_REPORT_V1.2_A.md`, `_B.md`, `_C.md` | Separate local rebuild, Tencent isolated update and local 0009 execution results, with raw evidence paths |
 | `FIX_EXECUTION_REPORT_V1.3.md` | First local V1.3 batch: reader ledger fix, LF archive policy, PG16/17 cross acceptance and remaining work |
 | `FIX_EXECUTION_REPORT_V1.4.md` | Local E1–E3 and D6 execution with PG16/17 raw evidence; pending Claude review |
@@ -64,6 +65,8 @@ This directory contains the implemented greenfield Canonical database. It does n
 | `FIX_EXECUTION_REPORT_V1.10.md` | Founder-approved 0018 implementation, local upgrade and PG16/PG17 evidence |
 | `FIX_EXECUTION_REPORT_V1.13.md` | Founder-approved D-8 / 0021 implementation, local upgrade and PG16/PG17 fresh-restore evidence |
 | `FIX_EXECUTION_REPORT_V1.15.md` | Founder-approved Learning / 0022 implementation, PG16/PG17 disposable acceptance, local upgrade and restore evidence |
+| `FIX_EXECUTION_REPORT_V1.17.md` | Private remote synchronization and database-side non-production application authorization |
+| `FIX_EXECUTION_REPORT_V1.18.md` | FD-6 application-auth configuration gate, synthetic regression and Tencent backup-alert recovery |
 
 ## Run locally when Docker is available
 
@@ -116,10 +119,10 @@ The migrations create migrator, application, reader and trusted context-binder `
 | `phoenix_canonical_backup_runtime` | Deployment-only backup role | `pg_read_all_data`, `BYPASSRLS`, `NOSUPERUSER` |
 | `phoenix_bootstrap` | Local container superuser for setup, migration and synthetic tests | All; never an application connection |
 
-The migration ledger is inaccessible to the app role. Phase 3 RLS uses a private backend-bound context that the application role cannot forge. Family, advisor and partner access requires the applicable membership, assignment, subject grant, Consent and authority. The 0009 write functions record allow/deny reason codes; Guardian evidence level cannot be edited in place. Acceptance data exists only inside removed disposable containers. FD-6 application authentication and real Web integration remain HOLD.
+The migration ledger is inaccessible to the app role. Phase 3 RLS uses a private backend-bound context that the application role cannot forge. Family, advisor and partner access requires the applicable membership, assignment, subject grant, Consent and authority. The 0009 write functions record allow/deny reason codes; Guardian evidence level cannot be edited in place. Acceptance data exists only inside removed disposable containers. The FD-6 fail-closed configuration contract and synthetic validation gate are implemented; live OIDC/JWT/JWKS and real Web integration remain HOLD until application-owned facts are supplied and reviewed.
 
 The local PostgreSQL 16 and 17 development databases are running with migrations 0001–0022, 22 matching ledger rows, 50 tables and 41 RLS policies. All 14 Learning tables contain zero development rows. Formal 0022 evidence also comes from disposable `--network none` PG16 and PG17 clusters, including split LOGIN accounts, one-use tickets, dedicated backup-role export, manifest verification and fresh-cluster restore. See `FIX_EXECUTION_REPORT_V1.15.md`.
 
 ## Contract holds
 
-The new Canonical business schema, approved Education 0019 scope, local Operations entitlement reference boundary and approved local Learning 0022 scope are implemented. The post-0022 catalog is 50 tables and 41 RLS policies on PG16/17. Institution/program activation remains fail-closed until the two-person review design and initial list are approved. Learning application authentication, real staff provisioning, real Operations entitlement synchronization, ASKWISE integration, document-kind vocabulary, Offer/Visa/Enrollment rules, historical Family Context and Founder OS originals, legacy compatibility, Feishu import, real-data migration and automatic identity reconciliation remain HOLD. No old `006` migration is copied into this namespace.
+The new Canonical business schema, approved Education 0019 scope, local Operations entitlement reference boundary and approved local Learning 0022 scope are implemented. The post-0022 catalog is 50 tables and 41 RLS policies on PG16/17. Institution/program activation remains fail-closed until the two-person review design and initial list are approved. Live Learning/application OIDC integration, real staff provisioning, real Operations entitlement synchronization, ASKWISE integration, document-kind vocabulary, Offer/Visa/Enrollment rules, historical Family Context and Founder OS originals, legacy compatibility, Feishu import, real-data migration and automatic identity reconciliation remain HOLD. No old `006` migration is copied into this namespace.

@@ -1,0 +1,13 @@
+=== PG16 HEALTH ===
+ Container phoenix-canonical-foundation-pg16-1 Starting
+ Container phoenix-canonical-foundation-pg16-1 Started
+ Container phoenix-canonical-foundation-pg16-1 Waiting
+ Container phoenix-canonical-foundation-pg16-1 Healthy
+/var/run/postgresql:5432 - accepting connections
+=== PG17 HEALTH ===
+ Container phoenix-canonical-foundation-pg17-1 Starting
+ Container phoenix-canonical-foundation-pg17-1 Started
+ Container phoenix-canonical-foundation-pg17-1 Waiting
+ Container phoenix-canonical-foundation-pg17-1 Healthy
+/var/run/postgresql:5432 - accepting connections
+RESULT=PASS_LOCAL_PG16_PG17_HEALTH

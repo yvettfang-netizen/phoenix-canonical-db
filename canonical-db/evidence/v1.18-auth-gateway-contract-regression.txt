@@ -1,0 +1,23 @@
+PASS valid_synthetic_contract
+PASS integration_rejects_synthetic_fixture rejected
+PASS integration_template_is_incomplete rejected
+PASS missing_issuer rejected
+PASS shared_secret_algorithm rejected
+PASS unsigned_algorithm rejected
+PASS token_ttl_over_15_minutes rejected
+PASS clock_skew_over_60_seconds rejected
+PASS jwks_cache_over_one_hour rejected
+PASS unknown_kid_no_refresh rejected
+PASS missing_required_claims rejected
+PASS automatic_principal_provisioning rejected
+PASS missing_mapping_fail_open rejected
+PASS ticket_ttl_over_60_seconds rejected
+PASS transaction_pooling rejected
+PASS missing_clear_on_return rejected
+PASS missing_discard_on_clear_failure rejected
+PASS credentials_not_separated rejected
+PASS same_credential_reference rejected
+PASS raw_token_logging rejected
+PASS personal_data_logging rejected
+PASS missing_audit_fields rejected
+RESULT=PASS_AUTH_GATEWAY_CONTRACT_REGRESSION

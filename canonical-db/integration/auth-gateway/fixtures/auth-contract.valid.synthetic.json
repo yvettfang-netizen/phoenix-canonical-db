@@ -1,0 +1,70 @@
+{
+  "contract_version": "1.0",
+  "environment": "synthetic",
+  "governance": {
+    "auth_contract_path": "canonical-db/integration/auth-gateway/AUTH_GATEWAY_INTEGRATION_CONTRACT_V1.0.md",
+    "auth_contract_version": "1.0"
+  },
+  "identity_provider": {
+    "provider_name": "SYNTHETIC_TEST_ONLY",
+    "issuer": "https://idp.synthetic.invalid",
+    "audience": "phoenix-canonical-synthetic",
+    "jwks_uri": "https://idp.synthetic.invalid/.well-known/jwks.json",
+    "required_claims": [
+      "iss",
+      "aud",
+      "exp",
+      "nbf",
+      "sub"
+    ],
+    "allowed_algorithms": [
+      "RS256",
+      "ES256"
+    ],
+    "token_max_ttl_seconds": 900,
+    "clock_skew_seconds": 60,
+    "jwks_cache_seconds": 3600,
+    "unknown_kid_refresh_once": true,
+    "refresh_rate_limit_seconds": 60
+  },
+  "identity_mapping": {
+    "lookup_key": [
+      "issuer",
+      "subject"
+    ],
+    "auto_provision": false,
+    "missing_or_disabled_action": "deny"
+  },
+  "database": {
+    "binder_role": "phoenix_canonical_context_binder",
+    "app_role": "phoenix_canonical_app",
+    "binder_credential_ref": "synthetic/binder",
+    "app_credential_ref": "synthetic/app",
+    "ticket_ttl_seconds": 45,
+    "pool_mode": "session",
+    "clear_context_on_return": true,
+    "discard_connection_on_clear_failure": true,
+    "separate_credentials": true
+  },
+  "logging": {
+    "request_nonce_uuid": true,
+    "log_token_raw": false,
+    "log_personal_data": false,
+    "required_fields": [
+      "timestamp",
+      "request_nonce",
+      "issuer",
+      "subject_id",
+      "channel",
+      "decision",
+      "reason_code"
+    ]
+  },
+  "ownership": {
+    "application_owner": "SYNTHETIC_TEST_ONLY",
+    "binder_owner": "SYNTHETIC_TEST_ONLY",
+    "principal_resolution_owner": "SYNTHETIC_TEST_ONLY",
+    "audit_event_owner": "SYNTHETIC_TEST_ONLY",
+    "incident_response_owner": "SYNTHETIC_TEST_ONLY"
+  }
+}

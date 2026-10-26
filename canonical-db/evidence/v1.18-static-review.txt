@@ -1,0 +1,29 @@
+LOCAL_HEAD=90cfc4992557672cfa03b07f1bc9d0343b39ef55
+PRIVATE_REMOTE_HEAD=90cfc4992557672cfa03b07f1bc9d0343b39ef55
+--- POWERSHELL_PARSE
+PS_PARSE_PASS=canonical-db\integration\auth-gateway\validate-auth-contract.ps1
+PS_PARSE_PASS=canonical-db\tests\auth_gateway_contract_regression.ps1
+--- JSON_PARSE
+JSON_PARSE_PASS=canonical-db\integration\auth-gateway\auth-contract.template.json
+JSON_PARSE_PASS=canonical-db\integration\auth-gateway\fixtures\auth-contract.valid.synthetic.json
+--- CACHED_DIFF_CHECK
+CACHED_DIFF_CHECK=PASS
+--- SECRET_MARKERS
+SECRET_MARKERS=PASS
+--- STAGED_FILES
+A	canonical-db/FIX_EXECUTION_REPORT_V1.18.md
+M	canonical-db/README.md
+A	canonical-db/evidence/v1.18-auth-gateway-contract-regression.txt
+A	canonical-db/evidence/v1.18-local-pg16-pg17-health.txt
+A	canonical-db/evidence/v1.18-static-review.txt
+A	canonical-db/evidence/v1.18-tencent-backup-recovery.txt
+A	canonical-db/evidence/v1.18-tencent-final-readonly.txt
+A	canonical-db/integration/auth-gateway/.gitattributes
+A	canonical-db/integration/auth-gateway/APPLICATION_AUTH_FACTS_REGISTER_V1.0.md
+A	canonical-db/integration/auth-gateway/AUTH_GATEWAY_INTEGRATION_CONTRACT_V1.0.md
+A	canonical-db/integration/auth-gateway/README.md
+A	canonical-db/integration/auth-gateway/auth-contract.template.json
+A	canonical-db/integration/auth-gateway/fixtures/auth-contract.valid.synthetic.json
+A	canonical-db/integration/auth-gateway/validate-auth-contract.ps1
+A	canonical-db/tests/auth_gateway_contract_regression.ps1
+RESULT=PASS_STATIC_REVIEW
