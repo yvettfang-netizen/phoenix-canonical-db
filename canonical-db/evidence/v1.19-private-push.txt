@@ -1,0 +1,9 @@
+COMMAND=git push canonical-private HEAD:refs/heads/codex/canonical-postgresql-phase1
+PRE_PUSH_LOCAL=52aff6f8e702de62b562236c85435ceb915f7ddb
+PRE_PUSH_REMOTE=a8be324a1346ba904d25a95bcd96c08634686c29
+OUTPUT=To https://github.com/yvettfang-netizen/phoenix-canonical-db.git
+OUTPUT=   a8be324..52aff6f  HEAD -> codex/canonical-postgresql-phase1
+POST_PUSH_REMOTE=52aff6f8e702de62b562236c85435ceb915f7ddb
+PUBLIC_ORIGIN_PUSH=NOT_RUN
+MERGE=NOT_RUN
+PULL_REQUEST=NOT_CREATED
