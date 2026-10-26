@@ -1,0 +1,47 @@
+EXECUTED_AT=2026-10-26 Asia/Shanghai
+BOUNDARY=read-only; no .env, key, token or credential content read; no deployment or restart
+
+COMMAND: gh repo view yvettfang-netizen/phoenix-canonical-db --json nameWithOwner,visibility,defaultBranchRef
+{"defaultBranchRef":{"name":"codex/canonical-postgresql-phase1"},"nameWithOwner":"yvettfang-netizen/phoenix-canonical-db","visibility":"PRIVATE"}
+
+COMMAND: gh repo view yvettfang-netizen/phoenix --json nameWithOwner,visibility,defaultBranchRef
+{"defaultBranchRef":{"name":"main"},"nameWithOwner":"yvettfang-netizen/phoenix","visibility":"PUBLIC"}
+
+COMMAND: git ls-remote canonical-private refs/heads/codex/canonical-postgresql-phase1
+a8be324a1346ba904d25a95bcd96c08634686c29	refs/heads/codex/canonical-postgresql-phase1
+
+COMMAND: ssh phoenix-tencent <read-only application facts>
+HOST=VM-0-15-ubuntu
+USER=ubuntu
+APP_REPO=/home/ubuntu/education-compass
+APP_BRANCH=claude/education-compass-virtual-payment-20261012
+APP_HEAD=79e59fc22c712b500f91c994f62a80e9d546f69f
+APP_TRACKED_DIRTY=0
+APP_ORIGIN=https://github.com/yvettfang-netizen/phoenix.git
+APP_REMOTE_BRANCH_REF=ABSENT
+PROCESS=phoenix_uat_api|PID=1085811|CWD=/home/ubuntu/education-compass/Phoenix Compass/education compass/server
+PROCESS=phoenix_uat_agent_worker|PID=1085842|CWD=/home/ubuntu/education-compass/Phoenix Compass/education compass/server
+PACKAGE=phoenix-family-os-server|VERSION=0.5.0
+POSTGRES_LISTENER=127.0.0.1:5432
+CANONICAL_CONTAINER=tencent-postgres-1|Up 3 days (healthy)|5432/tcp
+SOURCE=Phoenix Compass/education compass/server/src/auth/wechat-auth-provider.ts
+5:  openid: string
+20:      openid: `mock_${createHash('sha256').update(normalized).digest('hex').slice(0, 24)}`,
+46:      response = await this.fetchImpl(`https://api.weixin.qq.com/sns/jscode2session?${query.toString()}`, {
+54:    let payload: { openid?: string; unionid?: string; session_key?: string; errcode?: number; errmsg?: string }
+60:    if (!response.ok || payload.errcode || !payload.openid) {
+65:    invariant(payload.openid.length <= 128 && (!payload.unionid || payload.unionid.length <= 128),
+68:      openid: payload.openid,
+SOURCE=Phoenix Compass/education compass/server/src/services/auth-service.ts
+20:    private readonly sessionTtlMs = 7 * 24 * 60 * 60 * 1000
+25:  async createWechatSession(code: string): Promise<AuthSessionDto> {
+27:    const accessToken = randomToken()
+32:      let identity = await tx.findOne('wechatIdentities', { openid: identityResult.openid }, { forUpdate: true })
+39:          openid: identityResult.openid,
+67:  async payerSession(userId: string, code: string): Promise<{ openid: string; sessionKey: string }> {
+71:    invariant(identity.openid === result.openid, 403, 'PAYMENT_PAYER_MISMATCH', '请使用登录本小程序的微信账号支付')
+73:    return { openid: result.openid, sessionKey: result.sessionKey }
+SOURCE=Phoenix Compass/education compass/docs/API.md
+7:- 登录后接口使用服务端签发的 `Authorization: Bearer <opaque-token>`。
+46:  "accessToken": "opaque-token",
+54:使用当前 `Authorization: Bearer <opaque-token>` 撤销该会话，成功返回204。小程序退出登录时先发起该请求，再清理本地token及最小缓存；被撤销token后续访问返回 `SESSION_INVALID`。网络不可用时本地仍会退出，但生产运维必须依赖会话到期、异常登录监测和用户支持流程处理无法送达的撤销请求。

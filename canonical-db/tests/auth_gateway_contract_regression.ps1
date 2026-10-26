@@ -6,6 +6,7 @@ $root = Split-Path -Parent $PSScriptRoot
 $validator = Join-Path $root 'integration/auth-gateway/validate-auth-contract.ps1'
 $fixture = Join-Path $root 'integration/auth-gateway/fixtures/auth-contract.valid.synthetic.json'
 $template = Join-Path $root 'integration/auth-gateway/auth-contract.template.json'
+$ownerConfirmedCandidate = Join-Path $root 'integration/auth-gateway/auth-contract.owner-confirmed.candidate.json'
 $tempRoot = Join-Path ([IO.Path]::GetTempPath()) ("phoenix-auth-contract-" + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $tempRoot | Out-Null
 
@@ -45,6 +46,7 @@ try {
     Expect-Pass 'valid_synthetic_contract' $fixture
     Expect-Reject 'integration_rejects_synthetic_fixture' $fixture 'integration'
     Expect-Reject 'integration_template_is_incomplete' $template 'integration'
+    Expect-Reject 'owner_confirmed_candidate_stays_closed_without_oidc_and_keys' $ownerConfirmedCandidate 'integration'
 
     $c = Clone-Config; $c.identity_provider.PSObject.Properties.Remove('issuer'); Expect-Reject 'missing_issuer' $c
     $c = Clone-Config; $c.identity_provider.allowed_algorithms = @('HS256'); Expect-Reject 'shared_secret_algorithm' $c

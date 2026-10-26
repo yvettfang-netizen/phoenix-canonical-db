@@ -8,7 +8,8 @@ This directory turns the approved FD-6 rules into a fail-closed configuration ga
 - A PowerShell validator that enforces the approved OIDC/JWT, JWKS cache, ticket, connection-pool, audit and ownership boundaries.
 - A synthetic fixture and regression suite covering the required rejection paths.
 - An implementation contract describing the binder/app request lifecycle without choosing an identity provider.
-- An input register for the still-missing issuer, audience, JWKS/discovery URL and named owners.
+- A partially completed facts register with Founder-confirmed ownership, verified runtime/repository evidence and explicit identity/key holds.
+- An owner-confirmed candidate configuration that is intentionally rejected until OIDC metadata and separate credential references exist.
 
 ## Run the synthetic gate
 
@@ -24,8 +25,8 @@ pwsh -NoProfile -File ./integration/auth-gateway/validate-auth-contract.ps1 `
   -Mode integration
 ```
 
-The repository does not include `auth-contract.integration.json`. Keep the real file in the approved secret/configuration system. The file may contain public identity-provider metadata and secret references, but never tokens, passwords, private keys or client secrets.
+The repository does not include `auth-contract.integration.json`. Keep the real file in the approved secret/configuration system. The tracked `auth-contract.owner-confirmed.candidate.json` is an incomplete fail-closed record, not a runtime configuration. A real integration file may contain public identity-provider metadata and secret references, but never tokens, passwords, private keys or client secrets.
 
 ## Gate result
 
-The synthetic configuration gate is executable. Live OIDC/JWT/JWKS integration remains `HOLD` until every field in `APPLICATION_AUTH_FACTS_REGISTER_V1.0.md` is supplied and reviewed. The validator does not fetch JWKS, validate a real token, configure an application connection pool or write identity mappings.
+The synthetic configuration gate is executable. Ownership and runtime location are verified, but the current application uses WeChat `code2Session` plus an application-issued opaque session rather than OIDC/JWT. Live integration remains `HOLD` until the compatible OIDC path (or a formally amended contract), exact metadata, distinct secret references and application-side pool/clear/audit implementation are supplied and reviewed. The validator does not fetch JWKS, validate a real token, configure an application connection pool or write identity mappings.
