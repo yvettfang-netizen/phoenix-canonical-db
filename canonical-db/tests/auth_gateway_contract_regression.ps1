@@ -14,6 +14,10 @@ function Clone-Config {
     return (Get-Content -LiteralPath $fixture -Raw | ConvertFrom-Json -Depth 30 | ConvertTo-Json -Depth 30 | ConvertFrom-Json -Depth 30)
 }
 
+function Clone-OwnerConfirmedCandidate {
+    return (Get-Content -LiteralPath $ownerConfirmedCandidate -Raw | ConvertFrom-Json -Depth 30 | ConvertTo-Json -Depth 30 | ConvertFrom-Json -Depth 30)
+}
+
 function Save-Config($Config, [string]$Name) {
     $path = Join-Path $tempRoot "$Name.json"
     $Config | ConvertTo-Json -Depth 30 | Set-Content -LiteralPath $path -Encoding utf8NoBOM
@@ -46,7 +50,15 @@ try {
     Expect-Pass 'valid_synthetic_contract' $fixture
     Expect-Reject 'integration_rejects_synthetic_fixture' $fixture 'integration'
     Expect-Reject 'integration_template_is_incomplete' $template 'integration'
-    Expect-Reject 'owner_confirmed_candidate_stays_closed_without_oidc_and_keys' $ownerConfirmedCandidate 'integration'
+    Expect-Pass 'owner_confirmed_candidate_matches_staged_origin_and_refs' $ownerConfirmedCandidate 'integration'
+
+    $c = Clone-OwnerConfirmedCandidate; $c.identity_provider.issuer = 'https://other.example.com/canonical-identity'; Expect-Reject 'integration_rejects_issuer_drift' $c 'integration'
+    $c = Clone-OwnerConfirmedCandidate; $c.identity_provider.audience = 'other-audience'; Expect-Reject 'integration_rejects_audience_drift' $c 'integration'
+    $c = Clone-OwnerConfirmedCandidate; $c.identity_provider.jwks_uri = 'https://api.phoenixnova.com.cn/.well-known/other.json'; Expect-Reject 'integration_rejects_jwks_drift' $c 'integration'
+    $c = Clone-OwnerConfirmedCandidate; $c.identity_provider.signing_key_ref = 'file:/run/secrets/other'; Expect-Reject 'integration_rejects_signing_ref_drift' $c 'integration'
+    $c = Clone-OwnerConfirmedCandidate; $c.identity_provider.allowed_algorithms = @('RS256', 'ES256'); Expect-Reject 'integration_rejects_algorithm_widening' $c 'integration'
+    $c = Clone-OwnerConfirmedCandidate; $c.identity_provider.token_max_ttl_seconds = 301; Expect-Reject 'integration_rejects_selected_ttl_drift' $c 'integration'
+    $c = Clone-OwnerConfirmedCandidate; $c.database.app_credential_ref = 'file:/run/secrets/other-app'; Expect-Reject 'integration_rejects_app_ref_drift' $c 'integration'
 
     $c = Clone-Config; $c.identity_provider.PSObject.Properties.Remove('issuer'); Expect-Reject 'missing_issuer' $c
     $c = Clone-Config; $c.identity_provider.allowed_algorithms = @('HS256'); Expect-Reject 'shared_secret_algorithm' $c

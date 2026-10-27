@@ -1,6 +1,6 @@
 # Phoenix Canonical OIDC Broker Selection Register V1.0
 
-**Status:** TECHNICAL SELECTION COMPLETE / PUBLIC ORIGIN AND SECRET PROVISIONING HOLD
+**Status:** PUBLIC ORIGIN AND PROTECTED FILES STAGED / RUNTIME INTEGRATION HOLD
 
 **Contract direction:** Option A — preserve FD-6 and use an OIDC/JWT broker
 
@@ -15,18 +15,18 @@ This register captures the remaining public and reference-only facts needed to e
 | Field | Required value | Current status |
 |---|---|---|
 | Broker / issuer product or first-party component | `Phoenix First-Party Canonical Identity Broker V1.0`; trusted server-side component | SELECTED / LOCAL IMPLEMENTATION |
-| Implementation repository and immutable revision | Private `yvettfang-netizen/phoenix-canonical-db`, branch `codex/canonical-postgresql-phase1`; final V1.21 commit | BRANCH FIXED / COMMIT IN EXECUTION REPORT |
+| Implementation repository and immutable revision | Private `yvettfang-netizen/phoenix-canonical-db`, branch `codex/canonical-postgresql-phase1`; final V1.22 commit | BRANCH FIXED / COMMIT IN EXECUTION REPORT |
 | Upstream identity source | WeChat Mini Program `code2Session` / verified OpenID mapping | VERIFIED CONTEXT; BROKER MAPPING HOLD |
-| HTTPS issuer (`iss`) | Exact derivation: `<approved PUBLIC_BASE_URL>/canonical-identity` | PATH FIXED / PUBLIC ORIGIN MISSING |
+| HTTPS issuer (`iss`) | `https://api.phoenixnova.com.cn/canonical-identity` | PUBLIC ORIGIN VERIFIED / ENDPOINT NOT LIVE |
 | Audience (`aud`) | `phoenix-canonical-postgresql` | FIXED |
-| HTTPS JWKS URI | Exact derivation: `<approved PUBLIC_BASE_URL>/.well-known/phoenix-canonical-jwks.json` | PATH FIXED / PUBLIC ORIGIN MISSING |
+| HTTPS JWKS URI | `https://api.phoenixnova.com.cn/.well-known/phoenix-canonical-jwks.json` | PUBLIC ORIGIN VERIFIED / ENDPOINT NOT LIVE |
 | Signing algorithms | `ES256` only | FIXED |
 | Access-token maximum lifetime | 300 seconds | FIXED |
 | Clock skew | At most 60 seconds | FIXED RULE |
 | JWKS cache | 300 seconds | FIXED |
-| Signing-key reference | `file:/run/secrets/phoenix_canonical_oidc_signing_key_v1` | RESERVED / SECRET NOT PROVISIONED |
-| App database credential reference | `file:/run/secrets/phoenix_canonical_app_pgpass_v1` | RESERVED / SECRET NOT PROVISIONED |
-| Binder database credential reference | `file:/run/secrets/phoenix_canonical_binder_pgpass_v1` | RESERVED / SECRET NOT PROVISIONED |
+| Signing-key reference | `file:/run/secrets/phoenix_canonical_oidc_signing_key_v1` | TENCENT ISOLATED STAGED / 0600 / DISABLED |
+| App database credential reference | `file:/run/secrets/phoenix_canonical_app_pgpass_v1` | TENCENT ISOLATED STAGED / 0600 / LOGIN PASS |
+| Binder database credential reference | `file:/run/secrets/phoenix_canonical_binder_pgpass_v1` | TENCENT ISOLATED STAGED / 0600 / DISTINCT / LOGIN PASS |
 | Broker and incident owners | Founder 方琳媛 | CONFIRMED ACCOUNTABILITY |
 
 ## Selected implementation boundary
@@ -35,7 +35,9 @@ This register captures the remaining public and reference-only facts needed to e
 - It converts an already authenticated application user ID (`usr_*`) into a 300-second ES256 assertion. It never emits OpenID, name, phone, email, family ID or other personal fields.
 - It exposes only the public JWKS endpoint. There is no browser/mobile token-issuance route.
 - The signing private key is loaded only when the broker flag is enabled. On POSIX, startup rejects group/world-accessible key files.
-- The verifier and broker remain disabled until the approved HTTPS `PUBLIC_BASE_URL` and protected files exist.
+- The verified DNS, certificate and Nginx route establish `https://api.phoenixnova.com.cn` as the isolated public origin.
+- Root-owned 0600 persistent sources are projected at boot to the three 0600 `/run/secrets` targets. Secret values are not recorded in Git or evidence.
+- The deployed application was not restarted and does not yet contain this broker revision. Both enable flags remain `false`.
 
 ## Acceptance after fields are completed
 

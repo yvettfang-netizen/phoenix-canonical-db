@@ -10,6 +10,7 @@
     "issuer": "__REQUIRED_HTTPS_ISSUER__",
     "audience": "__REQUIRED__",
     "jwks_uri": "__REQUIRED_HTTPS_JWKS_OR_DISCOVERY_URL__",
+    "signing_key_ref": "__REQUIRED_SECRET_REFERENCE_ONLY__",
     "required_claims": [
       "iss",
       "aud",

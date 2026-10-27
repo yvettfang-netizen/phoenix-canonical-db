@@ -1,6 +1,6 @@
 # Phoenix Canonical Auth Gateway Integration Contract V1.0
 
-**Status:** IMPLEMENTATION SKELETON / LIVE INTEGRATION HOLD
+**Status:** VERIFIED PUBLIC CONFIGURATION / LIVE RUNTIME INTEGRATION HOLD
 **Authority:** `FOUNDER_DECISION_ADDENDUM_V1.3_FD6_FD7.md`, FD-6
 **Scope:** Application-side authentication and trusted-context handoff to the existing Canonical PostgreSQL database
 
@@ -16,6 +16,8 @@
 8. App redeems the ticket on the same session used for the business query. Transaction pooling is forbidden.
 9. Before a connection returns to the pool, app calls `auth.clear_context()`. A connection is discarded when clearing fails.
 10. Logs contain the request UUID, issuer, subject identifier, channel, decision and reason code. They never contain raw tokens, names, contact details, passwords or private keys.
+
+The FD-6 baseline permits `RS256` or `ES256` and up to 900 seconds. The Founder-selected first-party profile is deliberately narrower: exact issuer `https://api.phoenixnova.com.cn/canonical-identity`, exact audience `phoenix-canonical-postgresql`, exact JWKS URI, `ES256` only, 300-second token lifetime and 300-second JWKS cache. Integration-mode validation rejects widening or metadata/reference drift.
 
 ## 2. Required request sequence
 
@@ -57,4 +59,4 @@ Live integration may start only after the application team supplies and reviews:
 - separate app and binder secret references;
 - approved application repository and deployment environment.
 
-Until then, only the synthetic fixture and configuration validator are executable.
+The public metadata and three protected references are staged in the isolated environment and the tracked integration candidate now passes the configuration validator. This does not enable runtime integration: the deployed application revision, subject mapping, separated pools, ticket lifecycle, clear/discard behavior, protected audit output and live negative tests remain required.

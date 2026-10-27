@@ -7,9 +7,10 @@
   },
   "identity_provider": {
     "provider_name": "Phoenix First-Party Canonical Identity Broker V1.0",
-    "issuer": "https://approved-public-base-url-required.invalid/canonical-identity",
+    "issuer": "https://api.phoenixnova.com.cn/canonical-identity",
     "audience": "phoenix-canonical-postgresql",
-    "jwks_uri": "https://approved-public-base-url-required.invalid/.well-known/phoenix-canonical-jwks.json",
+    "jwks_uri": "https://api.phoenixnova.com.cn/.well-known/phoenix-canonical-jwks.json",
+    "signing_key_ref": "file:/run/secrets/phoenix_canonical_oidc_signing_key_v1",
     "required_claims": [
       "iss",
       "aud",

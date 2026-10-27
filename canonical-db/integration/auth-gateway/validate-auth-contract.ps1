@@ -87,6 +87,7 @@ $providerName = Require-Text $idp 'provider_name' 'identity_provider'
 $issuer = Require-Text $idp 'issuer' 'identity_provider'
 $audience = Require-Text $idp 'audience' 'identity_provider'
 $jwksUri = Require-Text $idp 'jwks_uri' 'identity_provider'
+$signingKeyRef = Require-Text $idp 'signing_key_ref' 'identity_provider'
 Require-HttpsUrl $issuer 'identity_provider.issuer'
 Require-HttpsUrl $jwksUri 'identity_provider.jwks_uri'
 $requiredClaims = @(Require-ObjectProperty $idp 'required_claims' 'identity_provider')
@@ -153,9 +154,35 @@ if ($Mode -eq 'integration') {
     Reject-Placeholder $issuer 'identity_provider.issuer'
     Reject-Placeholder $audience 'identity_provider.audience'
     Reject-Placeholder $jwksUri 'identity_provider.jwks_uri'
+    Reject-Placeholder $signingKeyRef 'identity_provider.signing_key_ref'
     Reject-Placeholder $binderCredential 'database.binder_credential_ref'
     Reject-Placeholder $appCredential 'database.app_credential_ref'
     foreach ($field in $ownerValues.Keys) { Reject-Placeholder $ownerValues[$field] "ownership.$field" }
+    if ($providerName -ne 'Phoenix First-Party Canonical Identity Broker V1.0') {
+        Fail 'identity_provider.provider_name is not the Founder-selected broker'
+    }
+    if ($issuer -ne 'https://api.phoenixnova.com.cn/canonical-identity') {
+        Fail 'identity_provider.issuer does not match the verified isolated public origin'
+    }
+    if ($audience -ne 'phoenix-canonical-postgresql') {
+        Fail 'identity_provider.audience is not the approved Canonical audience'
+    }
+    if ($jwksUri -ne 'https://api.phoenixnova.com.cn/.well-known/phoenix-canonical-jwks.json') {
+        Fail 'identity_provider.jwks_uri does not match the approved Canonical JWKS path'
+    }
+    if ($signingKeyRef -ne 'file:/run/secrets/phoenix_canonical_oidc_signing_key_v1') {
+        Fail 'identity_provider.signing_key_ref is not the approved protected reference'
+    }
+    if ($algorithms.Count -ne 1 -or $algorithms[0] -ne 'ES256') {
+        Fail 'identity_provider.allowed_algorithms must be exactly ES256 for the selected broker'
+    }
+    if ($idp.token_max_ttl_seconds -ne 300 -or $idp.jwks_cache_seconds -ne 300) {
+        Fail 'identity_provider token TTL and JWKS cache must both be 300 seconds'
+    }
+    if ($appCredential -ne 'file:/run/secrets/phoenix_canonical_app_pgpass_v1' -or
+        $binderCredential -ne 'file:/run/secrets/phoenix_canonical_binder_pgpass_v1') {
+        Fail 'database credential references do not match the approved protected files'
+    }
 }
 
 Write-Output "AUTH_CONTRACT_VALID mode=$Mode environment=$environment algorithms=$($algorithms -join ',') token_ttl=$($idp.token_max_ttl_seconds) ticket_ttl=$($database.ticket_ttl_seconds) pool=$poolMode"

@@ -1,0 +1,142 @@
+Phoenix Canonical PostgreSQL V1.22 - Tencent Isolated OIDC Origin and Protected Files
+Date: 2026-10-27 (Asia/Shanghai)
+Host: 1.12.77.180 / VM-0-15-ubuntu
+Boundary: isolated non-production; no application restart, Broker enablement, Migration, database write, real identity or production switch
+Redaction: no password, pgpass line, private key, token or private-file digest is included
+
+COMMAND
+Read-only SSH inspection of Nginx public host/certificate paths, API listener, tracked application revision and target secret metadata.
+
+RAW OUTPUT
+REMOTE_USER=ubuntu
+REMOTE_HOST=VM-0-15-ubuntu
+SUDO_NONINTERACTIVE=YES
+server_name api.phoenixnova.com.cn;
+listen 443 ssl http2;
+ssl_certificate /etc/letsencrypt/live/api.phoenixnova.com.cn/fullchain.pem;
+proxy_pass http://127.0.0.1:3010;
+API_PROCESS=/home/ubuntu/.nvm/versions/node/v24.20.0/bin/node --env-file=./.env.uat dist/index.js
+API_CWD=/home/ubuntu/education-compass/Phoenix Compass/education compass/server
+PUBLIC_BASE_URL_BEFORE=http://127.0.0.1:3010
+TARGET_SIGNING_FILE_BEFORE=ABSENT
+TARGET_APP_PGPASS_BEFORE=ABSENT
+TARGET_BINDER_PGPASS_BEFORE=ABSENT
+
+COMMAND
+DNS resolution, TLS certificate inspection and HTTPS health request for api.phoenixnova.com.cn.
+
+RAW OUTPUT
+DNS_ADDRESSES=1.12.77.180
+TLS_SUBJECT=CN=api.phoenixnova.com.cn
+TLS_ISSUER=CN=YR2, O=Let's Encrypt, C=US
+TLS_NOT_BEFORE=2026-09-22T07:03:54.0000000Z
+TLS_NOT_AFTER=2026-12-21T07:03:53.0000000Z
+TLS_DNS_NAME=api.phoenixnova.com.cn
+HTTPS_HEALTH_STATUS=200
+HTTPS_HEALTH_BODY={"ok":true}
+
+COMMAND
+Atomic remote staging: set the public/reference-only .env.uat fields; generate one P-256 signing key; derive app/binder pgpass files from the existing protected database environment without outputting values; validate split-role read-only login; remove container temporary copies.
+
+RAW OUTPUT
+PUBLIC_BASE_URL=https://api.phoenixnova.com.cn
+OIDC_BROKER_ENABLED=false
+OIDC_VERIFIER_ENABLED=false
+SECRET_DIR_MODE=700|ubuntu|ubuntu
+SECRET_METADATA=/run/secrets/phoenix_canonical_oidc_signing_key_v1|600|ubuntu|ubuntu|241
+SECRET_METADATA=/run/secrets/phoenix_canonical_app_pgpass_v1|600|ubuntu|ubuntu|132
+SECRET_METADATA=/run/secrets/phoenix_canonical_binder_pgpass_v1|600|ubuntu|ubuntu|135
+SIGNING_KEY_TYPE=EC_P256_VALID
+APP_LOGIN=phoenix_canonical_app_runtime
+BINDER_LOGIN=phoenix_canonical_binder_runtime
+DATABASE_WRITES=NONE
+APPLICATION_RESTART=NONE
+BROKER_ENABLEMENT=NONE
+
+COMMAND
+Install root-owned persistent secret sources and systemd-tmpfiles boot projection into /run/secrets.
+
+RAW OUTPUT
+PERSIST_DIR=700|root|root
+TMPFILES_CONFIG=644|root|root
+PERSIST_METADATA=phoenix_canonical_oidc_signing_key_v1|600|root|root|241
+RUNTIME_METADATA=phoenix_canonical_oidc_signing_key_v1|600|ubuntu|ubuntu|241
+PERSIST_METADATA=phoenix_canonical_app_pgpass_v1|600|root|root|132
+RUNTIME_METADATA=phoenix_canonical_app_pgpass_v1|600|ubuntu|ubuntu|132
+PERSIST_METADATA=phoenix_canonical_binder_pgpass_v1|600|root|root|135
+RUNTIME_METADATA=phoenix_canonical_binder_pgpass_v1|600|ubuntu|ubuntu|135
+BOOT_PROJECTION=SYSTEMD_TMPFILES_CONFIGURED
+SECRET_VALUES_OUTPUT=NONE
+
+COMMAND
+Post-staging metadata, format, public-key and unchanged-runtime checks.
+
+RAW OUTPUT
+APP_HEAD=79e59fc22c712b500f91c994f62a80e9d546f69f
+APP_TRACKED_DIRTY_COUNT=0
+API_PID=1085811
+ENV_MODE=600|ubuntu|ubuntu
+ENV_BACKUP_MODE=600|ubuntu|ubuntu
+PGPASS_FORMAT_phoenix_canonical_app_pgpass_v1=PASS
+PGPASS_FORMAT_phoenix_canonical_binder_pgpass_v1=PASS
+SIGNING_PUBLIC_KEY_SHA256=e56ae427b050d034011af327d1622a7741f55c24792fec94e098430f14c025fb
+CONTAINER_TEMP_PGPASS=ABSENT
+HTTPS_HEALTH_STATUS=200
+HTTPS_HEALTH_BODY={"ok":true}
+JWKS_STATUS=401
+
+INTERPRETATION
+- The DNS, valid certificate, Nginx route and health response verify https://api.phoenixnova.com.cn as the isolated public origin.
+- The three protected files exist with restrictive permissions and survive reboot through root-owned sources plus systemd-tmpfiles projection.
+- App and binder credentials remain distinct and were validated only with read-only SELECT current_user calls.
+- JWKS remains non-public because the deployed application commit does not contain the Broker/JWKS revision and was not restarted. Both enable flags remain false.
+- The protected pre-change .env.uat backup is 0600 and retained for rollback.
+
+COMMAND
+pwsh -NoProfile -File canonical-db/tests/auth_gateway_contract_regression.ps1
+
+RAW OUTPUT
+PASS valid_synthetic_contract
+PASS integration_rejects_synthetic_fixture rejected
+PASS integration_template_is_incomplete rejected
+PASS owner_confirmed_candidate_matches_staged_origin_and_refs
+PASS integration_rejects_issuer_drift rejected
+PASS integration_rejects_audience_drift rejected
+PASS integration_rejects_jwks_drift rejected
+PASS integration_rejects_signing_ref_drift rejected
+PASS integration_rejects_algorithm_widening rejected
+PASS integration_rejects_selected_ttl_drift rejected
+PASS integration_rejects_app_ref_drift rejected
+PASS missing_issuer rejected
+PASS shared_secret_algorithm rejected
+PASS unsigned_algorithm rejected
+PASS token_ttl_over_15_minutes rejected
+PASS clock_skew_over_60_seconds rejected
+PASS jwks_cache_over_one_hour rejected
+PASS unknown_kid_no_refresh rejected
+PASS missing_required_claims rejected
+PASS automatic_principal_provisioning rejected
+PASS missing_mapping_fail_open rejected
+PASS ticket_ttl_over_60_seconds rejected
+PASS transaction_pooling rejected
+PASS missing_clear_on_return rejected
+PASS missing_discard_on_clear_failure rejected
+PASS credentials_not_separated rejected
+PASS same_credential_reference rejected
+PASS raw_token_logging rejected
+PASS personal_data_logging rejected
+PASS missing_audit_fields rejected
+RESULT=PASS_AUTH_GATEWAY_CONTRACT_REGRESSION
+
+COMMAND
+pwsh -NoProfile -File canonical-db/integration/auth-gateway/validate-auth-contract.ps1 -Path canonical-db/integration/auth-gateway/auth-contract.owner-confirmed.candidate.json -Mode integration
+
+RAW OUTPUT
+AUTH_CONTRACT_VALID mode=integration environment=tencent_isolated_nonproduction algorithms=ES256 token_ttl=300 ticket_ttl=45 pool=session
+CANDIDATE_VALIDATION_EXIT=0
+
+FINAL LOCAL CHECKS
+JSON_PARSE=3/3 PASS
+CREDENTIAL_MATERIAL_HITS=0
+MIGRATION_CHANGE_COUNT=0
+DIFF_CHECK_EXIT=0

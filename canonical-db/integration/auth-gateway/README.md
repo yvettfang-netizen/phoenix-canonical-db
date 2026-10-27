@@ -9,7 +9,7 @@ This directory turns the approved FD-6 rules into a fail-closed configuration ga
 - A synthetic fixture and regression suite covering the required rejection paths.
 - An implementation contract describing the binder/app request lifecycle without choosing an identity provider.
 - A partially completed facts register with Founder-confirmed ownership, verified runtime/repository evidence and explicit identity/key holds.
-- An owner-confirmed candidate configuration that is intentionally rejected until OIDC metadata and separate credential references exist.
+- An owner-confirmed candidate configuration that passes only when the verified isolated origin and all selected reference names match exactly.
 - A Founder-approved Option A direction, selected first-party broker and provider-neutral application verifier with synthetic ES256, claim, JWKS and fail-closed tests. Both components are disabled and not connected to a live database path.
 
 ## Run the synthetic gate
@@ -26,8 +26,8 @@ pwsh -NoProfile -File ./integration/auth-gateway/validate-auth-contract.ps1 `
   -Mode integration
 ```
 
-The repository does not include `auth-contract.integration.json`. Keep the real file in the approved secret/configuration system. The tracked `auth-contract.owner-confirmed.candidate.json` is an incomplete fail-closed record, not a runtime configuration. A real integration file may contain public identity-provider metadata and secret references, but never tokens, passwords, private keys or client secrets.
+The repository does not include secret values. The tracked `auth-contract.owner-confirmed.candidate.json` contains public metadata and reference names only; it is not a runtime secret file and does not enable the application. Runtime secret values stay outside Git.
 
 ## Gate result
 
-The synthetic configuration gate is executable. Founder approved preserving FD-6; `Phoenix First-Party Canonical Identity Broker V1.0` and the local verifier pass synthetic tests. The current application still uses WeChat `code2Session` plus an application-issued opaque session. Live integration remains `HOLD` until the exact HTTPS public origin exists, the reserved secret files are provisioned, and the application-side pool/ticket/clear/audit implementation is supplied and reviewed. The tracked integration validator still does not configure a live application connection pool or write identity mappings.
+The synthetic configuration gate is executable. The verified isolated origin is `https://api.phoenixnova.com.cn`, and the three protected files are staged with restrictive permissions while both enable flags remain `false`. The current deployed application still uses WeChat `code2Session` plus an application-issued opaque session and does not contain the broker revision. Live integration remains `HOLD` until the application-side subject mapping, pool/ticket/clear/audit implementation and isolated end-to-end tests are supplied and reviewed. The validator does not configure a live connection pool or write identity mappings.

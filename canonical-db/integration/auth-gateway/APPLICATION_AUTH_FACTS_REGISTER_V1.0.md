@@ -1,6 +1,6 @@
 # Phoenix Canonical Application Authentication Facts Register V1.0
 
-**Status:** FIRST-PARTY BROKER SELECTED / LOCAL BROKER+VERIFIER PASS / LIVE INTEGRATION HOLD
+**Status:** PUBLIC ORIGIN + PROTECTED FILES STAGED / LOCAL BROKER+VERIFIER PASS / LIVE INTEGRATION HOLD
 **Last verified:** 2026-10-27 (Asia/Shanghai)
 **Purpose:** Record application-owned facts without changing the approved FD-6 rules
 **Do not enter:** passwords, tokens, client secrets, private keys, database credentials or real user data
@@ -14,9 +14,9 @@ The deployed application context uses WeChat Mini Program login: `wx.login` is e
 | Provider context | WeChat Mini Program login (`code2Session` / OpenID) | VERIFIED APPLICATION CONTEXT |
 | FD-6 contract direction | Preserve FD-6 and use an OIDC/JWT broker (Option A) | FOUNDER APPROVED 2026-10-26 |
 | FD-6 provider name | `Phoenix First-Party Canonical Identity Broker V1.0` | TECHNICALLY SELECTED / LOCAL IMPLEMENTATION |
-| Issuer (`iss`) | `<approved PUBLIC_BASE_URL>/canonical-identity` | PATH FIXED / PUBLIC ORIGIN HOLD |
+| Issuer (`iss`) | `https://api.phoenixnova.com.cn/canonical-identity` | VERIFIED PUBLIC ORIGIN / STAGED |
 | Audience (`aud`) | `phoenix-canonical-postgresql` | FIXED |
-| JWKS URI or discovery URL | `<approved PUBLIC_BASE_URL>/.well-known/phoenix-canonical-jwks.json` | PATH FIXED / PUBLIC ORIGIN HOLD |
+| JWKS URI or discovery URL | `https://api.phoenixnova.com.cn/.well-known/phoenix-canonical-jwks.json` | VERIFIED PUBLIC ORIGIN / ENDPOINT NOT LIVE |
 | Allowed algorithm | `ES256` only | FIXED |
 | Token maximum lifetime | 300 seconds | FIXED |
 | Clock skew | No more than 60 seconds | FIXED RULE |
@@ -43,16 +43,16 @@ This ownership entry identifies current accountability; it does not create produ
 | Field | Verified value | Status |
 |---|---|---|
 | Application GitHub repository | `yvettfang-netizen/phoenix` | VERIFIED; GITHUB REPORTS `PUBLIC` |
-| Deployed application worktree | `/home/ubuntu/education-compass` | VERIFIED READ-ONLY |
+| Deployed application worktree | `/home/ubuntu/education-compass` | VERIFIED; TRACKED SOURCE UNCHANGED |
 | Deployed branch | `claude/education-compass-virtual-payment-20261012` | VERIFIED ON SERVER; REMOTE BRANCH REF ABSENT |
 | Deployed commit | `79e59fc22c712b500f91c994f62a80e9d546f69f` | VERIFIED ON SERVER AND GITHUB COMMIT API |
 | Runtime package | `phoenix-family-os-server` V0.5.0 | VERIFIED |
-| Runtime processes | `phoenix_uat_api`, `phoenix_uat_agent_worker` | VERIFIED |
+| Runtime API | Node.js process on `127.0.0.1:3010`, proxied by Nginx | VERIFIED; NOT RESTARTED |
 | Integration environment | Tencent isolated non-production; application path above; Canonical PostgreSQL listens on host loopback only | VERIFIED NON-PRODUCTION BOUNDARY |
 | Canonical contract repository | `yvettfang-netizen/phoenix-canonical-db`, branch `codex/canonical-postgresql-phase1` | VERIFIED PRIVATE |
-| Signing-key reference | `file:/run/secrets/phoenix_canonical_oidc_signing_key_v1` | RESERVED / NOT PROVISIONED |
-| App database credential reference | `file:/run/secrets/phoenix_canonical_app_pgpass_v1` | RESERVED / NOT PROVISIONED |
-| Binder database credential reference | `file:/run/secrets/phoenix_canonical_binder_pgpass_v1` | RESERVED / NOT PROVISIONED; DISTINCT |
+| Signing-key reference | `file:/run/secrets/phoenix_canonical_oidc_signing_key_v1` | TENCENT ISOLATED STAGED / 0600 / DISABLED |
+| App database credential reference | `file:/run/secrets/phoenix_canonical_app_pgpass_v1` | TENCENT ISOLATED STAGED / 0600 / LOGIN PASS |
+| Binder database credential reference | `file:/run/secrets/phoenix_canonical_binder_pgpass_v1` | TENCENT ISOLATED STAGED / 0600 / DISTINCT / LOGIN PASS |
 | Pool mode | Direct or session | FIXED RULE |
 | Clear-on-return hook | No application implementation evidence found | IMPLEMENTATION HOLD |
 | Clear-failure discard | No application implementation/test evidence found | IMPLEMENTATION HOLD |
@@ -66,21 +66,20 @@ The application source repository being public and the deployed branch lacking a
 
 - Supplied by: Founder 方琳媛 (ownership and repository-location statement)
 - Verified by: Codex, read-only repository/server evidence
-- Verification date/time and timezone: 2026-10-26, Asia/Shanghai
+- Verification date/time and timezone: 2026-10-27, Asia/Shanghai
 - Application contract path/version: `canonical-db/integration/auth-gateway/AUTH_GATEWAY_INTEGRATION_CONTRACT_V1.0.md`, V1.0
 - Candidate configuration: `canonical-db/integration/auth-gateway/auth-contract.owner-confirmed.candidate.json`
-- Configuration validation evidence: candidate is deliberately rejected in `integration` mode because OIDC metadata and both key references are absent
+- Configuration validation evidence: candidate passes `integration` mode with exact origin, ES256 constraints and three protected references; drift cases reject
 - Live JWKS/token test evidence: NOT RUN / unavailable
 - Decision: `HOLD`
 
-The Option A approval and first-party broker selection close the contract-direction, component, audience, path, algorithm, TTL and reference-name steps. The approved public origin, provisioned secret files, application pools and permission to enable the integration remain missing.
+The public origin and protected files are staged only in the isolated Tencent environment. DNS, certificate, Nginx routing, 0600 permissions, distinct app/binder credentials and read-only role logins are verified. The application was not restarted, the deployed commit does not contain the broker implementation, and both enable flags remain `false`.
 
 ## Closure requirements
 
-1. Supply and approve the exact `PUBLIC_BASE_URL`; the selected component then derives the exact issuer and JWKS URI from fixed paths.
-2. Provision the three reserved protected files with separate key/credential values and restrictive permissions; never enter their contents here.
-3. Verify the broker public metadata and key rotation in an isolated environment.
-4. Implement and test separate app/binder pools, ticket handoff, `auth.clear_context()` on return, discard-on-clear-failure and protected gateway audit output in the application repository.
-5. Publish or otherwise make immutable the exact application branch/commit intended for isolated integration, then run the integration validator and negative token tests.
+1. Publish or otherwise make immutable the exact application revision containing the broker/verifier and database-runtime integration.
+2. Implement and test separate app/binder pools, ticket handoff, `auth.clear_context()` on return, discard-on-clear-failure and protected gateway audit output.
+3. Approve and test the WeChat application user to `usr_*` broker-subject mapping without automatic provisioning.
+4. Verify the broker public JWKS, token rejection paths and key rotation in the isolated environment before either enable flag changes.
 
-This register is not approved merely because confirmed fields are populated. The missing identity-provider and key facts keep live application integration on `HOLD`.
+Configuration staging and validator PASS do not constitute live integration approval. Missing runtime implementation, subject mapping and isolated end-to-end evidence keep the live application integration on `HOLD`.

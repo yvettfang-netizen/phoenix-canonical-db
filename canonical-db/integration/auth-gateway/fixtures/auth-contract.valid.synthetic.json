@@ -10,6 +10,7 @@
     "issuer": "https://idp.synthetic.invalid",
     "audience": "phoenix-canonical-synthetic",
     "jwks_uri": "https://idp.synthetic.invalid/.well-known/jwks.json",
+    "signing_key_ref": "synthetic/signing-key",
     "required_claims": [
       "iss",
       "aud",
