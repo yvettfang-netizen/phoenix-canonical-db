@@ -1,0 +1,2 @@
+server/migrations/*.sql text eol=lf
+docs/product/freeze/**/*.json text eol=lf

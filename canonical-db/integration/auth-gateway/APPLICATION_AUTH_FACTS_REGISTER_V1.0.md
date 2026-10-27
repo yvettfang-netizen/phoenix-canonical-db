@@ -1,7 +1,7 @@
 # Phoenix Canonical Application Authentication Facts Register V1.0
 
-**Status:** PARTIALLY COMPLETED / LIVE INTEGRATION HOLD
-**Last verified:** 2026-10-26 (Asia/Shanghai)
+**Status:** OPTION A APPROVED / LOCAL VERIFIER PASS / LIVE INTEGRATION HOLD
+**Last verified:** 2026-10-27 (Asia/Shanghai)
 **Purpose:** Record application-owned facts without changing the approved FD-6 rules
 **Do not enter:** passwords, tokens, client secrets, private keys, database credentials or real user data
 
@@ -12,7 +12,8 @@ The deployed application context uses WeChat Mini Program login: `wx.login` is e
 | Field | Verified value | Status |
 |---|---|---|
 | Provider context | WeChat Mini Program login (`code2Session` / OpenID) | VERIFIED APPLICATION CONTEXT |
-| FD-6 provider name | A standards-compliant OIDC/JWT provider or broker has not been selected | EVIDENCE_MISSING / HOLD |
+| FD-6 contract direction | Preserve FD-6 and use an OIDC/JWT broker (Option A) | FOUNDER APPROVED 2026-10-26 |
+| FD-6 provider name | A concrete broker product or first-party issuer implementation has not been selected | EVIDENCE_MISSING / HOLD |
 | Issuer (`iss`) | Not present in the current WeChat opaque-session design | EVIDENCE_MISSING / HOLD |
 | Audience (`aud`) | Not present in the current WeChat opaque-session design | EVIDENCE_MISSING / HOLD |
 | JWKS URI or discovery URL | Not present in the current WeChat opaque-session design | EVIDENCE_MISSING / HOLD |
@@ -55,6 +56,7 @@ This ownership entry identifies current accountability; it does not create produ
 | Clear-on-return hook | No application implementation evidence found | IMPLEMENTATION HOLD |
 | Clear-failure discard | No application implementation/test evidence found | IMPLEMENTATION HOLD |
 | Gateway audit destination | No protected destination reference supplied | EVIDENCE_MISSING / HOLD |
+| Application-side verifier | Provider-neutral `RS256` / `ES256` verifier, disabled by default | LOCAL IMPLEMENTATION / SYNTHETIC PASS |
 
 The application source repository being public and the deployed branch lacking a remote branch ref do not satisfy the original “exact private repository and branch” entry criterion. The database contract repository is private, but it is not substituted for the application repository.
 
@@ -69,9 +71,11 @@ The application source repository being public and the deployed branch lacking a
 - Live JWKS/token test evidence: NOT RUN / unavailable
 - Decision: `HOLD`
 
+The Option A approval and local verifier close the contract-direction and code-skeleton steps only. They do not supply a broker product, live metadata, keys, application pools or permission to enable the verifier.
+
 ## Closure requirements
 
-1. Select or approve an OIDC/JWT identity broker compatible with the existing WeChat login, or formally amend FD-6 to an explicitly reviewed opaque-session contract.
+1. Select or approve the concrete OIDC/JWT broker/issuer implementation compatible with the existing WeChat login. Option A is already approved; the product/implementation is still missing.
 2. Supply the exact HTTPS issuer, audience and JWKS/discovery URL for the selected OIDC path.
 3. Create distinct protected secret-manager references for the app and binder database credentials; never enter secret values here.
 4. Implement and test separate app/binder pools, ticket handoff, `auth.clear_context()` on return, discard-on-clear-failure and protected gateway audit output in the application repository.

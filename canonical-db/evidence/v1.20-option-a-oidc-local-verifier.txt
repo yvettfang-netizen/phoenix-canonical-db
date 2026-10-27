@@ -1,0 +1,84 @@
+Phoenix Canonical PostgreSQL V1.20 — Option A local OIDC/JWT verifier evidence
+Execution date: 2026-10-27 Asia/Shanghai
+Boundary: local-only, synthetic-only, no Tencent connection, no deployment, no real identity, no real key
+
+COMMAND
+Get-FileHash -Algorithm SHA256 canonical-db/phase2-gate/APPLICATION_IDENTITY_CONTRACT_FOUNDER_GATE_V1.0.md
+
+OUTPUT
+FOUNDER_GATE_SHA256=eec9add0f107bd09ba29e7211b12febc41977821857c30824ffcaecae2e3828a
+
+COMMAND
+npm.cmd --prefix "Phoenix Compass/education compass/server" run typecheck
+
+OUTPUT
+> phoenix-family-os-server@0.5.0 typecheck
+> tsc -p tsconfig.json --noEmit
+TYPECHECK_EXIT=0
+
+COMMAND
+node server/node_modules/typescript/bin/tsc -p server/tsconfig.json
+node --test server/dist/tests/oidc-jwt-verifier.test.js
+
+OUTPUT
+BUILD_EXIT=0
+✔ RS256 and ES256 tokens pass exact issuer, audience, lifetime and JWKS verification
+✔ forbidden algorithms, injected key headers and tampered signatures are rejected
+✔ claim mismatches, expiry, future nbf and excessive token lifetime are rejected
+✔ unknown kid performs one rate-limited refresh and then fails closed
+✔ JWKS network, media type and shape failures deny verification
+✔ configuration is disabled by default and fails closed when enabled facts are incomplete or unsafe
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+OIDC_TEST_EXIT=0
+
+COMMAND
+npm.cmd --prefix "Phoenix Compass/education compass/server" test
+
+OUTPUT
+ℹ tests 93
+ℹ suites 0
+ℹ pass 93
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+SERVER_TEST_EXIT=0
+
+WINDOWS BYTE-STABILITY CHECK
+The first full-suite run exposed CRLF materialization of immutable hash-pinned SQL/JSON files. No logical or indexed content differed. A scoped .gitattributes policy was added, the exact tracked files were re-materialized from HEAD, and the full suite then passed.
+
+OUTPUT
+server/migrations/001_initial_schema.sql SHA256=502AB6BED513978922FAD8FD424D1C11281B07771E37CE056CF001A2674B35C9
+docs/product/freeze/education-compass-v1-rc1/QUESTION_BANKS_V1_RC1.json SHA256=EFAE34EE595FC5E4A2FE8B6C5B89B1F182625BF15518620AC475320E4FD978F9
+docs/product/freeze/education-compass-v1-rc1/TAXONOMY_REGISTRY_V1_RC1.json SHA256=53691402AA191489317E013CFC5BBE121339301EECFD43F7C6430415B11E2231
+docs/product/freeze/education-compass-v1.1/QUESTION_BANK_UPDATE_V1_1.json SHA256=1E92841D2BACDD3ADC4086A68AD2749997ADBD07CC78FC810A02321765D17271
+
+COMMAND
+git diff --check
+git status --short -- canonical-db/migrations
+credential-value scan over changed verifier, test, config and decision files
+
+OUTPUT
+DIFF_CHECK_EXIT=0
+MIGRATION_CHANGES=NONE
+CREDENTIAL_VALUE_SCAN=PASS
+
+ARTIFACT HASHES
+Phoenix Compass/education compass/server/src/auth/oidc-jwt-verifier.ts
+cf0d59e9460b5bd82a6de035104eb89720f48451d1b289261ad2cb5ed38f8ef3
+
+Phoenix Compass/education compass/server/tests/oidc-jwt-verifier.test.ts
+de57c42dad1de132120126e8810c9ffc2b4f7f3adbb3b75c2f0ee282a0841a58
+
+NOT EXECUTED
+- No database Migration was created, changed or applied.
+- No Tencent host or database was contacted.
+- No application or database deployment occurred.
+- No real user, token, identity mapping, signing key, credential or business data was used.
+- CANONICAL_OIDC_ENABLED remains false and the verifier is not wired to the live request path.
