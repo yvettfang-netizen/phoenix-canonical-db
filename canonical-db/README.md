@@ -68,6 +68,7 @@ This directory contains the implemented greenfield Canonical database. It does n
 | `FIX_EXECUTION_REPORT_V1.17.md` | Private remote synchronization and database-side non-production application authorization |
 | `FIX_EXECUTION_REPORT_V1.18.md` | FD-6 application-auth configuration gate, synthetic regression and Tencent backup-alert recovery |
 | `FIX_EXECUTION_REPORT_V1.19.md` | Founder ownership, deployed application identity-context evidence, fail-closed candidate config and identity-contract Founder Gate |
+| `FIX_EXECUTION_REPORT_V1.20.md` | Founder-approved Option A direction, disabled provider-neutral OIDC/JWT verifier, synthetic security regression and concrete broker-selection HOLD |
 
 ## Run locally when Docker is available
 
