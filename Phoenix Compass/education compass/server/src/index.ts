@@ -1,5 +1,7 @@
-import { readFile } from 'node:fs/promises'
+import { readFile, stat } from 'node:fs/promises'
+import { createPrivateKey } from 'node:crypto'
 import { MockWechatAuthProvider, WechatApiAuthProvider } from './auth/wechat-auth-provider'
+import { CanonicalOidcBroker, loadCanonicalOidcBrokerConfig } from './auth/canonical-oidc-broker'
 import { loadConfig } from './config'
 import { loadSourceCatalog } from './domain/source-catalog'
 import { AgentContentCrypto } from './ai/crypto'
@@ -28,6 +30,7 @@ import { Store } from './store/store'
 
 async function main(): Promise<void> {
   const config = loadConfig()
+  const canonicalOidcBrokerConfig = loadCanonicalOidcBrokerConfig()
   const sourceCatalog = await loadSourceCatalog(config.sourceCatalogMode, config.sourceCatalogPath)
   const store: Store = config.databaseUrl ? new PostgresStore(config.databaseUrl) : new InMemoryStore()
   const authProvider = config.wechatAppId && config.wechatAppSecret
@@ -67,6 +70,15 @@ async function main(): Promise<void> {
   )
   const reports = new ReportService(store)
   const education = new EducationCompassService(store, config.growthDiscoveryPaymentEnabled)
+  let canonicalOidcBroker: CanonicalOidcBroker | undefined
+  if (canonicalOidcBrokerConfig) {
+    const signingKeyStat = await stat(canonicalOidcBrokerConfig.signingKeyFile)
+    if (process.platform !== 'win32' && (signingKeyStat.mode & 0o077) !== 0) {
+      throw new Error('Canonical OIDC signing key file permissions must deny group and other access')
+    }
+    const signingKeyPem = await readFile(canonicalOidcBrokerConfig.signingKeyFile, 'utf8')
+    canonicalOidcBroker = new CanonicalOidcBroker(canonicalOidcBrokerConfig, createPrivateKey(signingKeyPem))
+  }
   let agent: AgentService | undefined
   const currentAgentKey = config.aiContentKeyring[config.aiContentCurrentKeyVersion]
   if (currentAgentKey && Buffer.byteLength(config.openaiSafetyHmacKey, 'utf8') >= 32) {
@@ -116,7 +128,8 @@ async function main(): Promise<void> {
   )
   const server = createAppServer({
     auth, profiles, assessments, orders, reports, education, feishu,
-    ...(agent ? { agent } : {})
+    ...(agent ? { agent } : {}),
+    ...(canonicalOidcBroker ? { canonicalOidcBroker } : {})
   })
   let refundSweepRunning = false
   const reconcileRefunds = async (): Promise<void> => {

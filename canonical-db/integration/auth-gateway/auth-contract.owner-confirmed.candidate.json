@@ -6,10 +6,10 @@
     "auth_contract_version": "1.0"
   },
   "identity_provider": {
-    "provider_name": "WeChat Mini Program login context; OIDC broker not selected",
-    "issuer": "__EVIDENCE_MISSING_OIDC_ISSUER__",
-    "audience": "__EVIDENCE_MISSING_OIDC_AUDIENCE__",
-    "jwks_uri": "__EVIDENCE_MISSING_OIDC_JWKS__",
+    "provider_name": "Phoenix First-Party Canonical Identity Broker V1.0",
+    "issuer": "https://approved-public-base-url-required.invalid/canonical-identity",
+    "audience": "phoenix-canonical-postgresql",
+    "jwks_uri": "https://approved-public-base-url-required.invalid/.well-known/phoenix-canonical-jwks.json",
     "required_claims": [
       "iss",
       "aud",
@@ -18,12 +18,11 @@
       "sub"
     ],
     "allowed_algorithms": [
-      "RS256",
       "ES256"
     ],
-    "token_max_ttl_seconds": 900,
+    "token_max_ttl_seconds": 300,
     "clock_skew_seconds": 60,
-    "jwks_cache_seconds": 3600,
+    "jwks_cache_seconds": 300,
     "unknown_kid_refresh_once": true,
     "refresh_rate_limit_seconds": 60
   },
@@ -38,8 +37,8 @@
   "database": {
     "binder_role": "phoenix_canonical_context_binder",
     "app_role": "phoenix_canonical_app",
-    "binder_credential_ref": "__KEY_REFERENCE_PENDING_BINDER__",
-    "app_credential_ref": "__KEY_REFERENCE_PENDING_APP__",
+    "binder_credential_ref": "file:/run/secrets/phoenix_canonical_binder_pgpass_v1",
+    "app_credential_ref": "file:/run/secrets/phoenix_canonical_app_pgpass_v1",
     "ticket_ttl_seconds": 45,
     "pool_mode": "session",
     "clear_context_on_return": true,

@@ -10,6 +10,7 @@ import { EducationCompassService } from '../services/education-compass-service'
 import { FeishuSyncService } from '../integrations/feishu/sync-service'
 import { routeAgentRequest } from './agent-routes'
 import { InMemoryRateLimiter, RateLimiter } from './rate-limiter'
+import { CANONICAL_OIDC_JWKS_PATH, CanonicalOidcBroker } from '../auth/canonical-oidc-broker'
 
 export interface AppDependencies {
   auth: AuthService
@@ -21,6 +22,7 @@ export interface AppDependencies {
   agent?: AgentService
   feishu?: FeishuSyncService
   rateLimiter?: RateLimiter
+  canonicalOidcBroker?: CanonicalOidcBroker
   logger?: { error(message: string, context?: Record<string, unknown>): void }
 }
 
@@ -44,6 +46,16 @@ function json(response: ServerResponse, status: number, body?: unknown): void {
   }
   const raw = Buffer.from(JSON.stringify(body), 'utf8')
   response.setHeader('Content-Type', 'application/json; charset=utf-8')
+  response.setHeader('Content-Length', raw.length)
+  response.end(raw)
+}
+
+function publicJwks(response: ServerResponse, broker: CanonicalOidcBroker): void {
+  securityHeaders(response)
+  const raw = Buffer.from(JSON.stringify(broker.jwks()), 'utf8')
+  response.statusCode = 200
+  response.setHeader('Content-Type', 'application/jwk-set+json; charset=utf-8')
+  response.setHeader('Cache-Control', 'public, max-age=300, must-revalidate')
   response.setHeader('Content-Length', raw.length)
   response.end(raw)
 }
@@ -149,6 +161,10 @@ export function createHttpHandler(deps: AppDependencies): (request: IncomingMess
     const method = request.method ?? 'GET'
     try {
       if (method === 'GET' && url.pathname === '/health') return json(response, 200, { ok: true })
+      if (method === 'GET' && url.pathname === CANONICAL_OIDC_JWKS_PATH) {
+        invariant(deps.canonicalOidcBroker, 404, 'ROUTE_NOT_FOUND', '接口不存在')
+        return publicJwks(response, deps.canonicalOidcBroker)
+      }
 
       if (method === 'POST' && url.pathname === '/v1/auth/wechat/session') {
         invariant(await rateLimiter.consume(`auth:${request.socket.remoteAddress ?? 'unknown'}`, 10, 60_000), 429, 'RATE_LIMITED', '请求过于频繁，请稍后重试')

@@ -1,0 +1,107 @@
+Phoenix Canonical PostgreSQL V1.21 - First-Party OIDC Broker Evidence
+Date: 2026-10-27 (Asia/Shanghai)
+Scope: local code and synthetic data only; no Tencent connection, deployment, real identity or secret value
+
+COMMAND
+cd "Phoenix Compass/education compass/server"
+npm.cmd run typecheck
+
+RAW OUTPUT
+> phoenix-family-os-server@0.5.0 typecheck
+> tsc -p tsconfig.json --noEmit
+TYPECHECK_EXIT=0
+
+COMMAND
+npm.cmd run build
+
+RAW OUTPUT
+> phoenix-family-os-server@0.5.0 build
+> tsc -p tsconfig.json
+BUILD_EXIT=0
+
+COMMAND
+node --test dist/tests/canonical-oidc-broker.test.js
+
+RAW OUTPUT
+ok 1 - first-party broker selection derives exact metadata and protected reference names
+ok 2 - enabled broker fails closed on absent origin, unsafe origin or reference drift
+ok 3 - broker issues minimal short-lived ES256 token that passes the FD-6 verifier
+ok 4 - broker rejects non-P-256 signing keys and non-application subjects
+ok 5 - only the public JWKS endpoint is exposed without application authentication
+tests 5
+pass 5
+fail 0
+BROKER_TEST_EXIT=0
+
+COMMAND
+npm.cmd test
+
+RAW OUTPUT FOOTER
+tests 98
+suites 0
+pass 98
+fail 0
+cancelled 0
+skipped 0
+todo 0
+FULL_TEST_EXIT=0
+
+COMMAND
+pwsh -NoProfile -File canonical-db/tests/auth_gateway_contract_regression.ps1
+
+RAW OUTPUT
+PASS valid_synthetic_contract
+PASS integration_rejects_synthetic_fixture rejected
+PASS integration_template_is_incomplete rejected
+PASS owner_confirmed_candidate_stays_closed_without_oidc_and_keys rejected
+PASS missing_issuer rejected
+PASS shared_secret_algorithm rejected
+PASS unsigned_algorithm rejected
+PASS token_ttl_over_15_minutes rejected
+PASS clock_skew_over_60_seconds rejected
+PASS jwks_cache_over_one_hour rejected
+PASS unknown_kid_no_refresh rejected
+PASS missing_required_claims rejected
+PASS automatic_principal_provisioning rejected
+PASS missing_mapping_fail_open rejected
+PASS ticket_ttl_over_60_seconds rejected
+PASS transaction_pooling rejected
+PASS missing_clear_on_return rejected
+PASS missing_discard_on_clear_failure rejected
+PASS credentials_not_separated rejected
+PASS same_credential_reference rejected
+PASS raw_token_logging rejected
+PASS personal_data_logging rejected
+PASS missing_audit_fields rejected
+RESULT=PASS_AUTH_GATEWAY_CONTRACT_REGRESSION
+AUTH_GATEWAY_REGRESSION_EXIT=0
+
+COMMAND
+pwsh -NoProfile -File canonical-db/integration/auth-gateway/validate-auth-contract.ps1 -Path canonical-db/integration/auth-gateway/auth-contract.owner-confirmed.candidate.json -Mode integration
+
+RAW OUTPUT
+AUTH_CONTRACT_INVALID: identity_provider.issuer still contains a placeholder or synthetic value
+CANDIDATE_VALIDATION_EXIT=1
+EXPECTED_RESULT=REJECT
+
+COMMAND
+Targeted changed-file credential-material scan; migration diff check; git diff --check
+
+RAW OUTPUT
+CHANGED_FILE_COUNT=13
+CREDENTIAL_MATERIAL_HITS=0
+MIGRATION_CHANGE_COUNT=0
+DIFF_CHECK_EXIT=0
+
+COMMAND
+git ls-remote canonical-private refs/heads/codex/canonical-postgresql-phase1
+
+RAW OUTPUT
+53e901f46e60ee636e45f16aaf9e504034deba6e refs/heads/codex/canonical-postgresql-phase1
+
+INTERPRETATION
+- The selected first-party broker and existing verifier are locally implemented and synthetic-tested.
+- ES256, 300-second lifetime, exact audience, fixed issuer/JWKS paths and three protected reference names are enforced.
+- Both broker and verifier remain disabled by default.
+- The integration candidate remains fail-closed because the approved exact HTTPS PUBLIC_BASE_URL and actual protected files do not exist.
+- No migration, live database, Tencent host, real identity, real data or secret value was used.

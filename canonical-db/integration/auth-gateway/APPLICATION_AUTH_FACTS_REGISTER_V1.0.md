@@ -1,6 +1,6 @@
 # Phoenix Canonical Application Authentication Facts Register V1.0
 
-**Status:** OPTION A APPROVED / LOCAL VERIFIER PASS / LIVE INTEGRATION HOLD
+**Status:** FIRST-PARTY BROKER SELECTED / LOCAL BROKER+VERIFIER PASS / LIVE INTEGRATION HOLD
 **Last verified:** 2026-10-27 (Asia/Shanghai)
 **Purpose:** Record application-owned facts without changing the approved FD-6 rules
 **Do not enter:** passwords, tokens, client secrets, private keys, database credentials or real user data
@@ -13,14 +13,14 @@ The deployed application context uses WeChat Mini Program login: `wx.login` is e
 |---|---|---|
 | Provider context | WeChat Mini Program login (`code2Session` / OpenID) | VERIFIED APPLICATION CONTEXT |
 | FD-6 contract direction | Preserve FD-6 and use an OIDC/JWT broker (Option A) | FOUNDER APPROVED 2026-10-26 |
-| FD-6 provider name | A concrete broker product or first-party issuer implementation has not been selected | EVIDENCE_MISSING / HOLD |
-| Issuer (`iss`) | Not present in the current WeChat opaque-session design | EVIDENCE_MISSING / HOLD |
-| Audience (`aud`) | Not present in the current WeChat opaque-session design | EVIDENCE_MISSING / HOLD |
-| JWKS URI or discovery URL | Not present in the current WeChat opaque-session design | EVIDENCE_MISSING / HOLD |
-| Allowed algorithm | `RS256`, `ES256`, or both | FIXED RULE |
-| Token maximum lifetime | No more than 900 seconds | FIXED RULE |
+| FD-6 provider name | `Phoenix First-Party Canonical Identity Broker V1.0` | TECHNICALLY SELECTED / LOCAL IMPLEMENTATION |
+| Issuer (`iss`) | `<approved PUBLIC_BASE_URL>/canonical-identity` | PATH FIXED / PUBLIC ORIGIN HOLD |
+| Audience (`aud`) | `phoenix-canonical-postgresql` | FIXED |
+| JWKS URI or discovery URL | `<approved PUBLIC_BASE_URL>/.well-known/phoenix-canonical-jwks.json` | PATH FIXED / PUBLIC ORIGIN HOLD |
+| Allowed algorithm | `ES256` only | FIXED |
+| Token maximum lifetime | 300 seconds | FIXED |
 | Clock skew | No more than 60 seconds | FIXED RULE |
-| JWKS cache | No more than 3600 seconds | FIXED RULE |
+| JWKS cache | 300 seconds | FIXED |
 
 The existing seven-day opaque application session is not treated as an FD-6 JWT and cannot be entered into the OIDC fields. No provider metadata was inferred from WeChat URLs.
 
@@ -50,13 +50,15 @@ This ownership entry identifies current accountability; it does not create produ
 | Runtime processes | `phoenix_uat_api`, `phoenix_uat_agent_worker` | VERIFIED |
 | Integration environment | Tencent isolated non-production; application path above; Canonical PostgreSQL listens on host loopback only | VERIFIED NON-PRODUCTION BOUNDARY |
 | Canonical contract repository | `yvettfang-netizen/phoenix-canonical-db`, branch `codex/canonical-postgresql-phase1` | VERIFIED PRIVATE |
-| App database credential reference | Not obtained | KEY REFERENCE HOLD |
-| Binder database credential reference | Not obtained; must differ from app reference | KEY REFERENCE HOLD |
+| Signing-key reference | `file:/run/secrets/phoenix_canonical_oidc_signing_key_v1` | RESERVED / NOT PROVISIONED |
+| App database credential reference | `file:/run/secrets/phoenix_canonical_app_pgpass_v1` | RESERVED / NOT PROVISIONED |
+| Binder database credential reference | `file:/run/secrets/phoenix_canonical_binder_pgpass_v1` | RESERVED / NOT PROVISIONED; DISTINCT |
 | Pool mode | Direct or session | FIXED RULE |
 | Clear-on-return hook | No application implementation evidence found | IMPLEMENTATION HOLD |
 | Clear-failure discard | No application implementation/test evidence found | IMPLEMENTATION HOLD |
 | Gateway audit destination | No protected destination reference supplied | EVIDENCE_MISSING / HOLD |
-| Application-side verifier | Provider-neutral `RS256` / `ES256` verifier, disabled by default | LOCAL IMPLEMENTATION / SYNTHETIC PASS |
+| Application-side verifier | Provider-neutral verifier narrowed to the selected ES256 broker, disabled by default | LOCAL IMPLEMENTATION / SYNTHETIC PASS |
+| First-party broker | Minimal claims, public JWKS only, no browser issuance route | LOCAL IMPLEMENTATION / SYNTHETIC PASS |
 
 The application source repository being public and the deployed branch lacking a remote branch ref do not satisfy the original “exact private repository and branch” entry criterion. The database contract repository is private, but it is not substituted for the application repository.
 
@@ -71,13 +73,13 @@ The application source repository being public and the deployed branch lacking a
 - Live JWKS/token test evidence: NOT RUN / unavailable
 - Decision: `HOLD`
 
-The Option A approval and local verifier close the contract-direction and code-skeleton steps only. They do not supply a broker product, live metadata, keys, application pools or permission to enable the verifier.
+The Option A approval and first-party broker selection close the contract-direction, component, audience, path, algorithm, TTL and reference-name steps. The approved public origin, provisioned secret files, application pools and permission to enable the integration remain missing.
 
 ## Closure requirements
 
-1. Select or approve the concrete OIDC/JWT broker/issuer implementation compatible with the existing WeChat login. Option A is already approved; the product/implementation is still missing.
-2. Supply the exact HTTPS issuer, audience and JWKS/discovery URL for the selected OIDC path.
-3. Create distinct protected secret-manager references for the app and binder database credentials; never enter secret values here.
+1. Supply and approve the exact `PUBLIC_BASE_URL`; the selected component then derives the exact issuer and JWKS URI from fixed paths.
+2. Provision the three reserved protected files with separate key/credential values and restrictive permissions; never enter their contents here.
+3. Verify the broker public metadata and key rotation in an isolated environment.
 4. Implement and test separate app/binder pools, ticket handoff, `auth.clear_context()` on return, discard-on-clear-failure and protected gateway audit output in the application repository.
 5. Publish or otherwise make immutable the exact application branch/commit intended for isolated integration, then run the integration validator and negative token tests.
 

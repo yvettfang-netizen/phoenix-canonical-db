@@ -1,6 +1,6 @@
 # Canonical FD-6 OIDC/JWT Gate
 
-**Status:** LOCAL VERIFIER IMPLEMENTED / BROKER AND LIVE INTEGRATION HOLD
+**Status:** FIRST-PARTY BROKER + VERIFIER LOCALLY IMPLEMENTED / LIVE INTEGRATION HOLD
 **Founder direction:** Preserve FD-6 and use an OIDC/JWT broker (Option A, selected 2026-10-26)
 
 ## Implemented locally
@@ -16,11 +16,27 @@
 - no automatic identity provisioning;
 - fail-closed network, media-type, key-shape, claim and signature behavior.
 
-The verifier is disabled by default. It is not wired into the live request path and does not change the existing WeChat login or opaque application session.
+The selected component is `Phoenix First-Party Canonical Identity Broker V1.0`. It is a server-side technical component, not a customer-facing product. It issues 300-second ES256 assertions for non-personal application user IDs, exposes only a public JWKS route, and has no browser/mobile token-issuance endpoint.
+
+Both the broker and verifier are disabled by default. They do not change the existing WeChat login or opaque application session.
 
 ## Configuration boundary
 
-The following public facts are required before the verifier may be enabled:
+The approved metadata shape is:
+
+- issuer: `<approved PUBLIC_BASE_URL>/canonical-identity`;
+- audience: `phoenix-canonical-postgresql`;
+- JWKS: `<approved PUBLIC_BASE_URL>/.well-known/phoenix-canonical-jwks.json`;
+- signing algorithm: `ES256`;
+- token TTL: 300 seconds.
+
+The following protected reference names are reserved but no secret value has been provisioned:
+
+- `file:/run/secrets/phoenix_canonical_oidc_signing_key_v1`;
+- `file:/run/secrets/phoenix_canonical_app_pgpass_v1`;
+- `file:/run/secrets/phoenix_canonical_binder_pgpass_v1`.
+
+The following public facts are still required before the verifier may be enabled:
 
 - `CANONICAL_OIDC_ISSUER`
 - `CANONICAL_OIDC_AUDIENCE`
@@ -30,11 +46,11 @@ The following public facts are required before the verifier may be enabled:
 
 ## Still HOLD
 
-- broker/provider selection and exact metadata;
-- broker implementation or contracted external service;
-- distinct app and binder secret-manager references and pools;
+- approved exact HTTPS `PUBLIC_BASE_URL`, which resolves the fixed issuer/JWKS paths;
+- provisioned signing, app and binder secret files with restrictive permissions;
+- distinct app and binder pools using the reserved references;
 - mapping a verified broker subject to `auth.external_identities`;
 - one-time ticket handoff, connection clear/discard and protected audit output in the application runtime;
 - live token/JWKS tests, real identities, deployment and production use.
 
-Synthetic tests generate temporary RSA and P-256 keys in memory only. They never persist or commit private key material.
+Synthetic tests generate temporary P-256 keys in memory only. They never persist or commit private key material.

@@ -46,7 +46,7 @@
 `server/` 是 Node.js 20 + TypeScript 服务端实现，提供：
 
 - 微信 `code2Session` 边界、服务端 opaque session，以及退出时撤销当前 bearer 会话；
-- Founder 已批准 Canonical FD-6 Option A；服务端已有默认关闭的 provider-neutral OIDC/JWT 验证器及纯合成 RS256/ES256 回归。尚未选择实际 broker、配置真实 metadata/密钥或接入现有请求路径；
+- Founder 已批准 Canonical FD-6 Option A；已选择并本地实现默认关闭的 `Phoenix First-Party Canonical Identity Broker V1.0` 与 verifier，使用 300 秒 ES256、固定 audience、固定 issuer/JWKS 路径及纯合成回归。正式 HTTPS origin、真实密钥/凭据文件及数据库连接池仍未配置；
 - 家庭、学生、监护人同意、不可变测评快照、预览与报告接口；
 - 3990分服务端定价、订单幂等、Mock/微信支付 Provider 边界；
 - 微信支付 API v3 下单、签名/验签、通知解密、主动查单及退款领域逻辑；
@@ -87,7 +87,7 @@
 - `PAID_COMPASS_ENABLED` 尚无正式启用审批，必须保持 `false`。若来源目录在已有在途订单后被紧急撤回，须保留可信成功交易的交付并进入人工事故、退款和审计流程，不能静默拒绝已付款家庭。
 - 隐私政策、用户协议、AI报告声明、监护人同意文本、数字报告退款及访问期限仍需外部批准。
 - 生产 PostgreSQL、受信CA/`verify-full`连接、备份恢复、静态加密、审计、数据删除和监控告警仍需部署验证。
-- Canonical FD-6 的具体 OIDC broker/issuer、精确 `iss`/`aud`/JWKS、分离 app/binder 密钥引用、连接池/票据/清理/审计接入仍为 HOLD；本地验证器通过不等于已启用真实鉴权。
+- Canonical FD-6 的第一方 broker、audience、issuer/JWKS 路径及受保护文件名已确定；正式 `PUBLIC_BASE_URL`、三份真实 secret、分离连接池、票据、清理与审计接入仍为 HOLD。本地 broker/verifier 通过不等于已启用真实鉴权。
 - 未配置或验证真实飞书企业自建应用、App Token、7个Table ID、权限和网络；未完成飞书数据删除、保留和供应商安全评估。
 - 尚无真实 OpenAI Project/Key、批准模型、费用告警、数据处理/ZDR、未成年人披露与同意、危机升级文案或真实API预发布证据；Agent代码与Mock通过也不代表外部服务获准启用。
 - 199会员无购买入口、无会员权益实现，也不属于本次39.9报告验收范围。
