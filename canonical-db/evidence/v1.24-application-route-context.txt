@@ -1,0 +1,232 @@
+# V1.24 application route context — raw local evidence
+
+Date: 2026-10-28 (Asia/Shanghai)
+Scope: local review-candidate bridge and synthetic tests only; no migration, Tencent connection, deployment, real identity or real data.
+
+## Command
+
+```text
+npm.cmd run typecheck
+```
+
+## Raw output
+
+```text
+
+> phoenix-family-os-server@0.5.0 typecheck
+> tsc -p tsconfig.json --noEmit
+
+
+```
+
+## Command
+
+```text
+node --test dist/tests/canonical-application-route-bridge.test.js
+```
+
+## Raw output
+
+```text
+✔ route policy allowlists only three family-owned GET reads (2.0957ms)
+✔ owned family route derives subject and family server-side before internal ticket bridge (1.5663ms)
+✔ owned student route derives family through the stored student relationship (1.1056ms)
+✔ cross-family student is rejected before resolver, broker or gateway (0.8265ms)
+✔ admin or malformed application user cannot enter the family bridge (1.06ms)
+✔ missing or malformed canonical mapping fails closed without issuing a token (2.6939ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 102.2933
+
+```
+
+## Command
+
+```text
+npm.cmd test
+```
+
+## Raw output
+
+```text
+
+> phoenix-family-os-server@0.5.0 test
+> npm run build && node --test dist/tests/domain.test.js dist/tests/http.test.js dist/tests/wechat-pay.test.js dist/tests/feishu.test.js dist/tests/agent.test.js dist/tests/education-contracts.test.js dist/tests/education-http.test.js dist/tests/education-integrations.test.js dist/tests/oidc-jwt-verifier.test.js dist/tests/canonical-oidc-broker.test.js dist/tests/canonical-context-gateway.test.js dist/tests/canonical-application-route-bridge.test.js
+
+
+> phoenix-family-os-server@0.5.0 build
+> tsc -p tsconfig.json
+
+✔ Agent enqueue uses report-before-conversation PostgreSQL lock ordering (7.5913ms)
+✔ migration baselines stay immutable and Agent schema has no plaintext or response ID columns (29.7717ms)
+✔ Agent paid-report flow encrypts content, runs asynchronously, and exposes only trusted source DTOs (50.1124ms)
+✔ free submitted assessment creates one recoverable analysis without an entitlement and excludes PII/free text (9.2116ms)
+✔ paid report one-shot analysis is entitlement-gated, PII-minimized, and does not consume follow-up quota (8.5757ms)
+✔ free analysis fails closed for draft, 69 percent, revoked guardian consent, and consent revoked after enqueue (6.2748ms)
+✔ local and provider moderation block before model generation without consuming a successful reply (12.6229ms)
+✔ paid follow-up never forwards report module free text and unsafe source metadata fails closed (5.8785ms)
+✔ refund removes content access but preserves owner management, consent withdrawal, and deletion (4.7032ms)
+✔ idempotency is conflict-safe and three successful replies are cumulative across conversations (38.7734ms)
+✔ claim is exclusive and conversation cancellation fences a late worker result (5.4681ms)
+✔ ineligible reports never create Agent conversations or call the provider (6.7527ms)
+✔ OpenAI provider sends strict stateless Responses requests and retries only once (1.5ms)
+✔ OpenAI refusal, incomplete, malformed JSON, output moderation, and timeout use stable errors (0.5935ms)
+✔ Agent configuration fails closed and preserves the three-reply product boundary (1.1124ms)
+✔ content-key rotation does not change keyed idempotency or report-context digests (0.9133ms)
+✔ cancellation fences a claimed run so a late worker result is discarded (2.5341ms)
+✔ HTTP Agent contract uses flat strict consent, returns 202 runs, and extends full/preview reports (227.1475ms)
+✔ route policy allowlists only three family-owned GET reads (2.9125ms)
+✔ owned family route derives subject and family server-side before internal ticket bridge (3.4888ms)
+✔ owned student route derives family through the stored student relationship (2.0728ms)
+✔ cross-family student is rejected before resolver, broker or gateway (0.5654ms)
+✔ admin or malformed application user cannot enter the family bridge (1.2874ms)
+✔ missing or malformed canonical mapping fails closed without issuing a token (1.5702ms)
+✔ configuration stays disabled by default and fails closed on incomplete gateway facts (2.553ms)
+✔ separate binder and app pools resolve usr subject, exchange once, clear and discard before release (5.071ms)
+✔ unknown subject mapping denies before app pool and never auto-provisions an identity (0.8487ms)
+✔ non-usr verifier subject is rejected and redacted from denial audit (0.8292ms)
+✔ business callback cannot control transactions or roles and uncertain app connection is destroyed (0.8275ms)
+✔ clear or durable audit failure rolls back and destroys the app connection (1.5657ms)
+✔ DISCARD failure after a committed, cleared transaction destroys instead of reusing the connection (0.355ms)
+✔ protected JSONL audit writes an exact minimal schema and 0600 file without extra token fields (16.7274ms)
+✔ runtime builds distinct least-privilege pools from separate protected pgpass records (2.2987ms)
+✔ runtime refuses shared app and binder password before constructing pools (0.7131ms)
+✔ first-party broker selection derives exact metadata and protected reference names (0.9077ms)
+✔ enabled broker fails closed on absent origin, unsafe origin or reference drift (1.1436ms)
+✔ broker issues minimal short-lived ES256 token that passes the FD-6 verifier (37.2532ms)
+✔ broker rejects non-P-256 signing keys and non-application subjects (65.801ms)
+✔ only the public JWKS endpoint is exposed without application authentication (71.2139ms)
+✔ 23-field questionnaire contract matches the client contract and preserves 69/70/100 answers (5.5108ms)
+✔ paid Compass kill switch defaults off and rejects invalid configuration (0.6757ms)
+✔ production config pins verified TLS database and exact public WeChat callback origins (0.5161ms)
+✔ draft round-trip, 69 gate, and pre-charge six-module QA lock (8.1129ms)
+✔ placeholder catalog, failed QA, and report generation failure all block ordering (3.9293ms)
+✔ prepay rechecks guardian consent and active product after order creation (7.962ms)
+✔ server query reconciliation is throttled, recovers a missing callback, and closes expired NOTPAY orders (7.1247ms)
+✔ 3990 payment callback is idempotent and only delivers the already-QA-passed report (9.1005ms)
+✔ forged transaction fields and cross-user resource access never grant paid content (7.4193ms)
+✔ admin refund is RBAC-protected, idempotent, and revokes report entitlement once (4.8617ms)
+✔ synchronous refund success revokes access even when the webhook is lost (6.8725ms)
+✔ a success webhook racing the provider response cannot be downgraded to PROCESSING (2.9172ms)
+✔ durable refund reconciliation revokes access when the final webhook is lost (5.8897ms)
+✔ refund reconciliation replays an intent after a crash before the provider request (9.5832ms)
+✔ file adapter persists isolated state and migration matches production model (17.5369ms)
+✔ V1.0 base, V1.1 question-copy overlay, and taxonomy match their approved SHA-256 manifests (22.0762ms)
+✔ V1.1 L1 and all seven L2 routes expose approved copy, IDs, digests, markers, presentation, and no scoring (23.7646ms)
+✔ V1.1 is copy-only: V1.0 banks remain pinned and both versions preserve IDs, codes, routing, privacy boundaries, and scoring (7.3242ms)
+✔ validator rejects unknown IDs, wrong types, exclusive conflicts, and PII (0.5965ms)
+✔ validator enforces the current-year window and exact subject-range matrix schema (0.6919ms)
+✔ system switch preserves compatible common answers and removes old/incompatible branch data (0.3277ms)
+✔ L1 readiness produces the four frozen routes (0.4131ms)
+✔ L2 builds all six discovery outputs with traceable evidence and no score (0.877ms)
+✔ L2 preserves UNKNOWN and excludes prohibited conclusion language outside the disclaimer (0.4625ms)
+✔ Askwise handoff remains a validated RESERVED DTO with networking disabled (1.0671ms)
+✔ Level 3 remains an entry-only reservation with no questionnaire, payment, or pressure trigger (0.258ms)
+✔ next-support projection uses only the two frozen positive mappings and keeps Askwise reserved (0.2279ms)
+✔ V0.5 profiles support honest provisional nulls and the frozen Level 2 readiness status (113.2243ms)
+✔ V1.1 defaults new assessments while V1.0 endpoints and pinned drafts retain their historical bank (185.3142ms)
+✔ V0.5 real HTTP flow preserves revisions, payment authority, owner isolation and one entitlement (514.307ms)
+✔ next-support capabilities and advisor intent remain server-authoritative (362.3692ms)
+✔ IB uses the common bank and returns SYSTEM_BANK_PENDING without leaking the locked report (141.3979ms)
+✔ V0.5 consent grants are reusable while active and withdrawal fences draft, result and submit (250.2063ms)
+✔ verified payment after Level 2 consent withdrawal stays locked and enters auditable refund review (234.2664ms)
+✔ V0.5 Feishu mirror requires both gates, uses only profile allowlists, and fences withdrawal retries (30.3936ms)
+✔ V0.5 Free and Paid Agent serializers emit no PII, raw answers, or internal IDs and keep the frozen structure (2.7195ms)
+✔ V0.5 Paid Agent rejects a legacy entitlement and queues only the matching Growth Discovery SKU (21.3292ms)
+✔ Feishu integration is opt-in and enabled configuration fails closed (4.0262ms)
+✔ Feishu client caches tenant token and coalesces concurrent token requests (32.8618ms)
+✔ Feishu client rejects HTTP 200 responses whose provider code is non-zero (1.8703ms)
+✔ Feishu client classifies provider throttling as retryable and respects retry-after (1.5455ms)
+✔ Feishu client creates missing records and updates known records (2.3782ms)
+✔ Feishu client paginates field metadata for schema preflight (1.0702ms)
+✔ Customer profile mirror contracts are exact runtime-frozen allowlists (0.2014ms)
+✔ Customer pseudonyms are stable across service instances and separated by environment (20.3057ms)
+✔ Feishu reconciliation projects only pseudonymous operational fields and skips unchanged records (5.759ms)
+✔ Legacy customer profile reconcile preserves its core contract and stable pseudonyms (2.3936ms)
+✔ Customer profile fields are mirrored only when the explicit sensitive-field flag is enabled (1.6254ms)
+✔ Enabled customer profile mirror rejects formula prefixes and oversized values before egress (0.5606ms)
+✔ Persisted retry payload with an unknown customer field fails closed before Feishu egress (0.4027ms)
+✔ Turning the customer profile flag off discards a frozen sensitive retry body (0.5098ms)
+✔ Feishu schema preflight validates all remote field names, primary fields and types (0.45ms)
+✔ Profile schema requires sensitive columns only when the explicit profile flag is enabled (0.3055ms)
+✔ Feishu schema drift fails closed for the mirror without touching Phoenix data (0.3531ms)
+✔ Feishu reconciliation records a retryable failure and respects its next-attempt delay (1.9504ms)
+✔ Feishu unknown-result retry reuses its persisted UUID and frozen request bytes (0.827ms)
+✔ Authenticated customer profile APIs persist to the Phoenix store contract then feed the optional Feishu mirror (40.7106ms)
+✔ Feishu management endpoints require admin role and expose no credentials (49.9589ms)
+✔ profile sync and assessment draft GET round-trip over frozen HTTP contract (167.5784ms)
+✔ admin refund endpoint enforces RBAC and Idempotency-Key (63.0725ms)
+✔ HTTP rate limiter emits stable 429 error envelope (6.2358ms)
+✔ webhook ingress rejects unsigned bodies before consuming a processing slot and sets short server deadlines (6.0385ms)
+✔ logout revokes the presented bearer session before local token disposal (14.7777ms)
+✔ RS256 and ES256 tokens pass exact issuer, audience, lifetime and JWKS verification (51.2556ms)
+✔ forbidden algorithms, injected key headers and tampered signatures are rejected (46.3117ms)
+✔ claim mismatches, expiry, future nbf and excessive token lifetime are rejected (67.5043ms)
+✔ unknown kid performs one rate-limited refresh and then fails closed (101.5735ms)
+✔ JWKS network, media type and shape failures deny verification (48.8181ms)
+✔ configuration is disabled by default and fails closed when enabled facts are incomplete or unsafe (0.3528ms)
+✔ canonical API v3 message keeps exact bytes and final LF (1.5485ms)
+✔ API v3 provider signs exact request, verifies response, and signs mini-program params (31.04ms)
+✔ NOTPAY query accepts the official response shape without optional payer or amount (4.5487ms)
+✔ refund request uses validated reason and query/refund responses are signature-verified (6.142ms)
+✔ callback verifies raw bytes before AES-GCM decrypt and rejects tampering (2.2221ms)
+✔ official-shape AES-256-GCM vector decrypts and tag changes fail closed (0.232ms)
+ℹ tests 114
+ℹ suites 0
+ℹ pass 114
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2087.2156
+
+```
+
+## Command
+
+```text
+git diff --check
+```
+
+## Raw output
+
+```text
+warning: in the working copy of 'Phoenix Compass/education compass/docs/CANONICAL_OIDC_GATE.md', LF will be replaced by CRLF the next time Git touches it
+
+```
+
+## Command
+
+```text
+git diff --name-only -- canonical-db/migrations
+```
+
+## Raw output
+
+```text
+(no output)
+```
+
+## Command
+
+```text
+git status --short
+```
+
+## Raw output
+
+```text
+ M "Phoenix Compass/education compass/README.md"
+ M "Phoenix Compass/education compass/docs/CANONICAL_OIDC_GATE.md"
+ M "Phoenix Compass/education compass/server/package.json"
+ M canonical-db/integration/auth-gateway/APPLICATION_AUTH_FACTS_REGISTER_V1.0.md
+?? "Phoenix Compass/education compass/server/src/auth/canonical-application-route-bridge.ts"
+?? "Phoenix Compass/education compass/server/tests/canonical-application-route-bridge.test.ts"
+?? canonical-db/integration/auth-gateway/APPLICATION_ROUTE_CONTEXT_CONTRACT_V1.0_REVIEW_CANDIDATE.md
+
+```

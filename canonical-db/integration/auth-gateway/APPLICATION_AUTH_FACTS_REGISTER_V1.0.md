@@ -1,7 +1,7 @@
 # Phoenix Canonical Application Authentication Facts Register V1.0
 
-**Status:** PUBLIC ORIGIN + PROTECTED FILES STAGED / LOCAL BROKER+VERIFIER PASS / LIVE INTEGRATION HOLD
-**Last verified:** 2026-10-27 (Asia/Shanghai)
+**Status:** PUBLIC ORIGIN + PROTECTED FILES STAGED / LOCAL BROKER+VERIFIER+CONTEXT BRIDGE PASS / LIVE INTEGRATION HOLD
+**Last verified:** 2026-10-28 (Asia/Shanghai)
 **Purpose:** Record application-owned facts without changing the approved FD-6 rules
 **Do not enter:** passwords, tokens, client secrets, private keys, database credentials or real user data
 
@@ -54,11 +54,14 @@ This ownership entry identifies current accountability; it does not create produ
 | App database credential reference | `file:/run/secrets/phoenix_canonical_app_pgpass_v1` | TENCENT ISOLATED STAGED / 0600 / LOGIN PASS |
 | Binder database credential reference | `file:/run/secrets/phoenix_canonical_binder_pgpass_v1` | TENCENT ISOLATED STAGED / 0600 / DISTINCT / LOGIN PASS |
 | Pool mode | Direct or session | FIXED RULE |
-| Clear-on-return hook | No application implementation evidence found | IMPLEMENTATION HOLD |
-| Clear-failure discard | No application implementation/test evidence found | IMPLEMENTATION HOLD |
-| Gateway audit destination | No protected destination reference supplied | EVIDENCE_MISSING / HOLD |
+| Clear-on-return hook | `auth.clear_context()` + NULL-principal assertion + `DISCARD ALL` | LOCAL IMPLEMENTATION / SYNTHETIC PASS |
+| Clear-failure discard | rollback/clear uncertainty destroys the app connection; discard failure prevents reuse | LOCAL IMPLEMENTATION / SYNTHETIC PASS |
+| Gateway audit destination | 0600 append-only JSONL path is required; no deployed path enabled | LOCAL IMPLEMENTATION PASS / LIVE DESTINATION HOLD |
 | Application-side verifier | Provider-neutral verifier narrowed to the selected ES256 broker, disabled by default | LOCAL IMPLEMENTATION / SYNTHETIC PASS |
 | First-party broker | Minimal claims, public JWKS only, no browser issuance route | LOCAL IMPLEMENTATION / SYNTHETIC PASS |
+| Application subject derivation | authenticated server `usr_*` user ID; never OpenID/UnionID or client input | LOCAL REVIEW CANDIDATE / SYNTHETIC PASS |
+| Family route derivation | three read-only routes use trusted Store ownership; all other routes denied | LOCAL REVIEW CANDIDATE / NOT WIRED |
+| Canonical actor/family resolver | no approved family legacy-mapping resolver exists | CONTRACT HOLD |
 
 The application source repository being public and the deployed branch lacking a remote branch ref do not satisfy the original “exact private repository and branch” entry criterion. The database contract repository is private, but it is not substituted for the application repository.
 
@@ -78,8 +81,8 @@ The public origin and protected files are staged only in the isolated Tencent en
 ## Closure requirements
 
 1. Publish or otherwise make immutable the exact application revision containing the broker/verifier and database-runtime integration.
-2. Implement and test separate app/binder pools, ticket handoff, `auth.clear_context()` on return, discard-on-clear-failure and protected gateway audit output.
-3. Approve and test the WeChat application user to `usr_*` broker-subject mapping without automatic provisioning.
+2. Deploy and explicitly enable the locally tested separate app/binder pools, ticket handoff, clear/discard and protected audit only after isolated review.
+3. Approve the authenticated application user ID as the broker `usr_*` subject, register reviewed external-identity records without automatic provisioning, and approve the actor/family resolver described in `APPLICATION_ROUTE_CONTEXT_CONTRACT_V1.0_REVIEW_CANDIDATE.md`.
 4. Verify the broker public JWKS, token rejection paths and key rotation in the isolated environment before either enable flag changes.
 
 Configuration staging and validator PASS do not constitute live integration approval. Missing runtime implementation, subject mapping and isolated end-to-end evidence keep the live application integration on `HOLD`.

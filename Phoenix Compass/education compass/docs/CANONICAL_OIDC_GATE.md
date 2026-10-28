@@ -32,6 +32,8 @@ Both the broker and verifier are disabled by default. They do not change the exi
 
 The runtime has no public HTTP issuance or database-operation route. It is constructed only when all three explicit flags are enabled and the verifier metadata exactly matches the first-party broker. It therefore remains inert in the current application.
 
+`server/src/auth/canonical-application-route-bridge.ts` adds a disabled, unwired application-context candidate. It accepts only three authenticated, family-owned GET routes; derives the application family through trusted Store ownership; issues the broker token internally; and requires an injected resolver to return reviewed Canonical actor/family UUIDv7 values. Unknown routes, writes, admin actors, cross-family students and missing/malformed mappings are denied before token issuance. No resolver is configured because the application `fam_*` UUIDv4 text cannot be treated as a Canonical UUIDv7 and no family legacy-mapping resolver has been approved.
+
 ## Configuration boundary
 
 The verified isolated metadata is:
@@ -55,7 +57,7 @@ The corresponding `.env.uat` reference-only configuration is staged, but the run
 
 - deployment and explicit enablement of an immutable application revision containing the broker, verifier and context bridge;
 - real `usr_*` mapping records in `auth.external_identities` (unknown or disabled mappings are denied);
-- an approved application service boundary that supplies the Canonical actor/family/channel values to the internal bridge;
+- approval and implementation of the binder-side application-family mapping resolver described in `canonical-db/integration/auth-gateway/APPLICATION_ROUTE_CONTEXT_CONTRACT_V1.0_REVIEW_CANDIDATE.md`;
 - live token/JWKS tests, real identities, deployment and production use.
 
 Synthetic tests generate temporary P-256 keys in memory only. They never persist or commit private key material.
