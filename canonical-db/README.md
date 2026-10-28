@@ -72,6 +72,7 @@ This directory contains the implemented greenfield Canonical database. It does n
 | `FIX_EXECUTION_REPORT_V1.21.md` | Founder-authorized first-party broker selection, disabled local implementation, public JWKS and protected-reference gate |
 | `FIX_EXECUTION_REPORT_V1.22.md` | Verified isolated HTTPS origin, protected signing/app/binder file staging and exact integration configuration gate |
 | `FIX_EXECUTION_REPORT_V1.23.md` | Disabled local app/binder context bridge, one-use ticket exchange, fail-closed connection cleanup and minimal protected audit regression |
+| `FIX_EXECUTION_REPORT_V1.24.md` | Local read-route context derivation, trusted Store ownership checks, UUIDv4/UUIDv7 mismatch refusal and mapping-authority Founder Gate |
 
 ## Run locally when Docker is available
 
