@@ -46,7 +46,7 @@ The dedicated tests cover successful split-pool exchange, unmapped identity deni
 | `server/src/auth/canonical-context-gateway.ts` | `0d13a3d317ed8d6b3de19f3807bc3b0155b3752ce32c6192942122bd7b6b59b3` |
 | `server/src/auth/canonical-context-runtime.ts` | `93f055ea0cc061a62d1fb3e07c3ec6c725030ebd011368e02d8b04f9bf320a40` |
 | `server/tests/canonical-context-gateway.test.ts` | `3665f10486a4eb79be1755eca7cd99fd55b8e05b2783f2a6585747fcdace28dc` |
-| `evidence/v1.23-canonical-context-runtime.txt` | `fc32f7786b32476e4ce37be352a7c794d179ddbf56812fa0a4aaeb7b1a684836` |
+| `evidence/v1.23-canonical-context-runtime.txt` | `624deed3d04abb54515558544f1e6c081be2ed3e172ab98c7e729fe662b65771` |
 
 Implementation commit: `7a80849b5404a784e6b9e075d0911299fa3f6407`.
 
