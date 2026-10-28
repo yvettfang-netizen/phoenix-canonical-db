@@ -11,6 +11,7 @@ import { FeishuSyncService } from '../integrations/feishu/sync-service'
 import { routeAgentRequest } from './agent-routes'
 import { InMemoryRateLimiter, RateLimiter } from './rate-limiter'
 import { CANONICAL_OIDC_JWKS_PATH, CanonicalOidcBroker } from '../auth/canonical-oidc-broker'
+import type { CanonicalContextGateway } from '../auth/canonical-context-gateway'
 
 export interface AppDependencies {
   auth: AuthService
@@ -23,6 +24,7 @@ export interface AppDependencies {
   feishu?: FeishuSyncService
   rateLimiter?: RateLimiter
   canonicalOidcBroker?: CanonicalOidcBroker
+  canonicalContextGateway?: CanonicalContextGateway
   logger?: { error(message: string, context?: Record<string, unknown>): void }
 }
 

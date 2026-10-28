@@ -2,6 +2,12 @@ import { readFile, stat } from 'node:fs/promises'
 import { createPrivateKey } from 'node:crypto'
 import { MockWechatAuthProvider, WechatApiAuthProvider } from './auth/wechat-auth-provider'
 import { CanonicalOidcBroker, loadCanonicalOidcBrokerConfig } from './auth/canonical-oidc-broker'
+import {
+  createCanonicalContextRuntime,
+  loadCanonicalContextRuntimeConfig,
+  type CanonicalContextRuntime
+} from './auth/canonical-context-runtime'
+import { loadOidcJwtVerifierConfig, OidcJwtVerifier } from './auth/oidc-jwt-verifier'
 import { loadConfig } from './config'
 import { loadSourceCatalog } from './domain/source-catalog'
 import { AgentContentCrypto } from './ai/crypto'
@@ -27,10 +33,13 @@ import { AgentRepository } from './store/agent-repository'
 import { InMemoryStore } from './store/memory-store'
 import { PostgresStore } from './store/postgres-store'
 import { Store } from './store/store'
+import { invariant } from './domain/errors'
 
 async function main(): Promise<void> {
   const config = loadConfig()
   const canonicalOidcBrokerConfig = loadCanonicalOidcBrokerConfig()
+  const canonicalOidcVerifierConfig = loadOidcJwtVerifierConfig()
+  const canonicalContextRuntimeConfig = loadCanonicalContextRuntimeConfig()
   const sourceCatalog = await loadSourceCatalog(config.sourceCatalogMode, config.sourceCatalogPath)
   const store: Store = config.databaseUrl ? new PostgresStore(config.databaseUrl) : new InMemoryStore()
   const authProvider = config.wechatAppId && config.wechatAppSecret
@@ -78,6 +87,24 @@ async function main(): Promise<void> {
     }
     const signingKeyPem = await readFile(canonicalOidcBrokerConfig.signingKeyFile, 'utf8')
     canonicalOidcBroker = new CanonicalOidcBroker(canonicalOidcBrokerConfig, createPrivateKey(signingKeyPem))
+  }
+  let canonicalContextRuntime: CanonicalContextRuntime | undefined
+  if (canonicalContextRuntimeConfig) {
+    invariant(canonicalOidcBrokerConfig && canonicalOidcBroker && canonicalOidcVerifierConfig,
+      500, 'CANONICAL_CONTEXT_CONFIG_INVALID', 'Canonical context gateway 依赖 broker 与 verifier')
+    invariant(
+      canonicalOidcVerifierConfig.issuer === canonicalOidcBrokerConfig.issuer &&
+      canonicalOidcVerifierConfig.audience === canonicalOidcBrokerConfig.audience &&
+      canonicalOidcVerifierConfig.jwksUri === canonicalOidcBrokerConfig.jwksUri &&
+      canonicalOidcVerifierConfig.allowedAlgorithms.length === 1 &&
+      canonicalOidcVerifierConfig.allowedAlgorithms[0] === canonicalOidcBrokerConfig.algorithm &&
+      canonicalOidcVerifierConfig.tokenMaxTtlSeconds === canonicalOidcBrokerConfig.tokenTtlSeconds,
+      500, 'CANONICAL_CONTEXT_CONFIG_INVALID', 'Canonical verifier 必须精确匹配 first-party broker 元数据'
+    )
+    canonicalContextRuntime = await createCanonicalContextRuntime(
+      canonicalContextRuntimeConfig,
+      new OidcJwtVerifier(canonicalOidcVerifierConfig)
+    )
   }
   let agent: AgentService | undefined
   const currentAgentKey = config.aiContentKeyring[config.aiContentCurrentKeyVersion]
@@ -129,7 +156,8 @@ async function main(): Promise<void> {
   const server = createAppServer({
     auth, profiles, assessments, orders, reports, education, feishu,
     ...(agent ? { agent } : {}),
-    ...(canonicalOidcBroker ? { canonicalOidcBroker } : {})
+    ...(canonicalOidcBroker ? { canonicalOidcBroker } : {}),
+    ...(canonicalContextRuntime ? { canonicalContextGateway: canonicalContextRuntime.gateway } : {})
   })
   let refundSweepRunning = false
   const reconcileRefunds = async (): Promise<void> => {
@@ -171,7 +199,10 @@ async function main(): Promise<void> {
     clearInterval(refundSweepTimer)
     clearInterval(feishuSyncTimer)
     server.close(() => {
-      void store.close?.().finally(() => process.exit(0))
+      void Promise.allSettled([
+        store.close?.() ?? Promise.resolve(),
+        canonicalContextRuntime?.close() ?? Promise.resolve()
+      ]).finally(() => process.exit(0))
     })
   }
   process.once('SIGINT', shutdown)

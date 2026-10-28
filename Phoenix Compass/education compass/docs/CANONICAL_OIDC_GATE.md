@@ -1,6 +1,6 @@
 # Canonical FD-6 OIDC/JWT Gate
 
-**Status:** FIRST-PARTY BROKER + VERIFIER LOCALLY IMPLEMENTED / LIVE INTEGRATION HOLD
+**Status:** FIRST-PARTY BROKER + VERIFIER + DATABASE CONTEXT BRIDGE LOCALLY IMPLEMENTED / LIVE ENABLEMENT HOLD
 **Founder direction:** Preserve FD-6 and use an OIDC/JWT broker (Option A, selected 2026-10-26)
 
 ## Implemented locally
@@ -20,6 +20,18 @@ The selected component is `Phoenix First-Party Canonical Identity Broker V1.0`. 
 
 Both the broker and verifier are disabled by default. They do not change the existing WeChat login or opaque application session.
 
+`server/src/auth/canonical-context-gateway.ts` and `canonical-context-runtime.ts` now implement the disabled application-to-database bridge:
+
+- separate `phoenix_canonical_binder_runtime` and `phoenix_canonical_app_runtime` pools, each loaded from its own protected pgpass file;
+- exact `usr_*` subject resolution through `auth.resolve_external_identity` with no automatic provisioning;
+- a 45-second one-use ticket issued by binder and redeemed only on the app connection that performs the business transaction;
+- business callback denial for transaction, role and `DISCARD` control;
+- `auth.clear_context()`, a NULL principal assertion and `DISCARD ALL` before a connection is reused;
+- connection destruction on rollback, clear uncertainty or discard failure;
+- an append-only, 0600 JSONL audit containing only timestamp, request nonce, issuer, pseudonymous subject, channel, allow/deny and reason code.
+
+The runtime has no public HTTP issuance or database-operation route. It is constructed only when all three explicit flags are enabled and the verifier metadata exactly matches the first-party broker. It therefore remains inert in the current application.
+
 ## Configuration boundary
 
 The verified isolated metadata is:
@@ -37,14 +49,13 @@ The following protected references are staged in the Tencent isolated non-produc
 - `file:/run/secrets/phoenix_canonical_app_pgpass_v1`;
 - `file:/run/secrets/phoenix_canonical_binder_pgpass_v1`.
 
-The corresponding `.env.uat` reference-only configuration is staged, but the running process was not restarted. `CANONICAL_OIDC_BROKER_ENABLED` and `CANONICAL_OIDC_ENABLED` both remain `false`. Invalid or drifting facts still fail startup configuration. No signing key, database password or real token belongs in Git.
+The corresponding `.env.uat` reference-only configuration is staged, but the running process was not restarted. `CANONICAL_OIDC_BROKER_ENABLED`, `CANONICAL_OIDC_ENABLED` and `CANONICAL_CONTEXT_GATEWAY_ENABLED` remain `false`. Invalid or drifting facts still fail startup configuration. No signing key, database password or real token belongs in Git.
 
 ## Still HOLD
 
-- deployed immutable application revision containing the selected broker/verifier;
-- distinct app and binder pools using the reserved references;
-- mapping a verified broker subject to `auth.external_identities`;
-- one-time ticket handoff, connection clear/discard and protected audit output in the application runtime;
+- deployment and explicit enablement of an immutable application revision containing the broker, verifier and context bridge;
+- real `usr_*` mapping records in `auth.external_identities` (unknown or disabled mappings are denied);
+- an approved application service boundary that supplies the Canonical actor/family/channel values to the internal bridge;
 - live token/JWKS tests, real identities, deployment and production use.
 
 Synthetic tests generate temporary P-256 keys in memory only. They never persist or commit private key material.
