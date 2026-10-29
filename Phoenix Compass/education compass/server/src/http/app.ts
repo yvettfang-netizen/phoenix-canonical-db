@@ -11,7 +11,12 @@ import { FeishuSyncService } from '../integrations/feishu/sync-service'
 import { routeAgentRequest } from './agent-routes'
 import { InMemoryRateLimiter, RateLimiter } from './rate-limiter'
 import { CANONICAL_OIDC_JWKS_PATH, CanonicalOidcBroker } from '../auth/canonical-oidc-broker'
-import type { CanonicalContextGateway } from '../auth/canonical-context-gateway'
+import type { CanonicalApplicationRouteBridge } from '../auth/canonical-application-route-bridge'
+import {
+  familyReadDto,
+  requireCanonicalFamilyRls,
+  studentReadDto
+} from '../auth/canonical-application-read-contract'
 
 export interface AppDependencies {
   auth: AuthService
@@ -24,7 +29,7 @@ export interface AppDependencies {
   feishu?: FeishuSyncService
   rateLimiter?: RateLimiter
   canonicalOidcBroker?: CanonicalOidcBroker
-  canonicalContextGateway?: CanonicalContextGateway
+  canonicalApplicationRouteBridge?: CanonicalApplicationRouteBridge
   logger?: { error(message: string, context?: Record<string, unknown>): void }
 }
 
@@ -227,8 +232,23 @@ export function createHttpHandler(deps: AppDependencies): (request: IncomingMess
         return json(response, 200, await deps.feishu.validateSchema())
       }
 
+      const withCanonicalFamilyRead = async <T>(work: () => Promise<T>): Promise<T> => {
+        if (!deps.canonicalApplicationRouteBridge) return work()
+        return deps.canonicalApplicationRouteBridge.withApprovedFamilyRead({
+          method,
+          pathname: url.pathname,
+          user
+        }, async (client, operation) => {
+          await requireCanonicalFamilyRls(client, operation)
+          return work()
+        })
+      }
+
       if (url.pathname === '/v1/me/family') {
-        if (method === 'GET') return json(response, 200, { family: await deps.profiles.getFamily(user.id) })
+        if (method === 'GET') {
+          const family = await withCanonicalFamilyRead(() => deps.profiles.getFamily(user.id))
+          return json(response, 200, { family: familyReadDto(family) })
+        }
         if (method === 'PUT') {
           const body = parseJson(await readRawBody(request)) as unknown as FamilyInput
           return json(response, 200, { family: await deps.profiles.upsertFamily(user.id, body) })
@@ -236,7 +256,10 @@ export function createHttpHandler(deps: AppDependencies): (request: IncomingMess
       }
 
       if (url.pathname === '/v1/me/students') {
-        if (method === 'GET') return json(response, 200, { students: await deps.profiles.listStudents(user.id) })
+        if (method === 'GET') {
+          const students = await withCanonicalFamilyRead(() => deps.profiles.listStudents(user.id))
+          return json(response, 200, { students: students.map(studentReadDto) })
+        }
         if (method === 'POST') {
           const body = parseJson(await readRawBody(request)) as unknown as StudentInput
           return json(response, 201, { student: await deps.profiles.createStudent(user.id, body) })
@@ -246,7 +269,10 @@ export function createHttpHandler(deps: AppDependencies): (request: IncomingMess
       const ownStudent = url.pathname.match(/^\/v1\/me\/students\/([^/]+)$/)
       if (ownStudent?.[1]) {
         const studentId = decodeURIComponent(ownStudent[1])
-        if (method === 'GET') return json(response, 200, { student: await deps.profiles.getStudent(user.id, studentId) })
+        if (method === 'GET') {
+          const student = await withCanonicalFamilyRead(() => deps.profiles.getStudent(user.id, studentId))
+          return json(response, 200, { student: studentReadDto(student) })
+        }
         if (method === 'PUT') {
           const body = parseJson(await readRawBody(request)) as unknown as StudentInput
           return json(response, 200, { student: await deps.profiles.updateStudent(user.id, studentId, body) })

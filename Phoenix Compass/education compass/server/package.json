@@ -13,6 +13,7 @@
     "test:education-contracts": "npm run build && node --test dist/tests/education-contracts.test.js",
     "test:education-http": "npm run build && node --test dist/tests/education-http.test.js",
     "test:education-integrations": "npm run build && node --test dist/tests/education-integrations.test.js",
+    "test:canonical-http-e2e": "npm run build && node --test dist/tests/canonical-http-e2e.test.js",
     "db:migrate": "node scripts/migrate.js",
     "start": "node dist/src/index.js",
     "start:agent-worker": "node dist/src/services/agent-worker-main.js",

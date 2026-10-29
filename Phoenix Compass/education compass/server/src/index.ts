@@ -2,6 +2,7 @@ import { readFile, stat } from 'node:fs/promises'
 import { createPrivateKey } from 'node:crypto'
 import { MockWechatAuthProvider, WechatApiAuthProvider } from './auth/wechat-auth-provider'
 import { CanonicalOidcBroker, loadCanonicalOidcBrokerConfig } from './auth/canonical-oidc-broker'
+import { CanonicalApplicationRouteBridge } from './auth/canonical-application-route-bridge'
 import {
   createCanonicalContextRuntime,
   loadCanonicalContextRuntimeConfig,
@@ -157,7 +158,15 @@ async function main(): Promise<void> {
     auth, profiles, assessments, orders, reports, education, feishu,
     ...(agent ? { agent } : {}),
     ...(canonicalOidcBroker ? { canonicalOidcBroker } : {}),
-    ...(canonicalContextRuntime ? { canonicalContextGateway: canonicalContextRuntime.gateway } : {})
+    ...(canonicalOidcBroker && canonicalContextRuntime
+      ? {
+          canonicalApplicationRouteBridge: new CanonicalApplicationRouteBridge(
+            store,
+            canonicalOidcBroker,
+            canonicalContextRuntime.gateway
+          )
+        }
+      : {})
   })
   let refundSweepRunning = false
   const reconcileRefunds = async (): Promise<void> => {
