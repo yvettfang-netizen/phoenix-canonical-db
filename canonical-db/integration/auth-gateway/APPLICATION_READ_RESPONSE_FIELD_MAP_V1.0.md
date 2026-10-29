@@ -1,6 +1,6 @@
 # Application Read Response Field Map V1.0
 
-Status: **IMPLEMENTED LOCALLY / SYNTHETIC EVIDENCE ONLY**  
+Status: **IMPLEMENTED LOCALLY / SYNTHETIC EVIDENCE ONLY**
 Scope: the first three approved read-only Phoenix Family OS routes.
 
 ## Boundary
