@@ -1,0 +1,9 @@
+PASS accepted complete synthetic request without authorizing execution
+PASS rejected execution-authorized
+PASS rejected wrong-issuer
+PASS rejected non-v7-family
+PASS rejected missing-evidence-digest
+PASS rejected forbidden-openid-field
+PASS rejected direct-write-not-acknowledged
+PASS rejected oversized-change-window
+PASS request validator positive and seven fail-closed regressions

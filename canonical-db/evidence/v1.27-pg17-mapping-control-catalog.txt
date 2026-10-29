@@ -1,0 +1,14 @@
+ Container phoenix-canonical-foundation-pg17-1 Running
+ Container phoenix-canonical-foundation-pg17-1 Waiting
+ Container phoenix-canonical-foundation-pg17-1 Healthy
+pg_major=17
+ledger=23
+mapping_rows=0
+external_identity_rows=0
+app_mapping_dml=false
+binder_mapping_dml=false
+public_mapping_dml=false
+app_register_external_identity=true
+app_disable_external_identity=true
+controlled_family_mapping_functions=0
+PASS PG17 identity API available, family mapping DML denied, controlled mapping API absent, zero records

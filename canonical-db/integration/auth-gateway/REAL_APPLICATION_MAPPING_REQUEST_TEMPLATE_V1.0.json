@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "request_status": "DRAFT",
+  "execution_authorized": false,
+  "target_environment": "TENCENT_ISOLATED_NON_PRODUCTION",
+  "action": "REGISTER_EXTERNAL_IDENTITY_AND_VERIFY_FAMILY_MAPPING",
+  "source_system": "PHOENIX_FAMILY_OS",
+  "issuer": "https://api.phoenixnova.com.cn/canonical-identity",
+  "application_user_id": "<usr_application_user_id>",
+  "application_family_id": "<fam_application_family_id>",
+  "canonical": {
+    "external_identity_id": "<uuidv7>",
+    "principal_id": "<uuidv7>",
+    "actor_person_id": "<uuidv7>",
+    "family_id": "<uuidv7>",
+    "family_membership_id": "<uuidv7>",
+    "family_mapping_id": "<uuidv7>",
+    "principal_kind": "FAMILY",
+    "requested_mapping_status": "VERIFIED"
+  },
+  "evidence": {
+    "application_ownership_ref": "<private-evidence-reference>",
+    "application_ownership_sha256": "<sha256>",
+    "canonical_membership_ref": "<private-evidence-reference>",
+    "canonical_membership_sha256": "<sha256>",
+    "founder_approval_ref": "<private-evidence-reference>",
+    "founder_approval_sha256": "<sha256>",
+    "approval_status": "PENDING"
+  },
+  "change_control": {
+    "operator_principal_id": "<uuidv7>",
+    "reviewer_person_id": "<uuidv7>",
+    "rollback_owner_principal_id": "<uuidv7>",
+    "window_start": "<ISO-8601 timestamp>",
+    "window_end": "<ISO-8601 timestamp>"
+  },
+  "acknowledgements": {
+    "no_name_phone_openid_matching": true,
+    "no_secret_material": true,
+    "filled_request_stored_outside_git": true,
+    "direct_table_write_forbidden": true,
+    "no_record_created_by_validation": true
+  }
+}

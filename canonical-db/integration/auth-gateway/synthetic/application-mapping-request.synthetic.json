@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "request_status": "SYNTHETIC",
+  "execution_authorized": false,
+  "target_environment": "TENCENT_ISOLATED_NON_PRODUCTION",
+  "action": "REGISTER_EXTERNAL_IDENTITY_AND_VERIFY_FAMILY_MAPPING",
+  "source_system": "PHOENIX_FAMILY_OS",
+  "issuer": "https://api.phoenixnova.com.cn/canonical-identity",
+  "application_user_id": "usr_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "application_family_id": "fam_bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "canonical": {
+    "external_identity_id": "018f0000-0000-7000-8000-000000002701",
+    "principal_id": "018f0000-0000-7000-8000-000000002702",
+    "actor_person_id": "018f0000-0000-7000-8000-000000002703",
+    "family_id": "018f0000-0000-7000-8000-000000002704",
+    "family_membership_id": "018f0000-0000-7000-8000-000000002705",
+    "family_mapping_id": "018f0000-0000-7000-8000-000000002706",
+    "principal_kind": "FAMILY",
+    "requested_mapping_status": "VERIFIED"
+  },
+  "evidence": {
+    "application_ownership_ref": "evidence://synthetic/v1.27/application-ownership",
+    "application_ownership_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "canonical_membership_ref": "evidence://synthetic/v1.27/canonical-membership",
+    "canonical_membership_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+    "founder_approval_ref": "evidence://synthetic/v1.27/founder-approval",
+    "founder_approval_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+    "approval_status": "SYNTHETIC"
+  },
+  "change_control": {
+    "operator_principal_id": "018f0000-0000-7000-8000-000000002707",
+    "reviewer_person_id": "018f0000-0000-7000-8000-000000002708",
+    "rollback_owner_principal_id": "018f0000-0000-7000-8000-000000002709",
+    "window_start": "2026-10-29T10:00:00+08:00",
+    "window_end": "2026-10-29T10:30:00+08:00"
+  },
+  "acknowledgements": {
+    "no_name_phone_openid_matching": true,
+    "no_secret_material": true,
+    "filled_request_stored_outside_git": true,
+    "direct_table_write_forbidden": true,
+    "no_record_created_by_validation": true
+  }
+}
