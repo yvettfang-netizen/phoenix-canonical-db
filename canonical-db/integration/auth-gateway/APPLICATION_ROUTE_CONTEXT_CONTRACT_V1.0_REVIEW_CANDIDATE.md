@@ -1,10 +1,10 @@
 # Phoenix Canonical Application Route Context Contract V1.0
 
-- **Status:** REVIEW CANDIDATE / NOT EFFECTIVE / NOT DEPLOYED
+- **Status:** FOUNDER APPROVED FOR LOCAL IMPLEMENTATION / NOT DEPLOYED
 - **Date:** 2026-10-28 (Asia/Shanghai)
 - **Scope:** Application-side derivation of a Canonical `FAMILY` context from an already authenticated Phoenix Family OS request
 
-This file records a fail-closed implementation candidate. It does not approve live mappings, create identity records, change the Canonical schema or authorize Tencent deployment.
+Founder approved the five local implementation decisions in this file on 2026-10-28. This approval authorizes Migration `0023` and local synthetic verification only. It does not create real mappings or identity records, enable the HTTP routes, authorize Tencent deployment or authorize production use.
 
 ## 1. Verified application facts
 
@@ -13,9 +13,9 @@ This file records a fail-closed implementation candidate. It does not approve li
 3. Application family and student IDs use `fam_` / `stu_` plus UUIDv4-derived text. They are not Canonical UUIDv7 values and must never be converted by identifier shape.
 4. Canonical identity equivalence requires explicit reviewed mappings. Names, phone numbers, OpenID values and apparent identifier similarity are forbidden matching evidence.
 
-## 2. Initial route allowlist
+## 2. Approved initial route allowlist
 
-Only the following authenticated family-owned reads are represented by the local bridge candidate:
+Only the following authenticated family-owned reads are approved for the local bridge:
 
 | HTTP route | Canonical operation code | Family derivation |
 |---|---|---|
@@ -23,7 +23,7 @@ Only the following authenticated family-owned reads are represented by the local
 | `GET /v1/me/students` | `STUDENT_LIST_READ` | Family row whose `user_id` equals the authenticated application user |
 | `GET /v1/me/students/:studentId` | `STUDENT_PROFILE_READ` | Student row → family row → authenticated application user ownership |
 
-Every write, report, assessment, order, payment, refund, advisor, admin, webhook, worker and unknown route is denied by this candidate. Adding a route requires a reviewed contract update and a negative ownership test.
+Every write, report, assessment, order, payment, refund, advisor, admin, webhook, worker and unknown route remains denied. Adding a route requires a reviewed contract update and negative ownership test. This approval does not authorize returning raw Canonical rows; HTTP wiring and response-field conversion still require isolated review.
 
 ## 3. Trusted derivation rules
 
@@ -31,52 +31,52 @@ Every write, report, assessment, order, payment, refund, advisor, admin, webhook
 2. The application family ID is always obtained from the trusted application Store after ownership checks. It is never accepted from a request body or query parameter.
 3. `channel` is fixed to `FAMILY` for this allowlist. Admin roles cannot enter the family bridge.
 4. The first-party broker issues the short-lived token internally. The token is not returned to the browser or mini program.
-5. A trusted mapping resolver must return both the Canonical actor person UUIDv7 and family UUIDv7 for the exact application family ID.
-6. Missing, mismatched or malformed mappings deny before token issuance and before the app database pool is used.
-7. The existing context gateway still resolves `issuer + subject` through `auth.external_identities`, issues/redeems the one-use ticket, verifies Canonical membership and clears/discards the connection.
+5. The binder-only atomic database function resolves and tickets the Canonical actor person UUIDv7 and family UUIDv7 for the exact application family ID. The application runtime may not supply either Canonical identifier.
+6. Missing, mismatched, non-VERIFIED, disabled or expired mapping/context facts deny before app-pool use.
+7. The app pool only redeems the one-use ticket, then clears the context and discards or safely releases the connection.
 
-## 4. Mapping authority gap
+## 4. Approved mapping authority and identity process
 
-No approved runtime resolver currently maps an application `fam_*` identifier to a Canonical family UUIDv7. The current Canonical model contains `integration.legacy_id_mappings`, but a live resolver needs all of the following before a Migration or deployment may be created:
+1. The stable application source code is exactly `PHOENIX_FAMILY_OS`.
+2. `integration.legacy_id_mappings` is the only Canonical family mapping authority; resolution accepts only exact source + `FAMILY` + legacy ID records in `VERIFIED` status.
+3. Only the binder role may execute the SECURITY DEFINER atomic resolver/ticket function.
+4. Real `auth.external_identities` records may be created or disabled only through the existing controlled SERVICE functions. Unknown identities are never auto-provisioned.
+5. No real mapping or identity row is approved by this document. Each future real record needs its own evidence and operator trace.
+6. The application runtime must not use an unsigned mapping file or duplicate identity authority.
 
-1. an approved stable `source_system` code for Phoenix Family OS application identifiers;
-2. an approved process and evidence owner for moving mappings to `VERIFIED`;
-3. a binder-only SECURITY DEFINER resolver that atomically checks active external identity, active principal/person, verified family mapping and current family membership;
-4. exact read APIs and response-field mapping, because the application DTO and Canonical schema are not interchangeable;
-5. reconciliation, disablement and incident procedures for stale or conflicting mappings.
-
-Recommended technical shape for later review only:
+Implemented local shape:
 
 ```text
-issuer + usr_* subject + source_system + application family ID
+issuer + usr_* subject + PHOENIX_FAMILY_OS + application family ID
   -> active external identity
   -> active FAMILY principal and actor person
   -> one VERIFIED family legacy mapping
   -> current family membership
-  -> principal_id + actor_person_id + canonical_family_id
+  -> one-use ticket for principal + actor + canonical family + FAMILY channel
 ```
-
-The application runtime must not use an unsigned mapping file or duplicate identity authority merely to bypass this gate.
 
 ## 5. Local implementation evidence
 
-`server/src/auth/canonical-application-route-bridge.ts` implements the three-route allowlist, trusted Store ownership derivation, internal subject/token flow, strict UUIDv7 output validation and default denial. It depends on an injected mapping resolver and is not wired into HTTP runtime because no approved resolver exists.
+Migration `0023` implements `auth.issue_application_family_context_ticket(...)`. The function fixes the source namespace internally, locks the matched identity/principal/mapping/membership rows during ticket issuance, returns no row for unresolved input, and grants execution only to `phoenix_canonical_context_binder`.
 
-Synthetic regression proves:
+`server/src/auth/canonical-application-route-bridge.ts` implements the three-route allowlist, trusted Store ownership derivation, internal subject/token flow and default denial. It sends only the authenticated token and trusted application `fam_*` ID to the context gateway. It does not accept Canonical actor/family UUIDs. The context gateway uses one binder call and the existing app-pool ticket redemption/clear/discard flow.
 
-- the three read routes are the only allowed routes;
-- cross-family student access is rejected before resolver, broker or gateway use;
-- admin and malformed users are rejected;
-- missing, mismatched and UUIDv4 mappings are rejected before token issuance;
-- successful synthetic context uses the server user as subject and fixes channel to `FAMILY`.
+Synthetic regression covers:
 
-## 6. Founder decisions required before live work
+- the three read routes and cross-family ownership denial;
+- active identity, FAMILY principal, VERIFIED mapping and current membership;
+- wrong source, PENDING/REVOKED mapping, disabled identity and expired membership denial;
+- separate binder/app LOGINs, one-use redemption and function ACLs;
+- no automatic provisioning and no real records.
 
-| Decision | Recommended candidate | Current status |
+## 6. Decision and execution state
+
+| Decision | Approved value | State |
 |---|---|---|
-| Stable application `source_system` | `PHOENIX_FAMILY_OS` | HOLD — not approved here |
-| Family mapping authority | `integration.legacy_id_mappings`, exact source + kind + legacy ID, `VERIFIED` only | HOLD — process/owner required |
-| Initial live route scope | The three read-only routes in section 2 | HOLD — response/API mapping review required |
-| External identity registration | Controlled SERVICE workflow, no automatic provisioning | HOLD — real records and dual review required |
+| Stable application `source_system` | `PHOENIX_FAMILY_OS` | APPROVED / implemented locally in 0023 |
+| Family mapping authority | `integration.legacy_id_mappings`, exact source + kind + legacy ID, `VERIFIED` only | APPROVED / resolver implemented; real record evidence remains HOLD |
+| Atomic resolver | Binder-only active identity + FAMILY principal/person + VERIFIED mapping + current membership + ticket | APPROVED / implemented locally in 0023 |
+| Initial route scope | The three read-only routes in section 2 | APPROVED locally / HTTP wiring and response mapping remain HOLD |
+| External identity registration | Controlled SERVICE workflow, no automatic provisioning | APPROVED process / no real records created |
 
-Until these decisions and an isolated end-to-end review are complete, `CANONICAL_CONTEXT_GATEWAY_ENABLED=false` remains mandatory.
+Until PG16/17 acceptance, application response mapping, real record evidence and an isolated end-to-end review are complete, `CANONICAL_CONTEXT_GATEWAY_ENABLED=false` remains mandatory.

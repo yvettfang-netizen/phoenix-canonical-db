@@ -109,6 +109,25 @@ function binderClient(principalId: string | null = PRINCIPAL_ID): FakeClient {
   })
 }
 
+function applicationBinderClient(mapped = true): FakeClient {
+  return new FakeClient((sql) => {
+    if (sql.includes('issue_application_family_context_ticket')) {
+      return mapped
+        ? {
+            rows: [{
+              principal_id: PRINCIPAL_ID,
+              actor_person_id: ACTOR_ID,
+              family_id: FAMILY_ID,
+              ticket_id: TICKET_ID
+            }],
+            rowCount: 1
+          }
+        : { rows: [], rowCount: 0 }
+    }
+    throw new Error(`unexpected application binder query: ${sql}`)
+  })
+}
+
 function appClient(options: { clearFails?: boolean; discardFails?: boolean } = {}): FakeClient {
   return new FakeClient((sql) => {
     if (sql.includes('auth.clear_context') && options.clearFails) throw new Error('synthetic clear failure')
@@ -210,6 +229,51 @@ test('separate binder and app pools resolve usr subject, exchange once, clear an
   }])
   assert.equal(JSON.stringify(audit.events).includes('synthetic-signed-jwt'), false)
   assert.equal(JSON.stringify(audit.events).includes(FAMILY_ID), false)
+})
+
+test('application family context resolves identity, verified family mapping and ticket in one binder call', async () => {
+  const binder = new FakePool(applicationBinderClient())
+  const app = new FakePool(appClient())
+  const audit = new MemoryAudit()
+  const result = await gateway(binder, app, audit).withApplicationFamilyContext({
+    accessToken: 'synthetic-signed-jwt',
+    applicationFamilyId: `fam_${'a'.repeat(32)}`
+  }, async (client) => {
+    const queried = await client.query<{ answer: number }>('SELECT 42 AS answer')
+    return queried.rows[0]?.answer
+  })
+
+  assert.equal(result, 42)
+  assert.equal(binder.client.calls.length, 1)
+  assert.match(binder.client.calls[0]?.text ?? '', /issue_application_family_context_ticket/)
+  assert.equal(binder.client.calls.some((call) => call.text.includes('resolve_external_identity')), false)
+  assert.equal(binder.client.calls.some((call) => call.text.includes('issue_context_ticket(') &&
+    !call.text.includes('issue_application_family_context_ticket')), false)
+  assert.deepEqual(binder.client.calls[0]?.values, [
+    ISSUER,
+    'usr_synthetic_001',
+    `fam_${'a'.repeat(32)}`,
+    45,
+    REQUEST_NONCE
+  ])
+  assert.deepEqual(app.client.releases, [false])
+  assert.equal(audit.events[0]?.decision, 'ALLOW')
+  assert.equal(JSON.stringify(audit.events).includes(FAMILY_ID), false)
+})
+
+test('missing verified application family mapping denies before the app pool without auto-provisioning', async () => {
+  const binder = new FakePool(applicationBinderClient(false))
+  const app = new FakePool(appClient())
+  const audit = new MemoryAudit()
+  await assert.rejects(gateway(binder, app, audit).withApplicationFamilyContext({
+    accessToken: 'synthetic-signed-jwt',
+    applicationFamilyId: `fam_${'b'.repeat(32)}`
+  }, async () => undefined), isCode('CANONICAL_APPLICATION_MAPPING_REQUIRED'))
+  assert.equal(app.connectCount, 0)
+  assert.equal(binder.client.calls.length, 1)
+  assert.equal(binder.client.calls.some((call) => /INSERT|UPDATE/i.test(call.text)), false)
+  assert.deepEqual(binder.client.releases, [false])
+  assert.equal(audit.events[0]?.reasonCode, 'CANONICAL_APPLICATION_MAPPING_REQUIRED')
 })
 
 test('unknown subject mapping denies before app pool and never auto-provisions an identity', async () => {

@@ -4,11 +4,12 @@ import type { QueryResultRow } from 'pg'
 import {
   CanonicalApplicationRouteBridge,
   canonicalFamilyReadRoute,
-  type CanonicalApplicationGateway,
-  type CanonicalFamilyContextMapping,
-  type CanonicalFamilyContextResolver
+  type CanonicalApplicationGateway
 } from '../src/auth/canonical-application-route-bridge'
-import type { CanonicalContextExecutor, CanonicalContextRequest } from '../src/auth/canonical-context-gateway'
+import type {
+  CanonicalApplicationFamilyContextRequest,
+  CanonicalContextExecutor
+} from '../src/auth/canonical-context-gateway'
 import { AppError } from '../src/domain/errors'
 import { InMemoryStore } from '../src/store/memory-store'
 
@@ -18,37 +19,16 @@ const FAMILY_ID = `fam_${'3'.repeat(32)}`
 const OTHER_FAMILY_ID = `fam_${'4'.repeat(32)}`
 const STUDENT_ID = `stu_${'5'.repeat(32)}`
 const OTHER_STUDENT_ID = `stu_${'6'.repeat(32)}`
-const ACTOR_ID = '01940000-0000-7000-8000-000000000101'
-const CANONICAL_FAMILY_ID = '01940000-0000-7000-8000-000000000001'
-const ISSUER = 'https://api.phoenix.synthetic.test/canonical-identity'
-
-class MappingResolver implements CanonicalFamilyContextResolver {
-  readonly calls: Array<Record<string, string>> = []
-  mapping: CanonicalFamilyContextMapping | null = {
-    applicationFamilyId: FAMILY_ID,
-    actorPersonId: ACTOR_ID,
-    canonicalFamilyId: CANONICAL_FAMILY_ID
-  }
-
-  async resolve(input: {
-    issuer: string
-    subjectId: string
-    applicationFamilyId: string
-    operation: 'FAMILY_PROFILE_READ' | 'STUDENT_LIST_READ' | 'STUDENT_PROFILE_READ'
-  }): Promise<CanonicalFamilyContextMapping | null> {
-    this.calls.push(input)
-    return this.mapping
-  }
-}
-
 class Gateway implements CanonicalApplicationGateway {
-  readonly requests: CanonicalContextRequest[] = []
+  readonly requests: CanonicalApplicationFamilyContextRequest[] = []
+  error: Error | null = null
 
-  async withContext<T>(
-    request: CanonicalContextRequest,
+  async withApplicationFamilyContext<T>(
+    request: CanonicalApplicationFamilyContextRequest,
     work: (client: CanonicalContextExecutor) => Promise<T>
   ): Promise<T> {
     this.requests.push(request)
+    if (this.error) throw this.error
     return work({
       query: async <R extends QueryResultRow = QueryResultRow>() => ({ rows: [] as R[], rowCount: 0 })
     })
@@ -57,7 +37,6 @@ class Gateway implements CanonicalApplicationGateway {
 
 async function fixture(): Promise<{
   store: InMemoryStore
-  resolver: MappingResolver
   gateway: Gateway
   bridge: CanonicalApplicationRouteBridge
   issuedSubjects: string[]
@@ -83,17 +62,15 @@ async function fixture(): Promise<{
       createdAt: '2026-10-28T00:00:00.000Z', updatedAt: '2026-10-28T00:00:00.000Z'
     })
   })
-  const resolver = new MappingResolver()
   const gateway = new Gateway()
   const issuedSubjects: string[] = []
-  const bridge = new CanonicalApplicationRouteBridge(store, resolver, {
-    config: { issuer: ISSUER },
+  const bridge = new CanonicalApplicationRouteBridge(store, {
     issueForApplicationUser: (subject) => {
       issuedSubjects.push(subject)
       return { accessToken: 'server-internal-synthetic-token' }
     }
   }, gateway)
-  return { store, resolver, gateway, bridge, issuedSubjects }
+  return { store, gateway, bridge, issuedSubjects }
 }
 
 function isCode(code: string): (error: unknown) => boolean {
@@ -112,24 +89,16 @@ test('route policy allowlists only three family-owned GET reads', () => {
     isCode('CANONICAL_ROUTE_NOT_APPROVED'))
 })
 
-test('owned family route derives subject and family server-side before internal ticket bridge', async () => {
+test('owned family route derives subject and application family server-side for atomic binder resolution', async () => {
   const context = await fixture()
   const result = await context.bridge.withApprovedFamilyRead({
     method: 'GET', pathname: '/v1/me/family', user: { id: USER_ID, role: 'family_user' }
   }, async (_client, operation) => operation)
   assert.equal(result, 'FAMILY_PROFILE_READ')
-  assert.deepEqual(context.resolver.calls, [{
-    issuer: ISSUER,
-    subjectId: USER_ID,
-    applicationFamilyId: FAMILY_ID,
-    operation: 'FAMILY_PROFILE_READ'
-  }])
   assert.deepEqual(context.issuedSubjects, [USER_ID])
   assert.deepEqual(context.gateway.requests, [{
     accessToken: 'server-internal-synthetic-token',
-    actorPersonId: ACTOR_ID,
-    familyId: CANONICAL_FAMILY_ID,
-    channel: 'FAMILY'
+    applicationFamilyId: FAMILY_ID
   }])
 })
 
@@ -140,16 +109,15 @@ test('owned student route derives family through the stored student relationship
     user: { id: USER_ID, role: 'family_user' }
   }, async (_client, value) => value)
   assert.equal(operation, 'STUDENT_PROFILE_READ')
-  assert.equal(context.resolver.calls[0]?.applicationFamilyId, FAMILY_ID)
+  assert.equal(context.gateway.requests[0]?.applicationFamilyId, FAMILY_ID)
 })
 
-test('cross-family student is rejected before resolver, broker or gateway', async () => {
+test('cross-family student is rejected before broker or atomic gateway', async () => {
   const context = await fixture()
   await assert.rejects(context.bridge.withApprovedFamilyRead({
     method: 'GET', pathname: `/v1/me/students/${OTHER_STUDENT_ID}`,
     user: { id: USER_ID, role: 'family_user' }
   }, async () => undefined), isCode('CANONICAL_APPLICATION_FAMILY_FORBIDDEN'))
-  assert.equal(context.resolver.calls.length, 0)
   assert.equal(context.issuedSubjects.length, 0)
   assert.equal(context.gateway.requests.length, 0)
 })
@@ -163,24 +131,18 @@ test('admin or malformed application user cannot enter the family bridge', async
     await assert.rejects(context.bridge.withApprovedFamilyRead({
       method: 'GET', pathname: '/v1/me/family', user
     }, async () => undefined), isCode('CANONICAL_FAMILY_ACTOR_REQUIRED'))
-    assert.equal(context.resolver.calls.length, 0)
+    assert.equal(context.gateway.requests.length, 0)
   }
 })
 
-test('missing or malformed canonical mapping fails closed without issuing a token', async () => {
-  for (const mapping of [
-    null,
-    { applicationFamilyId: OTHER_FAMILY_ID, actorPersonId: ACTOR_ID, canonicalFamilyId: CANONICAL_FAMILY_ID },
-    { applicationFamilyId: FAMILY_ID, actorPersonId: '00000000-0000-4000-8000-000000000001', canonicalFamilyId: CANONICAL_FAMILY_ID }
-  ]) {
-    const context = await fixture()
-    context.resolver.mapping = mapping
-    await assert.rejects(context.bridge.withApprovedFamilyRead({
-      method: 'GET', pathname: '/v1/me/family', user: { id: USER_ID, role: 'family_user' }
-    }, async () => undefined), mapping === null
-      ? isCode('CANONICAL_APPLICATION_MAPPING_REQUIRED')
-      : isCode('CANONICAL_APPLICATION_MAPPING_INVALID'))
-    assert.equal(context.issuedSubjects.length, 0)
-    assert.equal(context.gateway.requests.length, 0)
-  }
+test('atomic gateway mapping denial propagates without exposing a client-supplied canonical identifier', async () => {
+  const context = await fixture()
+  context.gateway.error = new AppError(403, 'CANONICAL_APPLICATION_MAPPING_REQUIRED', 'synthetic denial')
+  await assert.rejects(context.bridge.withApprovedFamilyRead({
+    method: 'GET', pathname: '/v1/me/family', user: { id: USER_ID, role: 'family_user' }
+  }, async () => undefined), isCode('CANONICAL_APPLICATION_MAPPING_REQUIRED'))
+  assert.deepEqual(context.gateway.requests, [{
+    accessToken: 'server-internal-synthetic-token',
+    applicationFamilyId: FAMILY_ID
+  }])
 })

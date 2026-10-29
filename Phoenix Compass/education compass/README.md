@@ -87,7 +87,7 @@
 - `PAID_COMPASS_ENABLED` 尚无正式启用审批，必须保持 `false`。若来源目录在已有在途订单后被紧急撤回，须保留可信成功交易的交付并进入人工事故、退款和审计流程，不能静默拒绝已付款家庭。
 - 隐私政策、用户协议、AI报告声明、监护人同意文本、数字报告退款及访问期限仍需外部批准。
 - 生产 PostgreSQL、受信CA/`verify-full`连接、备份恢复、静态加密、审计、数据删除和监控告警仍需部署验证。
-- Canonical FD-6 的第一方 broker、verifier、分离 app/binder 连接池、`usr_*` 映射解析、45 秒一次性票据、连接清理/销毁、最小化受保护审计及三条只读家庭路由的 fail-closed 推导骨架已在本地实现并默认关闭；现有应用 `fam_*` UUIDv4 不能冒充 Canonical UUIDv7，家庭映射解析器、真实映射记录、显式启用、部署及真实身份联调仍为 HOLD。本地合成回归通过不等于已启用真实鉴权。
+- Canonical FD-6 的第一方 broker、verifier、分离 app/binder 连接池、`usr_*` 映射解析、45 秒一次性票据、连接清理/销毁、最小化受保护审计、三条只读家庭路由的 fail-closed 推导骨架，以及固定 `PHOENIX_FAMILY_OS` + VERIFIED family mapping + 当前成员关系的 binder 原子解析/签票能力已在本地实现并默认关闭；现有应用 `fam_*` UUIDv4 不能冒充 Canonical UUIDv7。真实映射记录、HTTP 响应字段映射、显式启用、部署及真实身份联调仍为 HOLD。本地合成回归通过不等于已启用真实鉴权。
 - 未配置或验证真实飞书企业自建应用、App Token、7个Table ID、权限和网络；未完成飞书数据删除、保留和供应商安全评估。
 - 尚无真实 OpenAI Project/Key、批准模型、费用告警、数据处理/ZDR、未成年人披露与同意、危机升级文案或真实API预发布证据；Agent代码与Mock通过也不代表外部服务获准启用。
 - 199会员无购买入口、无会员权益实现，也不属于本次39.9报告验收范围。

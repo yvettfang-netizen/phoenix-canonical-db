@@ -80,6 +80,7 @@ run "0018 D-2 legacy binder entry revocation" exec "$SRC" bash /opt/tests/f10_v2
 run "0019 Education master and records" exec "$SRC" bash /opt/tests/f10_v21_0019_education.sh
 run "0021 Operations entitlement reference" exec "$SRC" bash /opt/tests/f10_v22_0021_operations_entitlement.sh
 run "0022 Learning Core" exec "$SRC" bash /opt/tests/f10_v23_0022_learning.sh
+run "0023 application family context resolver" exec "$SRC" bash /opt/tests/f10_v25_0023_application_family_context.sh
 
 echo "=== D-9 reconciliation (server log vs persisted audit rows)"
 docker logs "$SRC" 2>&1 | grep 'PHOENIX_AUDIT' > "$AUDLOG"

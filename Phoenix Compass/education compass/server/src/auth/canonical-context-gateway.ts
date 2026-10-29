@@ -13,6 +13,11 @@ export interface CanonicalContextRequest {
   channel: CanonicalContextChannel
 }
 
+export interface CanonicalApplicationFamilyContextRequest {
+  accessToken: string
+  applicationFamilyId: string
+}
+
 export interface CanonicalGatewayAuditEvent {
   timestamp: string
   requestNonce: string
@@ -60,6 +65,7 @@ export interface CanonicalContextGatewayOptions {
 const UUID_V7 = /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
+const APPLICATION_FAMILY_ID = /^fam_[0-9a-f]{32}$/
 const CHANNELS = new Set<CanonicalContextChannel>(['FAMILY', 'ADVISOR', 'PARTNER', 'INTERNAL'])
 const FORBIDDEN_TRANSACTION_SQL = /(?:^|;)\s*(?:BEGIN|START\s+TRANSACTION|COMMIT|ROLLBACK|SAVEPOINT|RELEASE\s+SAVEPOINT|SET\s+ROLE|RESET\s+ROLE|DISCARD)\b/i
 
@@ -103,10 +109,7 @@ export class CanonicalContextGateway {
     request: CanonicalContextRequest,
     work: (client: CanonicalContextExecutor) => Promise<T>
   ): Promise<T> {
-    const requestNonce = this.nonceFactory()
-    if (!UUID_V4.test(requestNonce)) {
-      throw new AppError(500, 'CANONICAL_CONTEXT_CONFIG_INVALID', 'Canonical request nonce 必须是 UUIDv4')
-    }
+    const requestNonce = this.createRequestNonce()
     if (!CHANNELS.has(request.channel)) requestError('Canonical channel 无效')
     validateOptionalUuidV7(request.actorPersonId, 'actorPersonId')
     validateOptionalUuidV7(request.familyId, 'familyId')
@@ -122,6 +125,95 @@ export class CanonicalContextGateway {
       await this.recordDeny(identity, request.channel, requestNonce, failureCode(error))
       if (error instanceof AppError) throw error
       throw safeDatabaseError()
+    }
+  }
+
+  async withApplicationFamilyContext<T>(
+    request: CanonicalApplicationFamilyContextRequest,
+    work: (client: CanonicalContextExecutor) => Promise<T>
+  ): Promise<T> {
+    const requestNonce = this.createRequestNonce()
+    if (!APPLICATION_FAMILY_ID.test(request.applicationFamilyId)) {
+      requestError('applicationFamilyId 必须是受控应用家庭 ID')
+    }
+
+    let identity: VerifiedOidcIdentity | null = null
+    try {
+      identity = await this.verifier.verify(request.accessToken)
+      invariant(/^usr_[A-Za-z0-9_-]{1,128}$/.test(identity.subject), 401,
+        'CANONICAL_SUBJECT_INVALID', 'Canonical subject 必须是受控应用用户 ID')
+      const issued = await this.resolveApplicationFamilyAndIssueTicket(
+        identity,
+        request.applicationFamilyId,
+        requestNonce
+      )
+      const contextRequest: CanonicalContextRequest = {
+        accessToken: request.accessToken,
+        actorPersonId: issued.actorPersonId,
+        familyId: issued.familyId,
+        channel: 'FAMILY'
+      }
+      return await this.runWithTicket(
+        issued.principalId,
+        issued.ticketId,
+        identity,
+        contextRequest,
+        requestNonce,
+        work
+      )
+    } catch (error) {
+      await this.recordDeny(identity, 'FAMILY', requestNonce, failureCode(error))
+      if (error instanceof AppError) throw error
+      throw safeDatabaseError()
+    }
+  }
+
+  private createRequestNonce(): string {
+    const requestNonce = this.nonceFactory()
+    if (!UUID_V4.test(requestNonce)) {
+      throw new AppError(500, 'CANONICAL_CONTEXT_CONFIG_INVALID', 'Canonical request nonce 必须是 UUIDv4')
+    }
+    return requestNonce
+  }
+
+  private async resolveApplicationFamilyAndIssueTicket(
+    identity: VerifiedOidcIdentity,
+    applicationFamilyId: string,
+    requestNonce: string
+  ): Promise<{ principalId: string; actorPersonId: string; familyId: string; ticketId: string }> {
+    const client = await this.binderPool.connect().catch(() => { throw safeDatabaseError() })
+    let destroy = false
+    try {
+      const issued = await client.query<{
+        principal_id: string
+        actor_person_id: string
+        family_id: string
+        ticket_id: string
+      }>(
+        `SELECT principal_id::text,actor_person_id::text,family_id::text,ticket_id::text
+           FROM auth.issue_application_family_context_ticket(
+             $1::text,$2::text,$3::text,
+             clock_timestamp()+($4::integer * interval '1 second'),$5::uuid
+           )`,
+        [identity.issuer, identity.subject, applicationFamilyId, this.ticketTtlSeconds, requestNonce]
+      )
+      const row = issued.rows[0]
+      invariant(row, 403, 'CANONICAL_APPLICATION_MAPPING_REQUIRED',
+        '应用身份或家庭尚无当前有效的 Canonical 映射')
+      invariant(UUID_V7.test(row.principal_id) && UUID_V7.test(row.actor_person_id) &&
+        UUID_V7.test(row.family_id) && UUID.test(row.ticket_id),
+      503, 'CANONICAL_APPLICATION_MAPPING_INVALID', 'Canonical 应用映射返回值无效')
+      return {
+        principalId: row.principal_id,
+        actorPersonId: row.actor_person_id,
+        familyId: row.family_id,
+        ticketId: row.ticket_id
+      }
+    } catch (error) {
+      destroy = !(error instanceof AppError && error.code === 'CANONICAL_APPLICATION_MAPPING_REQUIRED')
+      throw error
+    } finally {
+      client.release(destroy)
     }
   }
 
