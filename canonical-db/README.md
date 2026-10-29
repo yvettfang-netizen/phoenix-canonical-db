@@ -79,6 +79,7 @@ This directory contains the implemented greenfield Canonical database. It does n
 | `FIX_EXECUTION_REPORT_V1.24.md` | Local read-route context derivation, trusted Store ownership checks, UUIDv4/UUIDv7 mismatch refusal and mapping-authority Founder Gate |
 | `FIX_EXECUTION_REPORT_V1.25.md` | Founder-approved 0023 atomic application family context resolver, PG16/17 acceptance and application gateway integration |
 | `FIX_EXECUTION_REPORT_V1.26.md` | Exact application DTO response map, live handler gate wiring and PG16/17 isolated HTTP-to-RLS synthetic evidence |
+| `FIX_EXECUTION_REPORT_V1.27.md` | Real-record intake/runbook package, offline request validator, PG16/17 mapping-control catalog audit and forward API decision gate |
 
 ## Run locally when Docker is available
 
