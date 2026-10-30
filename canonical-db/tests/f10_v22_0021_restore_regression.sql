@@ -1,6 +1,6 @@
 DO $test$
 BEGIN
-  IF (SELECT count(*) FROM canonical_migrations.applied)<>27 THEN
+  IF (SELECT count(*) FROM canonical_migrations.applied)<>29 THEN
     RAISE EXCEPTION 'post-0025 restore ledger mismatch while checking 0021';
   END IF;
   IF (SELECT count(*) FROM pg_tables WHERE schemaname='operations_ref')<>2 THEN

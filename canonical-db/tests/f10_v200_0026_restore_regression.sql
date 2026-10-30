@@ -1,6 +1,6 @@
 DO $test$
 BEGIN
-  IF (SELECT count(*) FROM canonical_migrations.applied)<>27 THEN
+  IF (SELECT count(*) FROM canonical_migrations.applied)<>29 THEN
     RAISE EXCEPTION 'post-0026 restore ledger mismatch';
   END IF;
   IF to_regclass('core.organizations') IS NULL OR to_regclass('crm.clients') IS NULL THEN

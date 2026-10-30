@@ -84,6 +84,7 @@ run "0023 application family context resolver" exec "$SRC" bash /opt/tests/f10_v
 run "0024 managed family mapping lifecycle" exec "$SRC" bash /opt/tests/f10_v28_0024_family_mapping_management.sh
 run "0026 Enterprise Core Organization and Client" exec "$SRC" bash /opt/tests/f10_v200_0026_enterprise_core.sh
 run "0027 CRM Lead identity and Deal" exec "$SRC" bash /opt/tests/f10_v200_0027_crm_lead_deal.sh
+run "0028/0029 Service Project, Task and Delivery" exec "$SRC" bash /opt/tests/f10_v200_0028_0029_service_delivery.sh
 
 echo "=== D-9 reconciliation (server log vs persisted audit rows)"
 docker logs "$SRC" 2>&1 | grep 'PHOENIX_AUDIT' > "$AUDLOG"

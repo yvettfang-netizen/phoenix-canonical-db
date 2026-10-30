@@ -10,7 +10,7 @@ psql_bootstrap() {
   psql -X -h 127.0.0.1 -U phoenix_bootstrap -d phoenix_canonical_dev -v ON_ERROR_STOP=1 "$@"
 }
 
-expected_count="${F10_EXPECTED_MIGRATION_COUNT:-27}"
+expected_count="${F10_EXPECTED_MIGRATION_COUNT:-29}"
 [[ "$expected_count" =~ ^[1-9][0-9]*$ ]] || { echo 'FAIL invalid expected migration count'; exit 1; }
 shopt -s nullglob
 all_files=(/opt/migrations/*.sql)
@@ -56,4 +56,4 @@ if [ "$processed_count" -ne "$directory_count" ] || [ "$ledger_count" -ne "$dire
   exit 1
 fi
 echo "PASS migration counts processed=$processed_count directory=$directory_count ledger=$ledger_count expected=$expected_count"
-psql_bootstrap -Atqc "SELECT 'ledger='||count(*) FROM canonical_migrations.applied; SELECT 'tables='||count(*) FROM pg_tables WHERE schemaname IN ('auth','core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning','crm'); SELECT 'policies='||count(*) FROM pg_policies WHERE schemaname IN ('core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning','crm');"
+psql_bootstrap -Atqc "SELECT 'ledger='||count(*) FROM canonical_migrations.applied; SELECT 'tables='||count(*) FROM pg_tables WHERE schemaname IN ('auth','core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning','crm','service'); SELECT 'policies='||count(*) FROM pg_policies WHERE schemaname IN ('core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning','crm','service');"

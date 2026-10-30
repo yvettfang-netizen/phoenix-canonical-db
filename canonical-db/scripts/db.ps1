@@ -241,7 +241,7 @@ function Test-MigrationChecksumDrift([string]$database) {
 function New-CanonicalBackup([string]$sourceDatabase = $devDb) {
     Start-Database
     Assert-MigrationsApplied $sourceDatabase
-    $domainTables = Invoke-Psql $sourceDatabase "SELECT format('%I.%I', n.nspname, c.relname) FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE c.relkind IN ('r','p') AND n.nspname IN ('auth','core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning','crm') ORDER BY 1;"
+    $domainTables = Invoke-Psql $sourceDatabase "SELECT format('%I.%I', n.nspname, c.relname) FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace WHERE c.relkind IN ('r','p') AND n.nspname IN ('auth','core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning','crm','service') ORDER BY 1;"
     $domainRows = 0L
     foreach ($table in @($domainTables)) {
         if (-not $table) { continue }
