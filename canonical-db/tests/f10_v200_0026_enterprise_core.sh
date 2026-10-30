@@ -23,6 +23,14 @@ ORG_ACTIVE_EVENT=018f0000-0000-7000-8000-000000026204
 CLIENT_A1=018f0000-0000-7000-8000-000000026301
 CLIENT_A2=018f0000-0000-7000-8000-000000026302
 CLIENT_DUP=018f0000-0000-7000-8000-000000026303
+CLIENT_EVENT_1=018f0000-0000-7000-8000-000000026311
+CLIENT_EVENT_2=018f0000-0000-7000-8000-000000026312
+CLIENT_EVENT_3=018f0000-0000-7000-8000-000000026313
+CLIENT_EVENT_4=018f0000-0000-7000-8000-000000026314
+CLIENT_EVENT_5=018f0000-0000-7000-8000-000000026315
+CLIENT_EVENT_6=018f0000-0000-7000-8000-000000026316
+CLIENT_EVENT_7=018f0000-0000-7000-8000-000000026317
+CLIENT_EVENT_8=018f0000-0000-7000-8000-000000026318
 DIGEST=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 
 app_psql()       { PGPASSFILE=/tmp/f10-app.pgpass       psql -X -q -h 127.0.0.1 -U "$APP"    -d "$DB" -v ON_ERROR_STOP=1 "$@"; }
@@ -84,26 +92,26 @@ grep -Eq 'family_memberships_no_overlapping_relationship|conflicting key value v
 echo 'PASS one Person has two current Family relationships; ended relationship remains and non-overlapping rejoin succeeds'
 
 cat >/tmp/f10-0026-client-a.sql <<SQL
-SELECT 'CLIENT_CREATE='||crm.create_client('$CLIENT_A1','$FAMILY_A','SYN_CLIENT_026A');
-SELECT 'CLIENT_DUPLICATE='||crm.create_client('$CLIENT_DUP','$FAMILY_A','SYN_CLIENT_026X');
-SELECT 'CLIENT_PAUSE='||crm.transition_client('$CLIENT_A1','PAUSED');
-SELECT 'CLIENT_RESUME='||crm.transition_client('$CLIENT_A1','ACTIVE');
-SELECT 'CLIENT_END='||crm.transition_client('$CLIENT_A1','ENDED');
-SELECT 'CLIENT_REESTABLISH='||crm.create_client('$CLIENT_A2','$FAMILY_A','SYN_CLIENT_026B');
-SELECT 'ENDED_REOPEN_DENIED='||crm.transition_client('$CLIENT_A1','ACTIVE');
-SELECT 'MISSING_FAMILY='||crm.create_client('$CLIENT_DUP','018f0000-0000-7000-8000-000000026999','SYN_CLIENT_026Z');
+SELECT 'CLIENT_CREATE='||crm.create_client('$CLIENT_A1','$FAMILY_A','SYN_CLIENT_026A','$CLIENT_EVENT_1');
+SELECT 'CLIENT_DUPLICATE='||crm.create_client('$CLIENT_DUP','$FAMILY_A','SYN_CLIENT_026X','$CLIENT_EVENT_2');
+SELECT 'CLIENT_PAUSE='||crm.transition_client('$CLIENT_A1','PAUSED','$CLIENT_EVENT_2');
+SELECT 'CLIENT_RESUME='||crm.transition_client('$CLIENT_A1','ACTIVE','$CLIENT_EVENT_3');
+SELECT 'CLIENT_END='||crm.transition_client('$CLIENT_A1','ENDED','$CLIENT_EVENT_4');
+SELECT 'CLIENT_REESTABLISH='||crm.create_client('$CLIENT_A2','$FAMILY_A','SYN_CLIENT_026B','$CLIENT_EVENT_5');
+SELECT 'ENDED_REOPEN_DENIED='||crm.transition_client('$CLIENT_A1','ACTIVE','$CLIENT_EVENT_6');
+SELECT 'MISSING_FAMILY='||crm.create_client('$CLIENT_DUP','018f0000-0000-7000-8000-000000026999','SYN_CLIENT_026Z','$CLIENT_EVENT_7');
 SQL
 out="$(run_session "$ENTERPRISE" "$FAMILY_A" 018f0000-0000-7000-8000-000000026405 /tmp/f10-0026-client-a.sql)"
 for expected in CLIENT_CREATE=true CLIENT_DUPLICATE=false CLIENT_PAUSE=true CLIENT_RESUME=true CLIENT_END=true CLIENT_REESTABLISH=true ENDED_REOPEN_DENIED=false MISSING_FAMILY=false; do expect_line "$expected" "$out"; done
 
 cat >/tmp/f10-0026-client-cross.sql <<SQL
-SELECT 'CROSS_FAMILY='||crm.create_client('$CLIENT_DUP','$FAMILY_A','SYN_CLIENT_026Y');
+SELECT 'CROSS_FAMILY='||crm.create_client('$CLIENT_DUP','$FAMILY_A','SYN_CLIENT_026Y','$CLIENT_EVENT_7');
 SQL
 out="$(run_session "$ENTERPRISE" "$FAMILY_B" 018f0000-0000-7000-8000-000000026406 /tmp/f10-0026-client-cross.sql)"
 expect_line 'CROSS_FAMILY=false' "$out"
 
 cat >/tmp/f10-0026-client-wrong-service.sql <<SQL
-SELECT 'WRONG_SERVICE_CLIENT='||crm.create_client('$CLIENT_DUP','$FAMILY_B','SYN_CLIENT_026W');
+SELECT 'WRONG_SERVICE_CLIENT='||crm.create_client('$CLIENT_DUP','$FAMILY_B','SYN_CLIENT_026W','$CLIENT_EVENT_8');
 SQL
 out="$(run_session "$MGMT" "$FAMILY_B" 018f0000-0000-7000-8000-000000026407 /tmp/f10-0026-client-wrong-service.sql)"
 expect_line 'WRONG_SERVICE_CLIENT=false' "$out"
@@ -122,9 +130,10 @@ acl="$(bootstrap_psql -Atqc "SELECT
   has_table_privilege('phoenix_canonical_app','crm.clients','SELECT,INSERT,UPDATE,DELETE')::text||'|'||
   has_table_privilege('phoenix_canonical_reader','crm.clients','SELECT,INSERT,UPDATE,DELETE')::text||'|'||
   has_table_privilege('phoenix_canonical_context_binder','crm.clients','SELECT,INSERT,UPDATE,DELETE')::text||'|'||
-  has_function_privilege('public','crm.create_client(uuid,uuid,text)','EXECUTE')::text||'|'||
-  has_function_privilege('phoenix_canonical_app','crm.create_client(uuid,uuid,text)','EXECUTE')::text")"
-test "$acl" = 'false|false|false|false|true' || { echo "FAIL ACL=$acl" >&2; exit 1; }
+  has_function_privilege('public','crm.create_client(uuid,uuid,text,uuid)','EXECUTE')::text||'|'||
+  has_function_privilege('phoenix_canonical_app','crm.create_client(uuid,uuid,text)','EXECUTE')::text||'|'||
+  has_function_privilege('phoenix_canonical_app','crm.create_client(uuid,uuid,text,uuid)','EXECUTE')::text")"
+test "$acl" = 'false|false|false|false|false|true' || { echo "FAIL ACL=$acl" >&2; exit 1; }
 authority="$(bootstrap_psql -Atqc "SELECT
   (SELECT person_id IS NULL FROM auth.principals WHERE principal_id='$ENTERPRISE')::text||'|'||
   (SELECT family_id='$FAMILY_A'::uuid FROM crm.clients WHERE client_id='$CLIENT_A2')::text||'|'||
