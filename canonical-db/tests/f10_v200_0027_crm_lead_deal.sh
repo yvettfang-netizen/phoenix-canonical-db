@@ -16,9 +16,14 @@ SOURCE=018f0000-0000-7000-8000-000000027102
 LEAD1=018f0000-0000-7000-8000-000000027201
 LEAD2=018f0000-0000-7000-8000-000000027202
 LEAD_CROSS=018f0000-0000-7000-8000-000000027203
+ATTR1=018f0000-0000-7000-8000-000000027211
+ATTR2=018f0000-0000-7000-8000-000000027212
+ATTR_CROSS=018f0000-0000-7000-8000-000000027213
 LINK1=018f0000-0000-7000-8000-000000027301
 LINK2=018f0000-0000-7000-8000-000000027302
 LINK_BAD=018f0000-0000-7000-8000-000000027303
+CANDIDATE=018f0000-0000-7000-8000-000000027321
+MERGE_DECISION=018f0000-0000-7000-8000-000000027322
 DEAL=018f0000-0000-7000-8000-000000027401
 ITEM1=018f0000-0000-7000-8000-000000027411
 ITEM2=018f0000-0000-7000-8000-000000027412
@@ -42,8 +47,8 @@ test "$(bootstrap_psql -Atqc "SELECT auth.install_service_principal('$CRM2','can
 cat >/tmp/f10-0027-source.sql <<SQL
 SELECT 'CAMPAIGN='||crm.register_campaign('$CAMPAIGN','SYN_CAMPAIGN_027','Synthetic Cross Compass Campaign','ACTIVE',clock_timestamp()-interval '1 day',clock_timestamp()+interval '30 days');
 SELECT 'SOURCE='||crm.register_lead_source('$SOURCE','phoenix_compass','WEBSITE','$CAMPAIGN',NULL);
-SELECT 'LEAD1='||crm.create_lead('$LEAD1','$SOURCE',NULL,NULL,'$CRM1','018f0000-0000-7000-8000-000000027501');
-SELECT 'LEAD2='||crm.create_lead('$LEAD2','$SOURCE',NULL,NULL,'$CRM1','018f0000-0000-7000-8000-000000027502');
+SELECT 'LEAD1='||crm.create_lead('$LEAD1','$SOURCE',NULL,NULL,'$CRM1','CHILD_COMPASS','v1','018f0000-0000-7000-8000-000000027501','$ATTR1');
+SELECT 'LEAD2='||crm.create_lead('$LEAD2','$SOURCE',NULL,NULL,'$CRM1','EDUCATION_COMPASS','v1','018f0000-0000-7000-8000-000000027502','$ATTR2');
 SQL
 out="$(run_session "$CRM1" NULL 018f0000-0000-7000-8000-000000027601 /tmp/f10-0027-source.sql)"
 for expected in CAMPAIGN=true SOURCE=true LEAD1=true LEAD2=true; do expect_line "$expected" "$out"; done
@@ -72,11 +77,22 @@ out="$(run_session "$CRM2" "$FAMILY_A" 018f0000-0000-7000-8000-000000027605 /tmp
 test "$(bootstrap_psql -Atqc "SELECT count(*) FROM crm.lead_identity_links WHERE client_id='$CLIENT' AND status='VERIFIED'")" = 2
 echo 'PASS two Leads may resolve to one Client only through distinct-principal verified links'
 
+cat >/tmp/f10-0027-candidate.sql <<SQL
+SELECT 'CANDIDATE='||crm.propose_lead_duplicate('$CANDIDATE','$LEAD1','$LEAD2','$HASH','018f0000-0000-7000-8000-000000027508');
+SELECT 'SAME_REVIEWER='||crm.review_lead_duplicate('$CANDIDATE','CONFIRMED','018f0000-0000-7000-8000-000000027513');
+SQL
+out="$(run_session "$CRM1" "$FAMILY_A" 018f0000-0000-7000-8000-000000027606 /tmp/f10-0027-candidate.sql)"
+expect_line 'CANDIDATE=true' "$out"; expect_line 'SAME_REVIEWER=false' "$out"
+cat >/tmp/f10-0027-review.sql <<SQL
+SELECT 'REVIEW='||crm.review_lead_duplicate('$CANDIDATE','CONFIRMED','018f0000-0000-7000-8000-000000027514');
+SQL
+out="$(run_session "$CRM2" "$FAMILY_A" 018f0000-0000-7000-8000-000000027609 /tmp/f10-0027-review.sql)"; expect_line 'REVIEW=true' "$out"
+
 cat >/tmp/f10-0027-merge-revoke.sql <<SQL
-SELECT 'MERGE='||crm.merge_lead('$LEAD2','$LEAD1','018f0000-0000-7000-8000-000000027508');
+SELECT 'MERGE='||crm.merge_lead('$MERGE_DECISION','$LEAD2','$LEAD1','$CANDIDATE','018f0000-0000-7000-8000-000000027515');
 SELECT 'REVOKE_BAD_LINK='||crm.revoke_lead_identity('$LINK2','018f0000-0000-7000-8000-000000027509');
 SQL
-out="$(run_session "$CRM1" "$FAMILY_A" 018f0000-0000-7000-8000-000000027606 /tmp/f10-0027-merge-revoke.sql)"
+out="$(run_session "$CRM1" "$FAMILY_A" 018f0000-0000-7000-8000-000000027610 /tmp/f10-0027-merge-revoke.sql)"
 expect_line 'MERGE=true' "$out"; expect_line 'REVOKE_BAD_LINK=true' "$out"
 state="$(bootstrap_psql -Atqc "SELECT (SELECT lead_status FROM crm.leads WHERE lead_id='$LEAD2')||'|'||(SELECT status FROM crm.lead_identity_links WHERE lead_identity_link_id='$LINK2')")"
 test "$state" = 'MERGED|REVOKED' || { echo "FAIL merge/revoke=$state" >&2; exit 1; }
@@ -97,7 +113,7 @@ test "$numeric_type" = 'numeric|18|2' || { echo "FAIL deal amount type=$numeric_
 echo 'PASS Deal uses NUMERIC money and carries three explicit Compass attributions without new master data'
 
 cat >/tmp/f10-0027-cross.sql <<SQL
-SELECT 'CROSS_FAMILY='||crm.create_lead('$LEAD_CROSS','$SOURCE',NULL,'$FAMILY_A','$CRM1','018f0000-0000-7000-8000-000000027511');
+SELECT 'CROSS_FAMILY='||crm.create_lead('$LEAD_CROSS','$SOURCE',NULL,'$FAMILY_A','$CRM1','FAMILY_COMPASS','v1','018f0000-0000-7000-8000-000000027511','$ATTR_CROSS');
 SELECT 'BAD_TARGET='||crm.link_lead_identity('$LINK_BAD','$LEAD1','CLIENT','018f0000-0000-7000-8000-000000027999','$HASH','018f0000-0000-7000-8000-000000027512');
 SQL
 out="$(run_session "$CRM1" "$FAMILY_B" 018f0000-0000-7000-8000-000000027608 /tmp/f10-0027-cross.sql)"
@@ -112,9 +128,10 @@ grep -q 'CRM_LEAD_EVENT_IMMUTABLE' <<<"$event_update" || { echo "FAIL event immu
 acl="$(bootstrap_psql -Atqc "SELECT
   has_table_privilege('phoenix_canonical_app','crm.leads','SELECT,INSERT,UPDATE,DELETE')::text||'|'||
   has_table_privilege('phoenix_canonical_reader','crm.deals','SELECT,INSERT,UPDATE,DELETE')::text||'|'||
-  has_function_privilege('public','crm.create_lead(uuid,uuid,uuid,uuid,uuid,uuid)','EXECUTE')::text||'|'||
-  has_function_privilege('phoenix_canonical_app','crm.create_lead(uuid,uuid,uuid,uuid,uuid,uuid)','EXECUTE')::text")"
-test "$acl" = 'false|false|false|true' || { echo "FAIL P1 ACL=$acl" >&2; exit 1; }
+  has_function_privilege('public','crm.create_lead(uuid,uuid,uuid,uuid,uuid,text,text,uuid,uuid)','EXECUTE')::text||'|'||
+  has_function_privilege('phoenix_canonical_app','crm.create_lead(uuid,uuid,uuid,uuid,uuid,uuid)','EXECUTE')::text||'|'||
+  has_function_privilege('phoenix_canonical_app','crm.create_lead(uuid,uuid,uuid,uuid,uuid,text,text,uuid,uuid)','EXECUTE')::text")"
+test "$acl" = 'false|false|false|false|true' || { echo "FAIL P1 ACL=$acl" >&2; exit 1; }
 audit="$(bootstrap_psql -Atqc "SELECT count(*) FILTER (WHERE decision='ALLOW')||'|'||count(*) FILTER (WHERE decision='DENY') FROM audit.access_events WHERE resource_kind LIKE 'CRM_%'")"
 IFS='|' read -r allow_count deny_count <<<"$audit"; test "$allow_count" -gt 0 && test "$deny_count" -gt 0
 echo 'PASS 0027 CRM tenant isolation, immutable events, exact ACL and allow/deny audit regression'

@@ -6,7 +6,7 @@ BEGIN
     RAISE EXCEPTION '0027 CRM catalog mismatch';
   END IF;
   IF (SELECT count(*) FROM crm.campaigns)<>1 OR (SELECT count(*) FROM crm.lead_sources)<>1
-     OR (SELECT count(*) FROM crm.leads)<>2 OR (SELECT count(*) FROM crm.lead_identity_links)<>2
+     OR (SELECT count(*) FROM crm.leads)<2 OR (SELECT count(*) FROM crm.lead_identity_links)<>2
      OR (SELECT count(*) FROM crm.deals)<>1 OR (SELECT count(*) FROM crm.deal_items)<>3 THEN
     RAISE EXCEPTION '0027 restored CRM rows mismatch';
   END IF;
@@ -21,8 +21,9 @@ BEGIN
   IF has_table_privilege('phoenix_canonical_app','crm.leads','SELECT')
      OR has_table_privilege('phoenix_canonical_app','crm.deals','INSERT')
      OR has_table_privilege('phoenix_canonical_reader','crm.leads','SELECT')
-     OR has_function_privilege('public','crm.create_lead(uuid,uuid,uuid,uuid,uuid,uuid)','EXECUTE')
-     OR NOT has_function_privilege('phoenix_canonical_app','crm.create_lead(uuid,uuid,uuid,uuid,uuid,uuid)','EXECUTE') THEN
+     OR has_function_privilege('public','crm.create_lead(uuid,uuid,uuid,uuid,uuid,text,text,uuid,uuid)','EXECUTE')
+     OR has_function_privilege('phoenix_canonical_app','crm.create_lead(uuid,uuid,uuid,uuid,uuid,uuid)','EXECUTE')
+     OR NOT has_function_privilege('phoenix_canonical_app','crm.create_lead(uuid,uuid,uuid,uuid,uuid,text,text,uuid,uuid)','EXECUTE') THEN
     RAISE EXCEPTION '0027 CRM ACL mismatch';
   END IF;
   IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='crm'

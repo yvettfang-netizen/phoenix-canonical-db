@@ -10,7 +10,7 @@ psql_bootstrap() {
   psql -X -h 127.0.0.1 -U phoenix_bootstrap -d phoenix_canonical_dev -v ON_ERROR_STOP=1 "$@"
 }
 
-expected_count="${F10_EXPECTED_MIGRATION_COUNT:-31}"
+expected_count="${F10_EXPECTED_MIGRATION_COUNT:-32}"
 [[ "$expected_count" =~ ^[1-9][0-9]*$ ]] || { echo 'FAIL invalid expected migration count'; exit 1; }
 shopt -s nullglob
 all_files=(/opt/migrations/*.sql)
