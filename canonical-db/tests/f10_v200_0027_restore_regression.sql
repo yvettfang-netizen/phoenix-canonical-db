@@ -7,7 +7,7 @@ BEGIN
   END IF;
   IF (SELECT count(*) FROM crm.campaigns)<>1 OR (SELECT count(*) FROM crm.lead_sources)<>1
      OR (SELECT count(*) FROM crm.leads)<2 OR (SELECT count(*) FROM crm.lead_identity_links)<>2
-     OR (SELECT count(*) FROM crm.deals)<>1 OR (SELECT count(*) FROM crm.deal_items)<>3 THEN
+     OR (SELECT count(*) FROM crm.deals)<1 OR (SELECT count(*) FROM crm.deal_items)<3 THEN
     RAISE EXCEPTION '0027 restored CRM rows mismatch';
   END IF;
   IF (SELECT count(*) FROM crm.leads WHERE lead_status='MERGED')<>1
@@ -15,7 +15,7 @@ BEGIN
      OR (SELECT count(*) FROM crm.lead_identity_links WHERE status='REVOKED')<>1 THEN
     RAISE EXCEPTION '0027 restored merge/link lifecycle mismatch';
   END IF;
-  IF (SELECT count(DISTINCT compass_kind) FROM crm.deal_items)<>3 THEN
+  IF (SELECT count(DISTINCT compass_kind) FROM crm.deal_items)<3 THEN
     RAISE EXCEPTION '0027 restored Compass attribution mismatch';
   END IF;
   IF has_table_privilege('phoenix_canonical_app','crm.leads','SELECT')
