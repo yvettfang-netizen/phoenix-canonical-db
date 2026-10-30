@@ -10,6 +10,7 @@ $canonicalRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $serverRoot = Join-Path $repoRoot 'Phoenix Compass\education compass\server'
 $migrationRoot = Join-Path $canonicalRoot 'migrations\canonical'
 $testRoot = Join-Path $canonicalRoot 'tests'
+$migrationCount = @(Get-ChildItem -LiteralPath $migrationRoot -File -Filter '*.sql').Count
 $images = @{
     '16' = 'postgres:16@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d'
     '17' = 'postgres:17@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3'
@@ -105,7 +106,7 @@ try {
     }
     if (-not $ready) { throw 'Ephemeral PostgreSQL did not become ready.' }
 
-    Invoke-Docker @('exec', '-e', 'F10_EXPECTED_MIGRATION_COUNT=29', $container, 'bash', '/opt/tests/f10_ephemeral_init.sh')
+    Invoke-Docker @('exec', '-e', "F10_EXPECTED_MIGRATION_COUNT=$migrationCount", $container, 'bash', '/opt/tests/f10_ephemeral_init.sh')
     Invoke-Docker @('cp', $rolesSql, "${container}:/tmp/v126-roles.sql")
     Invoke-Docker @('cp', $seedSql, "${container}:/tmp/v126-seed.sql")
     Invoke-Docker @('exec', '-e', 'PGPASSFILE=/tmp/f10-bootstrap.pgpass', $container,
