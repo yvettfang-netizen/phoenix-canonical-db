@@ -1,6 +1,6 @@
 DO $test$
 BEGIN
-  IF (SELECT count(*) FROM canonical_migrations.applied)<>34 THEN
+  IF (SELECT count(*) FROM canonical_migrations.applied)<34 THEN
     RAISE EXCEPTION 'M4 restore ledger mismatch';
   END IF;
   IF to_regclass('service.project_subject_authorizations') IS NULL THEN
@@ -11,7 +11,7 @@ BEGIN
      OR (SELECT count(*) FROM service.project_subjects WHERE data_scope='HEALTH' AND status='ENDED')<>2
      OR (SELECT count(*) FROM service.project_parties WHERE status='ENDED')<2
      OR (SELECT count(*) FROM service.project_assignments WHERE status='ENDED')<3
-     OR (SELECT count(*) FROM service.projects WHERE project_status='COMPLETED')<>2 THEN
+     OR (SELECT count(*) FROM service.projects WHERE project_status='COMPLETED')<2 THEN
     RAISE EXCEPTION 'M4 restored lifecycle rows mismatch';
   END IF;
   IF EXISTS(SELECT 1 FROM information_schema.columns WHERE table_schema='service'

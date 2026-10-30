@@ -8,6 +8,7 @@ APP=phoenix_canonical_app_f10
 BINDER=phoenix_canonical_binder_f10
 DB=phoenix_canonical_dev
 SERVICE=018f0000-0000-7000-8000-000000028001
+SERVICE_REVIEWER=018f0000-0000-7000-8000-000000028002
 WRONG_SERVICE=018f0000-0000-7000-8000-000000002001
 ADVISOR=018f0000-0000-7000-8000-000000002004
 FAMILY_A=018f0000-0000-7000-8000-000000000001
@@ -26,9 +27,14 @@ PSUB_BAD=018f0000-0000-7000-8000-000000028203
 DOMAIN1=018f0000-0000-7000-8000-000000028301
 DOMAIN2=018f0000-0000-7000-8000-000000028302
 ASSIGNMENT=018f0000-0000-7000-8000-000000028401
+ASSIGNMENT_REVIEWER=018f0000-0000-7000-8000-000000028402
+ASSIGNMENT_SERVICE=018f0000-0000-7000-8000-000000028403
 PARTY=018f0000-0000-7000-8000-000000028411
+MILESTONE_TEMPLATE=018f0000-0000-7000-8000-000000028420
 MILESTONE=018f0000-0000-7000-8000-000000028421
 DELIVERABLE=018f0000-0000-7000-8000-000000028431
+DOCUMENT=018f0000-0000-7000-8000-000000028432
+DOCUMENT_VERSION=018f0000-0000-7000-8000-000000028433
 TASK=018f0000-0000-7000-8000-000000028501
 TASK_LATE=018f0000-0000-7000-8000-000000028502
 
@@ -45,6 +51,7 @@ expect_line() { grep -qx "$1" <<<"$2" || { printf 'FAIL missing [%s]\n%s\n' "$1"
 
 before="$(bootstrap_psql -Atqc "SELECT (SELECT count(*) FROM casework.cases)||'|'||(SELECT count(*) FROM learning.enrollment)||'|'||(SELECT count(*) FROM consent.grants)")"
 test "$(bootstrap_psql -Atqc "SELECT auth.install_service_principal('$SERVICE','canonical_service_v2')")" = t
+test "$(bootstrap_psql -Atqc "SELECT auth.install_service_principal('$SERVICE_REVIEWER','canonical_service_v2')")" = t
 
 cat >/tmp/f10-0028-create.sql <<SQL
 SELECT 'PROJECT1='||service.create_project('$PROJECT1','$CLIENT','$FAMILY_A','$DEAL','SVC_028_A','Synthetic Multi-domain Service Project','MULTI_DOMAIN',clock_timestamp(),clock_timestamp()+interval '90 days','018f0000-0000-7000-8000-000000028601');
@@ -56,23 +63,38 @@ SELECT 'SUBJECT2='||service.add_project_subject_authorized('$PSUB2','$PROJECT1',
 SELECT 'DOMAIN1='||service.add_project_domain('$DOMAIN1','$PROJECT1','EDUCATION','018f0000-0000-7000-8000-000000028607');
 SELECT 'DOMAIN2='||service.add_project_domain('$DOMAIN2','$PROJECT1','WEALTH','018f0000-0000-7000-8000-000000028608');
 SELECT 'ASSIGN='||service.assign_project('$ASSIGNMENT','$PROJECT1','$ADVISOR','PROJECT_MANAGER','018f0000-0000-7000-8000-000000028609');
+SELECT 'ASSIGN_REVIEWER='||service.assign_project('$ASSIGNMENT_REVIEWER','$PROJECT1','$SERVICE_REVIEWER','SPECIALIST','018f0000-0000-7000-8000-000000028619');
+SELECT 'ASSIGN_SERVICE='||service.assign_project('$ASSIGNMENT_SERVICE','$PROJECT1','$SERVICE','PROJECT_OWNER','018f0000-0000-7000-8000-000000028627');
 SELECT 'PARTY='||service.add_project_party('$PARTY','$PROJECT1','FAMILY_ADMIN','$SUBJECT_A1',NULL::uuid,clock_timestamp()+interval '90 days','018f0000-0000-7000-8000-000000028620');
-SELECT 'MILESTONE='||service.create_milestone('$MILESTONE','$PROJECT1','MS_028_READY','Synthetic readiness milestone',clock_timestamp()+interval '10 days','018f0000-0000-7000-8000-000000028621');
+SELECT 'MILESTONE_TEMPLATE='||service.register_milestone_template('$MILESTONE_TEMPLATE','MS_028_TEMPLATE',1,'MULTI_DOMAIN','Synthetic readiness milestone');
+SELECT 'MILESTONE='||service.create_milestone_from_template('$MILESTONE','$PROJECT1','$MILESTONE_TEMPLATE','MS_028_READY',clock_timestamp()+interval '10 days','018f0000-0000-7000-8000-000000028621');
 SELECT 'MILESTONE_ACHIEVED='||service.transition_milestone('$MILESTONE','ACHIEVED','018f0000-0000-7000-8000-000000028622');
-SELECT 'DELIVERABLE='||service.create_deliverable('$DELIVERABLE','$PROJECT1','$PSUB1',NULL::uuid,'SYNTHETIC_BLUEPRINT',clock_timestamp()+interval '7 days','018f0000-0000-7000-8000-000000028623');
-SELECT 'DELIVERABLE_READY='||service.transition_deliverable('$DELIVERABLE','READY','018f0000-0000-7000-8000-000000028624');
-SELECT 'DELIVERABLE_DELIVERED='||service.transition_deliverable('$DELIVERABLE','DELIVERED','018f0000-0000-7000-8000-000000028625');
-SELECT 'DELIVERABLE_ACCEPTED='||service.transition_deliverable('$DELIVERABLE','ACCEPTED','018f0000-0000-7000-8000-000000028626');
+SELECT 'DOCUMENT='||docs.create_document('$DOCUMENT','$FAMILY_A','$SUBJECT_A1','EDUCATION','SYNTHETIC_BLUEPRINT',clock_timestamp()+interval '365 days');
+SELECT 'DOCUMENT_VERSION='||docs.append_document_version('$DOCUMENT_VERSION','$DOCUMENT',1,'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa','mock/service/v2/p2/blueprint-v1',128);
+SELECT 'DELIVERABLE='||service.create_versioned_deliverable('$DELIVERABLE','$PROJECT1','$PSUB1','$DOCUMENT','$DOCUMENT_VERSION','SYNTHETIC_BLUEPRINT',clock_timestamp()+interval '7 days','018f0000-0000-7000-8000-000000028623');
+SELECT 'DELIVERABLE_SUBMITTED='||service.submit_deliverable('$DELIVERABLE','018f0000-0000-7000-8000-000000028624');
 SELECT 'TASK='||service.create_task('$TASK','$PROJECT1','EDUCATION_APPLICATION_PREP','Synthetic application preparation','HIGH','$ADVISOR',clock_timestamp()+interval '14 days','018f0000-0000-7000-8000-000000028610');
 SELECT 'TASK_START='||service.transition_task('$TASK','IN_PROGRESS','WORK_STARTED','018f0000-0000-7000-8000-000000028611');
 SELECT 'TASK_BLOCK='||service.transition_task('$TASK','BLOCKED','AWAITING_SYNTHETIC_INPUT','018f0000-0000-7000-8000-000000028612');
 SELECT 'TASK_RESUME='||service.transition_task('$TASK','IN_PROGRESS','SYNTHETIC_INPUT_RECEIVED','018f0000-0000-7000-8000-000000028613');
 SELECT 'TASK_COMPLETE='||service.transition_task('$TASK','COMPLETED','WORK_COMPLETED','018f0000-0000-7000-8000-000000028614');
+SQL
+out="$(run_session "$SERVICE" "$FAMILY_A" 018f0000-0000-7000-8000-000000028701 /tmp/f10-0028-create.sql)"
+for expected in PROJECT1=true PROJECT2=true PLAN=true ACTIVATE=true SUBJECT1=true SUBJECT2=true DOMAIN1=true DOMAIN2=true ASSIGN=true ASSIGN_REVIEWER=true ASSIGN_SERVICE=true PARTY=true MILESTONE_TEMPLATE=true MILESTONE=true MILESTONE_ACHIEVED=true DOCUMENT=true DOCUMENT_VERSION=true DELIVERABLE=true DELIVERABLE_SUBMITTED=true TASK=true TASK_START=true TASK_BLOCK=true TASK_RESUME=true TASK_COMPLETE=true; do expect_line "$expected" "$out"; done
+
+cat >/tmp/f10-0028-review.sql <<SQL
+SELECT 'DELIVERABLE_REVIEW='||service.review_deliverable('$DELIVERABLE','APPROVE','SYNTHETIC_REVIEW_APPROVED','018f0000-0000-7000-8000-000000028625');
+SQL
+out="$(run_session "$SERVICE_REVIEWER" "$FAMILY_A" 018f0000-0000-7000-8000-000000028704 /tmp/f10-0028-review.sql)"
+expect_line 'DELIVERABLE_REVIEW=true' "$out"
+
+cat >/tmp/f10-0028-close.sql <<SQL
+SELECT 'DELIVERABLE_ACCEPTED='||service.accept_deliverable('$DELIVERABLE','018f0000-0000-7000-8000-000000028626');
 SELECT 'PROJECT_COMPLETE='||service.transition_project('$PROJECT1','COMPLETED','018f0000-0000-7000-8000-000000028615');
 SELECT 'LATE_TASK='||service.create_task('$TASK_LATE','$PROJECT1','LATE_WORK','Late work must fail','LOW',NULL,NULL,'018f0000-0000-7000-8000-000000028616');
 SQL
-out="$(run_session "$SERVICE" "$FAMILY_A" 018f0000-0000-7000-8000-000000028701 /tmp/f10-0028-create.sql)"
-for expected in PROJECT1=true PROJECT2=true PLAN=true ACTIVATE=true SUBJECT1=true SUBJECT2=true DOMAIN1=true DOMAIN2=true ASSIGN=true PARTY=true MILESTONE=true MILESTONE_ACHIEVED=true DELIVERABLE=true DELIVERABLE_READY=true DELIVERABLE_DELIVERED=true DELIVERABLE_ACCEPTED=true TASK=true TASK_START=true TASK_BLOCK=true TASK_RESUME=true TASK_COMPLETE=true PROJECT_COMPLETE=true LATE_TASK=false; do expect_line "$expected" "$out"; done
+out="$(run_session "$SERVICE" "$FAMILY_A" 018f0000-0000-7000-8000-000000028705 /tmp/f10-0028-close.sql)"
+for expected in DELIVERABLE_ACCEPTED=true PROJECT_COMPLETE=true LATE_TASK=false; do expect_line "$expected" "$out"; done
 
 shape="$(bootstrap_psql -Atqc "SELECT
   (SELECT count(*) FROM service.projects WHERE family_id='$FAMILY_A')||'|'||
@@ -108,7 +130,7 @@ grep -q 'permission denied' /tmp/f10-0028-acl.out
 event_update="$(bootstrap_psql -Atqc "UPDATE service.task_events SET reason_code='FORGED' WHERE task_id='$TASK'" 2>&1 || true)"
 grep -q 'SERVICE_EVENT_IMMUTABLE' <<<"$event_update" || { echo "FAIL event immutability=$event_update" >&2; exit 1; }
 
-cross_deliverable="$(bootstrap_psql -Atqc "INSERT INTO service.deliverables(deliverable_id,service_project_id,project_subject_id,deliverable_kind,status,created_by_principal_id,updated_by_principal_id) VALUES('018f0000-0000-7000-8000-000000028901','$PROJECT2','$PSUB1','SYNTHETIC_DELIVERABLE','DRAFT','$SERVICE','$SERVICE')" 2>&1 || true)"
+cross_deliverable="$(bootstrap_psql -Atqc "INSERT INTO service.deliverables(deliverable_id,service_project_id,project_subject_id,document_id,document_version_id,deliverable_kind,status,created_by_principal_id,updated_by_principal_id) VALUES('018f0000-0000-7000-8000-000000028901','$PROJECT2','$PSUB1','$DOCUMENT','$DOCUMENT_VERSION','SYNTHETIC_DELIVERABLE','DRAFT','$SERVICE','$SERVICE')" 2>&1 || true)"
 grep -qi 'foreign key constraint' <<<"$cross_deliverable" || { echo "FAIL cross-project deliverable target=$cross_deliverable" >&2; exit 1; }
 
 after="$(bootstrap_psql -Atqc "SELECT (SELECT count(*) FROM casework.cases)||'|'||(SELECT count(*) FROM learning.enrollment)||'|'||(SELECT count(*) FROM consent.grants)")"

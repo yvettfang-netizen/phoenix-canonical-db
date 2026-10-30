@@ -90,6 +90,7 @@ run "0031 M1 Client and Partner relationships" exec "$SRC" bash /opt/tests/f10_v
 run "0032 M2 Lead acquisition management" exec "$SRC" bash /opt/tests/f10_v206_0032_m2_lead_acquisition.sh
 run "0033 M3 Consultation and Deal management" exec "$SRC" bash /opt/tests/f10_v207_0033_m3_consultation_deal.sh
 run "0034 M4 Service Project governance" exec "$SRC" bash /opt/tests/f10_v208_0034_m4_service_project.sh
+run "0035 M5 Service Delivery governance" exec "$SRC" bash /opt/tests/f10_v209_0035_m5_service_delivery.sh
 
 echo "=== D-9 reconciliation (server log vs persisted audit rows)"
 docker logs "$SRC" 2>&1 | grep 'PHOENIX_AUDIT' > "$AUDLOG"
