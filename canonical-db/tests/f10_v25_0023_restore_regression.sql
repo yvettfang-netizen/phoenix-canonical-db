@@ -1,7 +1,7 @@
 DO $test$
 BEGIN
-  IF (SELECT count(*) FROM canonical_migrations.applied)<>23 THEN
-    RAISE EXCEPTION '0023 restore ledger mismatch';
+  IF (SELECT count(*) FROM canonical_migrations.applied)<>25 THEN
+    RAISE EXCEPTION 'post-0025 restore ledger mismatch while checking 0023';
   END IF;
   IF to_regprocedure('auth.issue_application_family_context_ticket(text,text,text,timestamptz,uuid)') IS NULL THEN
     RAISE EXCEPTION '0023 atomic application family context function missing';
