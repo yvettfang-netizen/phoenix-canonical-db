@@ -79,6 +79,7 @@ This directory contains the implemented greenfield Canonical database. It does n
 | `PHASE2B_AUDIT_REPORT.md` | Completion audit, migration/backup fixes, actual retest results and next-stage gate |
 | `PHASE2C_EXECUTION_REPORT.md` | PG16/17 negative-acceptance closure, backup tamper refusal and Phase 3 entry audit |
 | `PHASE3_EXECUTION_REPORT.md` | Effective greenfield contract, applied business schema, RLS and PG16/17 formal acceptance |
+| `ENTERPRISE_DATABASE_V2_SIX_MILESTONES_EXECUTION_REPORT.md` | M0–M5 controlled branch, Migration, checksum, Draft PR, test and HOLD summary |
 | `phase2-gate/` | Source evidence, the effective greenfield contract and approval register |
 | `deploy/tencent/` | No-public-port PostgreSQL 16 deployment, health and backup package |
 | `integration/auth-gateway/` | FD-6 fail-closed application-auth configuration contract, validator, synthetic fixture and application-team facts register |
