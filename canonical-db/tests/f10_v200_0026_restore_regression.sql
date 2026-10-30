@@ -29,8 +29,9 @@ BEGIN
      OR has_table_privilege('phoenix_canonical_app','crm.clients','INSERT')
      OR has_table_privilege('phoenix_canonical_reader','core.organizations','SELECT')
      OR has_table_privilege('phoenix_canonical_context_binder','crm.clients','SELECT')
-     OR has_function_privilege('public','crm.create_client(uuid,uuid,text)','EXECUTE')
-     OR NOT has_function_privilege('phoenix_canonical_app','crm.create_client(uuid,uuid,text)','EXECUTE') THEN
+     OR has_function_privilege('public','crm.create_client(uuid,uuid,text,uuid)','EXECUTE')
+     OR has_function_privilege('phoenix_canonical_app','crm.create_client(uuid,uuid,text)','EXECUTE')
+     OR NOT has_function_privilege('phoenix_canonical_app','crm.create_client(uuid,uuid,text,uuid)','EXECUTE') THEN
     RAISE EXCEPTION '0026 Enterprise Core ACL mismatch';
   END IF;
   IF EXISTS (

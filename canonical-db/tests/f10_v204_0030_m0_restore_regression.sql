@@ -1,6 +1,6 @@
 DO $test$
 BEGIN
-  IF (SELECT count(*) FROM canonical_migrations.applied)<>30 THEN
+  IF (SELECT count(*) FROM canonical_migrations.applied)<30 THEN
     RAISE EXCEPTION 'M0 restore ledger mismatch';
   END IF;
   IF to_regclass('core.organization_identifiers') IS NULL

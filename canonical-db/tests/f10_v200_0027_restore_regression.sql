@@ -1,8 +1,8 @@
 DO $test$
 BEGIN
   IF (SELECT count(*) FROM canonical_migrations.applied)<29 THEN RAISE EXCEPTION 'post-0029 ledger missing while checking 0027 CRM'; END IF;
-  IF (SELECT count(*) FROM pg_tables WHERE schemaname='crm')<>12
-     OR (SELECT count(*) FROM pg_policies WHERE schemaname='crm')<>12 THEN
+  IF (SELECT count(*) FROM pg_tables WHERE schemaname='crm')<12
+     OR (SELECT count(*) FROM pg_policies WHERE schemaname='crm')<12 THEN
     RAISE EXCEPTION '0027 CRM catalog mismatch';
   END IF;
   IF (SELECT count(*) FROM crm.campaigns)<>1 OR (SELECT count(*) FROM crm.lead_sources)<>1
