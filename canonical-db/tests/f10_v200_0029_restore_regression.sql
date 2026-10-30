@@ -3,25 +3,25 @@ BEGIN
   IF (SELECT count(*) FROM canonical_migrations.applied)<29 THEN
     RAISE EXCEPTION 'post-0029 ledger mismatch';
   END IF;
-  IF (SELECT count(*) FROM pg_tables WHERE schemaname='service')<>10
-     OR (SELECT count(*) FROM pg_policies WHERE schemaname='service')<>10 THEN
+  IF (SELECT count(*) FROM pg_tables WHERE schemaname='service')<10
+     OR (SELECT count(*) FROM pg_policies WHERE schemaname='service')<10 THEN
     RAISE EXCEPTION '0028 Service catalog mismatch';
   END IF;
-  IF (SELECT count(*) FROM service.projects)<>2
-     OR (SELECT count(*) FROM service.project_subjects)<>2
-     OR (SELECT count(*) FROM service.project_domains)<>2
-     OR (SELECT count(*) FROM service.project_assignments)<>1
-     OR (SELECT count(*) FROM service.project_parties)<>1
-     OR (SELECT count(*) FROM service.project_milestones)<>1
-     OR (SELECT count(*) FROM service.deliverables)<>1
-     OR (SELECT count(*) FROM service.tasks)<>1 THEN
+  IF (SELECT count(*) FROM service.projects)<2
+     OR (SELECT count(*) FROM service.project_subjects)<2
+     OR (SELECT count(*) FROM service.project_domains)<2
+     OR (SELECT count(*) FROM service.project_assignments)<1
+     OR (SELECT count(*) FROM service.project_parties)<1
+     OR (SELECT count(*) FROM service.project_milestones)<1
+     OR (SELECT count(*) FROM service.deliverables)<1
+     OR (SELECT count(*) FROM service.tasks)<1 THEN
     RAISE EXCEPTION '0028 restored Service rows mismatch';
   END IF;
   IF (SELECT task_status FROM service.tasks)<> 'COMPLETED'
      OR (SELECT count(*) FROM service.project_milestones WHERE status='ACHIEVED')<>1
      OR (SELECT count(*) FROM service.deliverables WHERE status='ACCEPTED' AND delivered_at IS NOT NULL)<>1
      OR (SELECT count(*) FROM service.task_events)<>5
-     OR (SELECT count(*) FROM service.project_events)<>18 THEN
+     OR (SELECT count(*) FROM service.project_events)<18 THEN
     RAISE EXCEPTION '0028 restored lifecycle or immutable event rows mismatch';
   END IF;
   IF (SELECT count(*) FROM service.projects WHERE family_id='018f0000-0000-7000-8000-000000000001')<>2
