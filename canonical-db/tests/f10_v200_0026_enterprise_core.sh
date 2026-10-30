@@ -18,6 +18,8 @@ MEMBER_B2=018f0000-0000-7000-8000-000000026104
 MEMBER_B3=018f0000-0000-7000-8000-000000026105
 ORG=018f0000-0000-7000-8000-000000026201
 ORG_DUP=018f0000-0000-7000-8000-000000026202
+ORG_INACTIVE_EVENT=018f0000-0000-7000-8000-000000026203
+ORG_ACTIVE_EVENT=018f0000-0000-7000-8000-000000026204
 CLIENT_A1=018f0000-0000-7000-8000-000000026301
 CLIENT_A2=018f0000-0000-7000-8000-000000026302
 CLIENT_DUP=018f0000-0000-7000-8000-000000026303
@@ -43,8 +45,8 @@ test "$(bootstrap_psql -Atqc "SELECT auth.install_service_principal('$ENTERPRISE
 cat >/tmp/f10-0026-org.sql <<SQL
 SELECT 'ORG_CREATE='||core.register_organization('$ORG','Synthetic Phoenix School Ltd','Synthetic Phoenix School','SCHOOL','CN','$DIGEST');
 SELECT 'ORG_DUPLICATE='||core.register_organization('$ORG_DUP','Synthetic Phoenix School Ltd','Duplicate Business Role','SERVICE_PROVIDER','CN','$DIGEST');
-SELECT 'ORG_INACTIVE='||core.transition_organization('$ORG','INACTIVE');
-SELECT 'ORG_ACTIVE='||core.transition_organization('$ORG','ACTIVE');
+SELECT 'ORG_INACTIVE='||core.transition_organization('$ORG','INACTIVE','$ORG_INACTIVE_EVENT');
+SELECT 'ORG_ACTIVE='||core.transition_organization('$ORG','ACTIVE','$ORG_ACTIVE_EVENT');
 SQL
 out="$(run_session "$ENTERPRISE" NULL 018f0000-0000-7000-8000-000000026401 /tmp/f10-0026-org.sql)"
 for expected in ORG_CREATE=true ORG_DUPLICATE=false ORG_INACTIVE=true ORG_ACTIVE=true; do expect_line "$expected" "$out"; done

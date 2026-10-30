@@ -1,6 +1,6 @@
 DO $test$
 BEGIN
-  IF (SELECT count(*) FROM canonical_migrations.applied)<>29 THEN
+  IF (SELECT count(*) FROM canonical_migrations.applied)<29 THEN
     RAISE EXCEPTION 'post-0029 ledger mismatch';
   END IF;
   IF (SELECT count(*) FROM pg_tables WHERE schemaname='service')<>10

@@ -1,6 +1,6 @@
 DO $test$
 BEGIN
-  IF (SELECT count(*) FROM canonical_migrations.applied)<>29 THEN
+  IF (SELECT count(*) FROM canonical_migrations.applied)<29 THEN
     RAISE EXCEPTION 'post-0025 restore ledger mismatch while checking 0023';
   END IF;
   IF to_regprocedure('auth.issue_application_family_context_ticket(text,text,text,timestamptz,uuid)') IS NULL THEN

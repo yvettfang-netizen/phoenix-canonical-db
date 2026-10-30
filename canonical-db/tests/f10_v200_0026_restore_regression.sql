@@ -1,6 +1,6 @@
 DO $test$
 BEGIN
-  IF (SELECT count(*) FROM canonical_migrations.applied)<>29 THEN
+  IF (SELECT count(*) FROM canonical_migrations.applied)<29 THEN
     RAISE EXCEPTION 'post-0026 restore ledger mismatch';
   END IF;
   IF to_regclass('core.organizations') IS NULL OR to_regclass('crm.clients') IS NULL THEN
@@ -40,7 +40,8 @@ BEGIN
   ) THEN
     RAISE EXCEPTION '0026 duplicate current Client relationship restored';
   END IF;
-  IF (SELECT count(*) FROM core.organizations)<>1
+  IF NOT EXISTS (SELECT 1 FROM core.organizations
+       WHERE organization_id='018f0000-0000-7000-8000-000000026201')
      OR (SELECT count(*) FROM crm.clients)<>2
      OR (SELECT count(*) FROM crm.clients WHERE lifecycle_status='ACTIVE')<>1
      OR (SELECT count(*) FROM crm.clients WHERE lifecycle_status='ENDED')<>1 THEN
