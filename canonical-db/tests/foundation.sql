@@ -2,7 +2,7 @@ DO $test$
 DECLARE
   schema_name text;
 BEGIN
-  FOREACH schema_name IN ARRAY ARRAY['auth','core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning','canonical_migrations'] LOOP
+  FOREACH schema_name IN ARRAY ARRAY['auth','core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning','crm','canonical_migrations'] LOOP
     IF NOT EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = schema_name) THEN
       RAISE EXCEPTION 'missing schema: %', schema_name;
     END IF;
@@ -28,10 +28,10 @@ BEGIN
   IF (SELECT count(*) FROM canonical_migrations.applied) < 8 THEN
     RAISE EXCEPTION 'migration ledger is not repeat safe';
   END IF;
-  IF (SELECT count(*) FROM pg_tables WHERE schemaname IN ('auth','core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning')) <> 50 THEN
+  IF (SELECT count(*) FROM pg_tables WHERE schemaname IN ('auth','core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning','crm')) <> 52 THEN
     RAISE EXCEPTION 'unexpected Canonical business table count';
   END IF;
-  IF (SELECT count(*) FROM pg_policies WHERE schemaname IN ('core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning')) <> 41 THEN
+  IF (SELECT count(*) FROM pg_policies WHERE schemaname IN ('core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning','crm')) <> 43 THEN
     RAISE EXCEPTION 'unexpected Canonical RLS policy count';
   END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'phoenix_canonical_context_binder' AND NOT rolcanlogin AND NOT rolsuper) THEN

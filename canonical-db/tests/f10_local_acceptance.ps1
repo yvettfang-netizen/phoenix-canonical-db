@@ -8,12 +8,13 @@ $image = if ($Version -eq '16') {
 } else {
     'postgres:17@sha256:2d2b8998d31037bf721cfdf764d76ba74171b4fab3431b7f72c27c56ddbdf9e3'
 }
-$source = "phoenix-canonical-f10-v25-pwsh-pg$Version"
-$restore = "phoenix-canonical-f10-v25-pwsh-restore-pg$Version"
-$backupVolume = "phoenix_canonical_f10_backup_pg${Version}_v25_pwsh"
-$sourceEnv = Join-Path $root "runtime/f10-v25-pg$Version.env"
-$restoreEnv = Join-Path $root "runtime/f10-v25-restore-pg$Version.env"
-$evidence = Join-Path $root "evidence/v1.28-0024-pwsh-f10-pg$Version.txt"
+$source = "phoenix-canonical-f10-v200-pwsh-pg$Version"
+$restore = "phoenix-canonical-f10-v200-pwsh-restore-pg$Version"
+$backupVolume = "phoenix_canonical_f10_backup_pg${Version}_v200_pwsh"
+$sourceEnv = Join-Path $root "runtime/f10-v200-pg$Version.env"
+$restoreEnv = Join-Path $root "runtime/f10-v200-restore-pg$Version.env"
+$evidence = Join-Path $root "evidence/v2.0-0026-pwsh-f10-pg$Version.txt"
+New-Item -ItemType Directory -Force -Path (Join-Path $root 'runtime'),(Join-Path $root 'evidence') | Out-Null
 $names = @(docker ps -a --format '{{.Names}}')
 $volumes = @(docker volume ls --format '{{.Name}}')
 if ($names -contains $source -or $names -contains $restore -or $volumes -contains $backupVolume -or
@@ -68,30 +69,30 @@ try {
     Run-Checked "docker exec $source mkdir /opt/migrations /opt/tests" @('exec',$source,'mkdir','-p','/opt/migrations','/opt/tests')
     Run-Checked "docker cp current Canonical migrations into $source" @('cp','migrations/canonical/.',"${source}:/opt/migrations")
     Run-Checked "docker cp test files into $source" @('cp','tests/.',"${source}:/opt/tests")
-    Run-Checked "docker exec $source stage 0011-0025 outside migration directory for E1 ledger=10 check" @(
-        'exec',$source,'bash','-c','mv /opt/migrations/001[1-9]_*.sql /opt/migrations/002[0-5]_*.sql /tmp/')
+    Run-Checked "docker exec $source stage 0011-0026 outside migration directory for E1 ledger=10 check" @(
+        'exec',$source,'bash','-c','mv /opt/migrations/001[1-9]_*.sql /opt/migrations/002[0-6]_*.sql /tmp/')
     Run-Checked "docker exec $source bash f10_ephemeral_init.sh expected=10" @(
         'exec','-e','F10_EXPECTED_MIGRATION_COUNT=10',$source,'bash','/opt/tests/f10_ephemeral_init.sh')
-    Run-Checked "docker exec $source restore staged 0011-0025" @(
-        'exec',$source,'bash','-c','mv /tmp/001[1-9]_*.sql /tmp/002[0-5]_*.sql /opt/migrations/')
+    Run-Checked "docker exec $source restore staged 0011-0026" @(
+        'exec',$source,'bash','-c','mv /tmp/001[1-9]_*.sql /tmp/002[0-6]_*.sql /opt/migrations/')
     Run-Checked "docker exec $source bash f10_ephemeral_init.sh" @('exec',$source,'bash','/opt/tests/f10_ephemeral_init.sh')
     Run-Checked "docker exec $source bash f10_ephemeral_init.sh repeat" @('exec',$source,'bash','/opt/tests/f10_ephemeral_init.sh')
-    Write-Output 'COMMAND: disposable container extra empty 0026 file; migration inventory must refuse'
-    $extra = & docker exec $source bash -c 'touch /opt/migrations/0026_extra_probe.sql; bash /opt/tests/f10_ephemeral_init.sh' 2>&1
+    Write-Output 'COMMAND: disposable container extra empty 0027 file; migration inventory must refuse'
+    $extra = & docker exec $source bash -c 'touch /opt/migrations/0027_extra_probe.sql; bash /opt/tests/f10_ephemeral_init.sh' 2>&1
     $extraCode = $LASTEXITCODE
     $extra | Out-Host
     if ($extraCode -eq 0 -or (($extra -join ' ') -notmatch 'FAIL migration inventory')) { throw 'Extra migration file was not refused' }
     Write-Output "PASS extra migration refused, exit=$extraCode"
-    Run-Checked "docker exec $source remove exact disposable extra file" @('exec',$source,'rm','/opt/migrations/0026_extra_probe.sql')
-    Write-Output 'COMMAND: disposable container temporarily hides 0025; migration inventory must refuse'
-    $missing = & docker exec $source bash -c 'mv /opt/migrations/0025_family_mapping_lock_hardening.sql /tmp/0025_family_mapping_lock_hardening.sql; bash /opt/tests/f10_ephemeral_init.sh' 2>&1
+    Run-Checked "docker exec $source remove exact disposable extra file" @('exec',$source,'rm','/opt/migrations/0027_extra_probe.sql')
+    Write-Output 'COMMAND: disposable container temporarily hides 0026; migration inventory must refuse'
+    $missing = & docker exec $source bash -c 'mv /opt/migrations/0026_enterprise_core_organization_client.sql /tmp/0026_enterprise_core_organization_client.sql; bash /opt/tests/f10_ephemeral_init.sh' 2>&1
     $missingCode = $LASTEXITCODE
     $missing | Out-Host
     if ($missingCode -eq 0 -or (($missing -join ' ') -notmatch 'FAIL migration inventory')) { throw 'Missing migration file was not refused' }
     Write-Output "PASS missing migration refused, exit=$missingCode"
-    Run-Checked "docker exec $source restore exact staged 0025" @(
-        'exec',$source,'mv','/tmp/0025_family_mapping_lock_hardening.sql',
-        '/opt/migrations/0025_family_mapping_lock_hardening.sql')
+    Run-Checked "docker exec $source restore exact staged 0026" @(
+        'exec',$source,'mv','/tmp/0026_enterprise_core_organization_client.sql',
+        '/opt/migrations/0026_enterprise_core_organization_client.sql')
 
     foreach ($suite in @('foundation.sql','rls_probe.sql','docs_probe.sql',
         'contract_neutral_probe.sql','trusted_context_probe.sql','phase3_acceptance.sql')) {
@@ -113,9 +114,10 @@ try {
     Run-Checked "docker exec $source bash f10_v23_0022_learning.sh" @('exec',$source,'bash','/opt/tests/f10_v23_0022_learning.sh')
     Run-Checked "docker exec $source bash f10_v25_0023_application_family_context.sh" @('exec',$source,'bash','/opt/tests/f10_v25_0023_application_family_context.sh')
     Run-Checked "docker exec $source bash f10_v28_0024_family_mapping_management.sh" @('exec',$source,'bash','/opt/tests/f10_v28_0024_family_mapping_management.sh')
-    $auditLog = Join-Path $root "evidence/v1.28-0024-pwsh-audit-log-pg$Version.txt"
-    $auditIds = Join-Path $root "evidence/v1.28-0024-pwsh-audit-db-ids-pg$Version.txt"
-    $reconcile = Join-Path $root "evidence/v1.28-0024-pwsh-audit-reconcile-pg$Version.txt"
+    Run-Checked "docker exec $source bash f10_v200_0026_enterprise_core.sh" @('exec',$source,'bash','/opt/tests/f10_v200_0026_enterprise_core.sh')
+    $auditLog = Join-Path $root "evidence/v2.0-0026-pwsh-audit-log-pg$Version.txt"
+    $auditIds = Join-Path $root "evidence/v2.0-0026-pwsh-audit-db-ids-pg$Version.txt"
+    $reconcile = Join-Path $root "evidence/v2.0-0026-pwsh-audit-reconcile-pg$Version.txt"
     @(docker logs $source 2>&1 | Select-String 'PHOENIX_AUDIT' | ForEach-Object { $_.Line }) | Set-Content -LiteralPath $auditLog
     if ($LASTEXITCODE -ne 0) { throw 'Could not read disposable server audit log' }
     if ((Get-Content -LiteralPath $auditLog -Raw) -match 'Synthetic Renamed|Forbidden Cross Family') {

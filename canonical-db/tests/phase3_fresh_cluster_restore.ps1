@@ -94,9 +94,9 @@ GRANT pg_read_all_data TO phoenix_canonical_backup_runtime WITH INHERIT TRUE, SE
     & docker cp $dump "${freshContainerName}:/tmp/restore.dump" | Out-Host
     & docker exec -i -u postgres $freshContainerName pg_restore -U postgres -d phoenix_canonical_dev --no-owner --exit-on-error /tmp/restore.dump | Out-Host
     if ($LASTEXITCODE -ne 0) { throw 'fresh-cluster pg_restore failed' }
-    $catalog = Fresh-Psql 'postgres' "SELECT 'ledger='||count(*) FROM canonical_migrations.applied; SELECT 'tables='||count(*) FROM pg_tables WHERE schemaname IN ('auth','core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning'); SELECT 'policies='||count(*) FROM pg_policies WHERE schemaname IN ('core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning'); SELECT 'roles='||count(*) FROM pg_roles WHERE rolname LIKE 'phoenix_canonical_%';"
+    $catalog = Fresh-Psql 'postgres' "SELECT 'ledger='||count(*) FROM canonical_migrations.applied; SELECT 'tables='||count(*) FROM pg_tables WHERE schemaname IN ('auth','core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning','crm'); SELECT 'policies='||count(*) FROM pg_policies WHERE schemaname IN ('core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning','crm'); SELECT 'roles='||count(*) FROM pg_roles WHERE rolname LIKE 'phoenix_canonical_%';"
     Write-Output $catalog
-    if ($catalog -notmatch "(?m)^ledger=$migrationCount$" -or $catalog -notmatch 'tables=50' -or $catalog -notmatch 'policies=41' -or $catalog -notmatch 'roles=10') { throw 'fresh-cluster catalog verification failed' }
+    if ($catalog -notmatch "(?m)^ledger=$migrationCount$" -or $catalog -notmatch 'tables=52' -or $catalog -notmatch 'policies=43' -or $catalog -notmatch 'roles=10') { throw 'fresh-cluster catalog verification failed' }
     foreach($name in @('foundation.sql','rls_probe.sql','docs_probe.sql','contract_neutral_probe.sql','trusted_context_probe.sql','phase3_acceptance.sql')) {
         $sql = Get-Content -LiteralPath (Join-Path $root "tests/$name") -Raw
         Fresh-Psql 'postgres' $sql | Out-Null

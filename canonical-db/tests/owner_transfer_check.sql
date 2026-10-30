@@ -8,12 +8,12 @@ BEGIN
   SELECT count(*), count(*) FILTER (WHERE pg_get_userbyid(c.relowner) <> o)
     INTO n_tables, n_bad_tables
     FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
-   WHERE n.nspname IN ('auth','core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning')
+   WHERE n.nspname IN ('auth','core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning','crm')
      AND c.relkind IN ('r','v','S');
   SELECT count(*), count(*) FILTER (WHERE pg_get_userbyid(p.proowner) <> o)
     INTO n_funcs, n_bad_funcs
     FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
-   WHERE n.nspname IN ('auth','core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning')
+   WHERE n.nspname IN ('auth','core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning','crm')
      AND p.prokind = 'f';
   SELECT count(*) INTO n_super_owned FROM pg_roles WHERE rolname = o AND (rolsuper OR rolcanlogin OR rolbypassrls);
   IF n_bad_tables <> 0 THEN RAISE EXCEPTION 'FAIL %: tables not owned by owner role', n_bad_tables; END IF;

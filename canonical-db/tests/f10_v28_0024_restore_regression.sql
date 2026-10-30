@@ -1,6 +1,6 @@
 DO $test$
 BEGIN
-  IF (SELECT count(*) FROM canonical_migrations.applied)<>25 THEN
+  IF (SELECT count(*) FROM canonical_migrations.applied)<>26 THEN
     RAISE EXCEPTION 'post-0025 restore ledger mismatch while checking 0024';
   END IF;
   IF to_regprocedure('integration.propose_family_mapping(uuid,text,text,text,uuid,text,text,text,text,text,text,uuid)') IS NULL
