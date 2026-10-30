@@ -99,10 +99,10 @@ test "$state" = 'MERGED|REVOKED' || { echo "FAIL merge/revoke=$state" >&2; exit 
 echo 'PASS audited Lead merge preserves source Lead and mistaken identity association can be revoked'
 
 cat >/tmp/f10-0027-deal.sql <<SQL
-SELECT 'DEAL='||crm.create_deal('$DEAL','$CLIENT','$FAMILY_A','$LEAD1','Synthetic Multi Compass Deal','MULTI_DOMAIN',12345.67,'CNY',clock_timestamp()+interval '20 days','$CRM1','018f0000-0000-7000-8000-000000027510');
-SELECT 'CHILD='||crm.add_deal_item('$ITEM1','$DEAL','CHILD_027','Synthetic Child Compass','EDUCATION','CHILD_COMPASS',1,1000.00,'CNY');
-SELECT 'EDU='||crm.add_deal_item('$ITEM2','$DEAL','EDU_027','Synthetic Education Compass','EDUCATION','EDUCATION_COMPASS',1,2000.00,'CNY');
-SELECT 'FAMILY='||crm.add_deal_item('$ITEM3','$DEAL','FAMILY_027','Synthetic Family Compass','WEALTH','FAMILY_COMPASS',1,3000.00,'CNY');
+SELECT 'DEAL='||crm.create_managed_deal('$DEAL','018f0000-0000-7000-8000-000000027414','$CLIENT','$FAMILY_A','$LEAD1',NULL,'Synthetic Multi Compass Deal','MULTI_DOMAIN',12345.67,'CNY',clock_timestamp()+interval '20 days','$CRM1',NULL,'018f0000-0000-7000-8000-000000027510');
+SELECT 'CHILD='||crm.add_managed_deal_item('$ITEM1','$DEAL','CHILD_027','Synthetic Child Compass','EDUCATION','CHILD_COMPASS',1,1000.00,'CNY','018f0000-0000-7000-8000-000000027516');
+SELECT 'EDU='||crm.add_managed_deal_item('$ITEM2','$DEAL','EDU_027','Synthetic Education Compass','EDUCATION','EDUCATION_COMPASS',1,2000.00,'CNY','018f0000-0000-7000-8000-000000027517');
+SELECT 'FAMILY='||crm.add_managed_deal_item('$ITEM3','$DEAL','FAMILY_027','Synthetic Family Compass','WEALTH','FAMILY_COMPASS',1,3000.00,'CNY','018f0000-0000-7000-8000-000000027518');
 SQL
 out="$(run_session "$CRM1" "$FAMILY_A" 018f0000-0000-7000-8000-000000027607 /tmp/f10-0027-deal.sql)"
 for expected in DEAL=true CHILD=true EDU=true FAMILY=true; do expect_line "$expected" "$out"; done

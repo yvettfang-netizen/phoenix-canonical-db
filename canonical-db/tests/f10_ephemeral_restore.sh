@@ -45,13 +45,13 @@ fi
 
 catalog="$(psql_restore -Atqc "SELECT 'ledger='||count(*) FROM canonical_migrations.applied; SELECT 'tables='||count(*) FROM pg_tables WHERE schemaname IN ('auth','core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning','crm','service'); SELECT 'policies='||count(*) FROM pg_policies WHERE schemaname IN ('core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning','crm','service'); SELECT 'people='||count(*) FROM core.people;")"
 printf '%s\n' "$catalog"
-grep -qx 'ledger=32' <<<"$catalog"
-grep -qx 'tables=85' <<<"$catalog"
-grep -qx 'policies=76' <<<"$catalog"
+grep -qx 'ledger=33' <<<"$catalog"
+grep -qx 'tables=89' <<<"$catalog"
+grep -qx 'policies=80' <<<"$catalog"
 grep -q '^people=[1-9]' <<<"$catalog"
 
-for suite in foundation.sql rls_probe.sql docs_probe.sql contract_neutral_probe.sql trusted_context_probe.sql phase3_acceptance.sql f10_catalog_regression.sql f10_d6_immutability_regression.sql f10_v16_document_trigger.sql f10_v20_0018_restore_regression.sql f10_v21_0019_restore_regression.sql f10_v22_0021_restore_regression.sql f10_v23_0022_restore_regression.sql f10_v25_0023_restore_regression.sql f10_v28_0024_restore_regression.sql f10_v200_0026_restore_regression.sql f10_v200_0027_restore_regression.sql f10_v200_0029_restore_regression.sql f10_v204_0030_m0_restore_regression.sql f10_v205_0031_m1_restore_regression.sql f10_v206_0032_m2_restore_regression.sql; do
+for suite in foundation.sql rls_probe.sql docs_probe.sql contract_neutral_probe.sql trusted_context_probe.sql phase3_acceptance.sql f10_catalog_regression.sql f10_d6_immutability_regression.sql f10_v16_document_trigger.sql f10_v20_0018_restore_regression.sql f10_v21_0019_restore_regression.sql f10_v22_0021_restore_regression.sql f10_v23_0022_restore_regression.sql f10_v25_0023_restore_regression.sql f10_v28_0024_restore_regression.sql f10_v200_0026_restore_regression.sql f10_v200_0027_restore_regression.sql f10_v200_0029_restore_regression.sql f10_v204_0030_m0_restore_regression.sql f10_v205_0031_m1_restore_regression.sql f10_v206_0032_m2_restore_regression.sql f10_v207_0033_m3_restore_regression.sql; do
   psql_restore -f "/opt/tests/$suite" >/tmp/f10-restore-suite.log
   echo "PASS restored $suite"
 done
-echo 'PASS fresh-cluster manifest-verified restore with synthetic rows and M2 Lead acquisition boundary'
+echo 'PASS fresh-cluster manifest-verified restore with synthetic rows and M3 Consultation/Deal boundary'
