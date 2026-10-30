@@ -105,7 +105,7 @@ try {
     }
     if (-not $ready) { throw 'Ephemeral PostgreSQL did not become ready.' }
 
-    Invoke-Docker @('exec', '-e', 'F10_EXPECTED_MIGRATION_COUNT=26', $container, 'bash', '/opt/tests/f10_ephemeral_init.sh')
+    Invoke-Docker @('exec', '-e', 'F10_EXPECTED_MIGRATION_COUNT=27', $container, 'bash', '/opt/tests/f10_ephemeral_init.sh')
     Invoke-Docker @('cp', $rolesSql, "${container}:/tmp/v126-roles.sql")
     Invoke-Docker @('cp', $seedSql, "${container}:/tmp/v126-seed.sql")
     Invoke-Docker @('exec', '-e', 'PGPASSFILE=/tmp/f10-bootstrap.pgpass', $container,

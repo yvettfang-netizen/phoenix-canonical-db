@@ -1,14 +1,17 @@
 DO $test$
 BEGIN
-  IF (SELECT count(*) FROM canonical_migrations.applied)<>26 THEN
+  IF (SELECT count(*) FROM canonical_migrations.applied)<>27 THEN
     RAISE EXCEPTION 'post-0026 restore ledger mismatch';
   END IF;
   IF to_regclass('core.organizations') IS NULL OR to_regclass('crm.clients') IS NULL THEN
     RAISE EXCEPTION '0026 Enterprise Core tables missing';
   END IF;
-  IF (SELECT count(*) FROM pg_tables WHERE schemaname='crm')<>1
-     OR (SELECT count(*) FROM pg_policies WHERE schemaname='crm')<>1 THEN
-    RAISE EXCEPTION '0026 CRM catalog mismatch';
+  IF to_regclass('crm.clients') IS NULL OR NOT EXISTS (
+    SELECT 1 FROM pg_policies
+     WHERE schemaname='crm' AND tablename='clients'
+       AND policyname='clients_enterprise_family_service'
+  ) THEN
+    RAISE EXCEPTION '0026 Client catalog objects missing';
   END IF;
   IF NOT EXISTS (
     SELECT 1 FROM pg_constraint

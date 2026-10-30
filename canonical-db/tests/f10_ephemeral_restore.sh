@@ -45,13 +45,13 @@ fi
 
 catalog="$(psql_restore -Atqc "SELECT 'ledger='||count(*) FROM canonical_migrations.applied; SELECT 'tables='||count(*) FROM pg_tables WHERE schemaname IN ('auth','core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning','crm'); SELECT 'policies='||count(*) FROM pg_policies WHERE schemaname IN ('core','consent','audit','integration','docs','casework','education','identity','operations_ref','learning','crm'); SELECT 'people='||count(*) FROM core.people;")"
 printf '%s\n' "$catalog"
-grep -qx 'ledger=26' <<<"$catalog"
-grep -qx 'tables=52' <<<"$catalog"
-grep -qx 'policies=43' <<<"$catalog"
+grep -qx 'ledger=27' <<<"$catalog"
+grep -qx 'tables=63' <<<"$catalog"
+grep -qx 'policies=54' <<<"$catalog"
 grep -q '^people=[1-9]' <<<"$catalog"
 
-for suite in foundation.sql rls_probe.sql docs_probe.sql contract_neutral_probe.sql trusted_context_probe.sql phase3_acceptance.sql f10_catalog_regression.sql f10_d6_immutability_regression.sql f10_v16_document_trigger.sql f10_v20_0018_restore_regression.sql f10_v21_0019_restore_regression.sql f10_v22_0021_restore_regression.sql f10_v23_0022_restore_regression.sql f10_v25_0023_restore_regression.sql f10_v28_0024_restore_regression.sql f10_v200_0026_restore_regression.sql; do
+for suite in foundation.sql rls_probe.sql docs_probe.sql contract_neutral_probe.sql trusted_context_probe.sql phase3_acceptance.sql f10_catalog_regression.sql f10_d6_immutability_regression.sql f10_v16_document_trigger.sql f10_v20_0018_restore_regression.sql f10_v21_0019_restore_regression.sql f10_v22_0021_restore_regression.sql f10_v23_0022_restore_regression.sql f10_v25_0023_restore_regression.sql f10_v28_0024_restore_regression.sql f10_v200_0026_restore_regression.sql f10_v200_0027_restore_regression.sql; do
   psql_restore -f "/opt/tests/$suite" >/tmp/f10-restore-suite.log
   echo "PASS restored $suite"
 done
-echo 'PASS fresh-cluster manifest-verified restore with synthetic rows and 0026 Enterprise Core boundary'
+echo 'PASS fresh-cluster manifest-verified restore with synthetic rows and 0027 CRM boundary'
