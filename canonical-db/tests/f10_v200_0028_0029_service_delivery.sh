@@ -51,8 +51,8 @@ SELECT 'PROJECT1='||service.create_project('$PROJECT1','$CLIENT','$FAMILY_A','$D
 SELECT 'PROJECT2='||service.create_project('$PROJECT2','$CLIENT','$FAMILY_A',NULL,'SVC_028_B','Synthetic Second Service Project','EDUCATION',NULL,NULL,'018f0000-0000-7000-8000-000000028602');
 SELECT 'PLAN='||service.transition_project('$PROJECT1','PLANNED','018f0000-0000-7000-8000-000000028603');
 SELECT 'ACTIVATE='||service.transition_project('$PROJECT1','ACTIVE','018f0000-0000-7000-8000-000000028604');
-SELECT 'SUBJECT1='||service.add_project_subject('$PSUB1','$PROJECT1','$SUBJECT_A1','EDUCATION','018f0000-0000-7000-8000-000000028605');
-SELECT 'SUBJECT2='||service.add_project_subject('$PSUB2','$PROJECT1','$SUBJECT_A2','WEALTH','018f0000-0000-7000-8000-000000028606');
+SELECT 'SUBJECT1='||service.add_project_subject_authorized('$PSUB1','$PROJECT1','$SUBJECT_A1','EDUCATION',NULL,'018f0000-0000-7000-8000-000000028605');
+SELECT 'SUBJECT2='||service.add_project_subject_authorized('$PSUB2','$PROJECT1','$SUBJECT_A2','WEALTH',NULL,'018f0000-0000-7000-8000-000000028606');
 SELECT 'DOMAIN1='||service.add_project_domain('$DOMAIN1','$PROJECT1','EDUCATION','018f0000-0000-7000-8000-000000028607');
 SELECT 'DOMAIN2='||service.add_project_domain('$DOMAIN2','$PROJECT1','WEALTH','018f0000-0000-7000-8000-000000028608');
 SELECT 'ASSIGN='||service.assign_project('$ASSIGNMENT','$PROJECT1','$ADVISOR','PROJECT_MANAGER','018f0000-0000-7000-8000-000000028609');
@@ -84,12 +84,12 @@ shape="$(bootstrap_psql -Atqc "SELECT
   (SELECT status FROM service.deliverables WHERE deliverable_id='$DELIVERABLE')||'|'||
   (SELECT task_status FROM service.tasks WHERE task_id='$TASK')||'|'||
   (SELECT access_status FROM service.project_subjects WHERE project_subject_id='$PSUB1')")"
-test "$shape" = '2|2|2|1|1|ACHIEVED|ACCEPTED|COMPLETED|REFERENCE_ONLY' || { echo "FAIL service shape=$shape" >&2; exit 1; }
+test "$shape" = '2|2|2|0|1|ACHIEVED|ACCEPTED|COMPLETED|REFERENCE_ONLY' || { echo "FAIL service shape=$shape" >&2; exit 1; }
 echo 'PASS one Family has multiple Service Projects; Project Parties, Subjects, Domains, Milestones, Deliverables and Tasks use controlled lifecycles'
 
 cat >/tmp/f10-0028-cross.sql <<SQL
 SELECT 'CROSS_PROJECT='||service.create_project('$PROJECT_BAD','$CLIENT','$FAMILY_A',NULL,'SVC_028_X','Forbidden Cross Family','EDUCATION',NULL,NULL,'018f0000-0000-7000-8000-000000028617');
-SELECT 'CROSS_SUBJECT='||service.add_project_subject('$PSUB_BAD','$PROJECT1','$SUBJECT_B','GENERAL','018f0000-0000-7000-8000-000000028618');
+SELECT 'CROSS_SUBJECT='||service.add_project_subject_authorized('$PSUB_BAD','$PROJECT1','$SUBJECT_B','GENERAL',NULL,'018f0000-0000-7000-8000-000000028618');
 SQL
 out="$(run_session "$SERVICE" "$FAMILY_B" 018f0000-0000-7000-8000-000000028702 /tmp/f10-0028-cross.sql)"
 expect_line 'CROSS_PROJECT=false' "$out"; expect_line 'CROSS_SUBJECT=false' "$out"

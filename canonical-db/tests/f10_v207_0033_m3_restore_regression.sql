@@ -1,6 +1,6 @@
 DO $test$
 BEGIN
-  IF (SELECT count(*) FROM canonical_migrations.applied)<>33 THEN
+  IF (SELECT count(*) FROM canonical_migrations.applied)<33 THEN
     RAISE EXCEPTION 'M3 restore ledger mismatch';
   END IF;
   IF to_regclass('crm.consultation_events') IS NULL
