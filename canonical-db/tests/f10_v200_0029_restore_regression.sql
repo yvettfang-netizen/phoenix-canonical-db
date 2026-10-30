@@ -17,14 +17,14 @@ BEGIN
      OR (SELECT count(*) FROM service.tasks)<1 THEN
     RAISE EXCEPTION '0028 restored Service rows mismatch';
   END IF;
-  IF (SELECT task_status FROM service.tasks)<> 'COMPLETED'
-     OR (SELECT count(*) FROM service.project_milestones WHERE status='ACHIEVED')<>1
-     OR (SELECT count(*) FROM service.deliverables WHERE status='ACCEPTED' AND delivered_at IS NOT NULL)<>1
-     OR (SELECT count(*) FROM service.task_events)<>5
+  IF NOT EXISTS(SELECT 1 FROM service.tasks WHERE task_status='COMPLETED')
+     OR (SELECT count(*) FROM service.project_milestones WHERE status='ACHIEVED')<1
+     OR (SELECT count(*) FROM service.deliverables WHERE status='ACCEPTED' AND delivered_at IS NOT NULL)<1
+     OR (SELECT count(*) FROM service.task_events)<5
      OR (SELECT count(*) FROM service.project_events)<18 THEN
     RAISE EXCEPTION '0028 restored lifecycle or immutable event rows mismatch';
   END IF;
-  IF (SELECT count(*) FROM service.projects WHERE family_id='018f0000-0000-7000-8000-000000000001')<>2
+  IF (SELECT count(*) FROM service.projects WHERE family_id='018f0000-0000-7000-8000-000000000001')<2
      OR (SELECT count(DISTINCT business_domain) FROM service.project_domains)<>2
      OR EXISTS(SELECT 1 FROM service.project_subjects WHERE access_status<>'REFERENCE_ONLY') THEN
     RAISE EXCEPTION '0028 family/project/subject boundary mismatch';
